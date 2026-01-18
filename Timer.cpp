@@ -108,8 +108,8 @@ int Timer::getTimeInMillis() const
 void Timer::startTimer()
 {
 	timerState_ = TimerState::Running;
-	GetLocalTime(&lastUpdateTime_);
-	GetLocalTime(&updatingTime_);
+	GetSystemTime(&lastUpdateTime_);
+	GetSystemTime(&updatingTime_);
 }
 
 void Timer::stopTimer()

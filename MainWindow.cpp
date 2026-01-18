@@ -558,7 +558,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 				if (pSettingsWindow->window() == nullptr) // dont create multiple settings windows
 				{
 					// Create and show settings window
-					if (!pSettingsWindow->create(L"Settings - Version 1.4", 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
+					if (!pSettingsWindow->create(L"Settings - Version 1.4.5", 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
 						return 0;
 					}
 
