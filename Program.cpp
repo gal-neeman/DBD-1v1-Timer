@@ -115,12 +115,36 @@ void controllerInputCallback(const WORD buttons)
 	SendMessage(hwndMainWindow, CONTROLLER_INPUT ,buttons, NULL);
 }
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nShowCmd)
+static void disableFullscreenOptimizations() {
+	wchar_t exePath[MAX_PATH];
+
+	if (GetModuleFileNameW(NULL, exePath, MAX_PATH) == 0) {
+		return;
+	}
+
+	HKEY hKey;
+	LSTATUS status = RegCreateKeyExW(HKEY_CURRENT_USER,
+		L"Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers",
+		0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL);
+
+	if (status == ERROR_SUCCESS) {
+		std::wstring flag = L"~ DISABLEDXMAXIMIZEDWINDOWEDMODE";
+
+		DWORD dataSize = (flag.length() + 1) * sizeof(wchar_t);
+
+		RegSetValueExW(hKey, exePath, 0, REG_SZ, (const BYTE*)flag.c_str(), dataSize);
+		RegCloseKey(hKey);
+	}
+}
+
+int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
 	// Create the main window
 	MainWindow win;
 	try
 	{
+		disableFullscreenOptimizations();
+
 		// Global hInstance variable (declared in globals.h)
 		hInstanceGlobal = hInstance;
 
