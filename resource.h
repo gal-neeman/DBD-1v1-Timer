@@ -1,4 +1,3 @@
-#pragma once
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by DBD 1v1 Timer1.rc
