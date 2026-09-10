@@ -303,7 +303,7 @@ private:
 	};
 
 public:
-	ColorPickerWindow* pColorPicker; // Reference to a Color Picker window
+	ColorPickerWindow colorPicker;
 
 	/**
 	@brief Sets the preview colors of the color selection controls.

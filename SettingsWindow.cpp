@@ -119,7 +119,7 @@ void SettingsWindow::initializeTextControls() const
 	const HWND hwndTextColorBackground = createControl(WC_STATIC, L"Background", titleX, tileHeight_ * 14, titleWidth, tileHeight_);
 
 	// Copyright text
-	const HWND hwndCopyright = createControl(WC_STATIC, L"© Truueh 2025", 10, SIZE_SETTINGS_HEIGHT - 65, 100, 40);
+	const HWND hwndCopyright = createControl(WC_STATIC, L"ï¿½ Truueh 2025", 10, SIZE_SETTINGS_HEIGHT - 65, 100, 40);
 
 	// Apply fonts
 	setControlsFont(hwnd_);
@@ -270,19 +270,19 @@ void SettingsWindow::handleControlCommand(const LPARAM lParam)
 	case CID_BACKGROUND_COLOR:
 	{
 		// Open a Color Picker window
-		if (pColorPicker->window() == nullptr)
+		if (colorPicker.window() == nullptr)
 		{
-			pColorPicker->controlId = controlId; // Notify Color Picker who called it
-			pColorPicker->pTempSettings = &tempSettings_;
+			colorPicker.controlId = controlId; // Notify Color Picker who called it
+			colorPicker.pTempSettings = &tempSettings_;
 		
-			if (!pColorPicker->create(L"Color Picker", 850, 300, SIZE_COLORPICKER_WIDTH, SIZE_COLORPICKER_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr, nullptr)) {
+			if (!colorPicker.create(L"Color Picker", 850, 300, SIZE_COLORPICKER_WIDTH, SIZE_COLORPICKER_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr, nullptr)) {
 				return;
 			}
-			ShowWindow(pColorPicker->window(), SW_SHOW);
+			ShowWindow(colorPicker.window(), SW_SHOW);
 		}
 		else
 		{
-			SetForegroundWindow(pColorPicker->window());
+			SetForegroundWindow(colorPicker.window());
 		}
 	}
 	break;
@@ -450,6 +450,10 @@ LRESULT SettingsWindow::handleMessage(const UINT wMsg, const WPARAM wParam, cons
 		}
 		case WM_DESTROY:
 			hwnd_ = nullptr;
+			DeleteObject(mouseBitmap_);
+			DeleteObject(controllerBitmap_);
+			mouseBitmap_ = nullptr;
+			controllerBitmap_ = nullptr;
 			return 0;
 		case WM_COMMAND: // Control item clicked
 			handleControlCommand(lParam);
@@ -532,8 +536,8 @@ LRESULT CALLBACK SettingsWindow::ctrlWndProc(
 	case WM_MBUTTONDOWN:
 	case WM_XBUTTONDOWN:
 		{
-			const HWND settingsHwnd = pGlobalTimerWindow->pSettingsWindow->window();
-			const bool isCtrlActive = pGlobalTimerWindow->pSettingsWindow->hActiveControl_ != nullptr;
+			const HWND settingsHwnd = pGlobalTimerWindow->settingsWindow.window();
+			const bool isCtrlActive = pGlobalTimerWindow->settingsWindow.hActiveControl_ != nullptr;
 			if (settingsHwnd != nullptr && isCtrlActive)
 			{
 				SendMessage(settingsHwnd, uMsg, wParam, lParam);
