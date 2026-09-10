@@ -304,8 +304,9 @@ void MainWindow::handlePainting()
 		{
 			// Select color for timer 2
 			ID2D1SolidColorBrush* pBrushTimer_2;
+			int lastSecondsTime = appSettings.optionLastSecondsTime * 1000;
 			if (timer1.getTimeInMillis() > 0
-				&& timer1.getTimeInMillis() - timer2.getTimeInMillis() <= 20000
+				&& timer1.getTimeInMillis() - timer2.getTimeInMillis() <= lastSecondsTime
 				&& (timer2.getTimerState() == TimerState::Running || timer2.getTimerState() == TimerState::Paused)
 				&& timer1.getTimeInMillis() - timer2.getTimeInMillis() > 0)
 			{
