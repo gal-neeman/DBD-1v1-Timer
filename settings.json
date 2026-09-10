@@ -10,7 +10,7 @@
    "conStartNoReset" : 5011,
    "conTimer1" : 5003,
    "conTimer2" : 5002,
-   "optionLastSecondsTime" : 20,
+   "optionLastSecondsTime" : 23,
    "optionStartOnChange" : false,
    "optionTransparent" : false,
    "start" : 70,

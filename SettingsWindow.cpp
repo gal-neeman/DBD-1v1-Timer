@@ -222,6 +222,14 @@ void SettingsWindow::setCopyrightFont(const HWND hControl)
 	SendMessage(hControl, WM_SETFONT, (WPARAM)hFont, TRUE);
 }
 
+void SettingsWindow::updateTempSettingsLastSeconds() {
+	BOOL success = false;
+	int lastSecondsTime = GetDlgItemInt(hwnd_, CID_LAST_SECONDS_TIME, &success, false);
+	if (success) {
+		tempSettings_.optionLastSecondsTime = lastSecondsTime;
+	}
+}
+
 void SettingsWindow::handleControlCommand(const LPARAM lParam)
 {
 	const HWND hwndCtrl = reinterpret_cast<HWND>(lParam); // clicked item handle
@@ -231,10 +239,13 @@ void SettingsWindow::handleControlCommand(const LPARAM lParam)
 	switch (controlId) {
 	// OK
 	case CID_OK:
+	{
+		updateTempSettingsLastSeconds();
 		applySettings(tempSettings_);
 		SendMessage(GetWindow(hwnd_, GW_OWNER), REFRESH_BRUSHES, 0, 0);
 		DestroyWindow(hwnd_);
 		break;
+	}
 		
 	// Cancel
 	case CID_CANCEL:

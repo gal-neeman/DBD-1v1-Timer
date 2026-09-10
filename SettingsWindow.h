@@ -114,6 +114,11 @@ private:
 	void applyInitialControlTextValue(HWND hCtrl);
 
 	/**
+	@brief Apply the new LastSecondsTime field to the tempSettings_
+	*/
+	void updateTempSettingsLastSeconds();
+
+	/**
 	@brief WindowProcedure for CommonControls controls.
 
 	@param uMsg The WindowMessage
