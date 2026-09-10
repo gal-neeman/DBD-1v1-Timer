@@ -417,6 +417,7 @@ void SettingsWindow::applyInitialControlTextValue(const HWND hCtrl) {
 		int lastSecondsInt = appSettings.optionLastSecondsTime;
 		std::wstring lastSecondsStr = std::to_wstring(lastSecondsInt);
 		SetWindowText(hCtrl, lastSecondsStr.c_str());
+		break;
 	}
 	default:
 		break;
