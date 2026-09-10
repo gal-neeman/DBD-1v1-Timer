@@ -26,7 +26,7 @@ HRESULT MainWindow::createGraphicsResources()
 		const D2D1_SIZE_U size = D2D1::SizeU(rc.right, rc.bottom);
 
 		const D2D1_RENDER_TARGET_PROPERTIES rtProperties = D2D1::RenderTargetProperties(
-			D2D1_RENDER_TARGET_TYPE_DEFAULT,
+			D2D1_RENDER_TARGET_TYPE_SOFTWARE,
 			D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE),
 			96.0f, 96.0f,
 			D2D1_RENDER_TARGET_USAGE_NONE,
@@ -35,7 +35,7 @@ HRESULT MainWindow::createGraphicsResources()
 
 		hr = pFactory_->CreateHwndRenderTarget(
 			rtProperties,
-			D2D1::HwndRenderTargetProperties(hwnd_, size),
+			D2D1::HwndRenderTargetProperties(hwnd_, size, D2D1_PRESENT_OPTIONS_IMMEDIATELY),
 			&pRenderTarget_
 		);
 
