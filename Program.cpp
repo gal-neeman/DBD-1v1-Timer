@@ -168,7 +168,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 		ShowWindow(win.window(), nShowCmd);
 
-
 		// Create variables for settings and color picker windows
 		SettingsWindow settings;
 		ColorPickerWindow colorPicker;
@@ -184,8 +183,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		applySettings(appSettings);
 
 		// Listen for hotkeys While Running in the background - Install a hook procedure
-		SetWindowsHookEx(WH_KEYBOARD_LL, &kbHook, nullptr, NULL);
-		SetWindowsHookEx(WH_MOUSE_LL, &mouseHook, nullptr, NULL);
+		if (!IsDebuggerPresent())
+		{
+			SetWindowsHookEx(WH_KEYBOARD_LL, &kbHook, nullptr, NULL);
+			SetWindowsHookEx(WH_MOUSE_LL, &mouseHook, nullptr, NULL);
+		}
 
 		// Controller support
 		std::unique_ptr<ControllerManager> controllerManager(std::make_unique<ControllerManager>());

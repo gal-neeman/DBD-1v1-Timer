@@ -142,27 +142,32 @@ float MainWindow::getLargestFontsizeFit() const
 	IDWriteTextFormat* pTempTextFormat;
 	IDWriteTextLayout* pTempTextLayout;
 
-	float maxSize = 100;
+	int low = 1;
+	int high = 1000;
+	int mid = 0;
+	int bestFit = 10;
 	constexpr WCHAR fontFamily[] = L"Sitka";
-	bool conditionMet = false;
 
 	constexpr wchar_t text[] = L"";
 
-	// Iterate through options untill the largest possible font size is found
-	while (!conditionMet)
+	// Binary search for the best fit font size for the new window size
+	while (low <= high)
 	{
+		mid = (low + high) / 2;
+
 		HRESULT hr = pWriteFactory_->CreateTextFormat(
 			fontFamily,
 			nullptr,
 			pTextFormat_->GetFontWeight(),
 			pTextFormat_->GetFontStyle(),
 			pTextFormat_->GetFontStretch(),
-			maxSize,
+			mid,
 			L"",
 			&pTempTextFormat
 		);
 
 		if (FAILED(hr)) {
+			safeRelease(&pTempTextFormat);
 			exitApp();
 		}
 
@@ -176,6 +181,8 @@ float MainWindow::getLargestFontsizeFit() const
 		);
 
 		if (FAILED(hr)) {
+			safeRelease(&pTempTextFormat);
+			safeRelease(&pTempTextLayout);
 			exitApp();
 		}
 
@@ -187,21 +194,24 @@ float MainWindow::getLargestFontsizeFit() const
 			exitApp();
 		}
 
-		if (layoutMetrics.width <= winSize_[0] &&
-			layoutMetrics.height <= winSize_[1])
-		{
-			conditionMet = true;
-		}
-		else
-		{
-			maxSize--;
-		}
-
 		safeRelease(&pTempTextFormat);
 		safeRelease(&pTempTextLayout);
+
+		int winHeight = winSize_[1];
+
+		if (layoutMetrics.height > winHeight) {
+			high = mid - 1;
+		}
+		else if (layoutMetrics.height < winHeight) {
+			bestFit = mid;
+			low = mid + 1;
+		}
+		else {
+			return mid;
+		}
 	}
 
-	return maxSize;
+	return bestFit;
 }
 
 void MainWindow::discardGraphicsResources()
