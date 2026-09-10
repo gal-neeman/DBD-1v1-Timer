@@ -570,18 +570,18 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			switch (wParam)
 			{
 			case MENU_SETTINGS:
-				if (pSettingsWindow->window() == nullptr) // dont create multiple settings windows
+				if (settingsWindow.window() == nullptr) // dont create multiple settings windows
 				{
 					// Create and show settings window
-					if (!pSettingsWindow->create(L"Settings - Version 1.4.7", 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
+					if (!settingsWindow.create(L"Settings - Version 1.4.7", 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
 						return 0;
 					}
 
-					ShowWindow(pSettingsWindow->window(), SW_SHOW);
+					ShowWindow(settingsWindow.window(), SW_SHOW);
 				}
 				else
 				{
-					SetForegroundWindow(pSettingsWindow->window());
+					SetForegroundWindow(settingsWindow.window());
 				}
 				return 0;
 			case MENU_QUIT:
@@ -679,9 +679,9 @@ void MainWindow::handleHotKey(const int code)
 
 void MainWindow::handleControllerInput(const WORD buttons) const
 {
-	if (pSettingsWindow->window() != nullptr)
+	if (settingsWindow.window() != nullptr)
 	{
-		SendMessage(pSettingsWindow->window(), CONTROLLER_INPUT, buttons, NULL);
+		SendMessage(settingsWindow.window(), CONTROLLER_INPUT, buttons, NULL);
 		return;
 	}
 

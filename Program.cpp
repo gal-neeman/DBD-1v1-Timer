@@ -168,13 +168,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 		ShowWindow(win.window(), nShowCmd);
 
-		// Create variables for settings and color picker windows
-		SettingsWindow settings;
-		ColorPickerWindow colorPicker;
-		settings.pColorPicker = &colorPicker;
-
-		win.pSettingsWindow = &settings;
-
 		// global variables for timer
 		pGlobalTimerWindow = &win;
 		hwndMainWindow = win.window();
