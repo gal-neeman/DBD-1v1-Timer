@@ -16,6 +16,7 @@ constexpr byte CID_CON_START = 113;
 constexpr byte CID_CON_TIMER1 = 114;
 constexpr byte CID_CON_TIMER2 = 115;
 constexpr byte CID_CON_START_NO_RESET = 117;
+constexpr byte CID_LAST_SECONDS_TIME = 118;
 constexpr byte MENU_QUIT = 1;
 constexpr byte MENU_SETTINGS = 0;
 constexpr byte KEY_START = 0;
