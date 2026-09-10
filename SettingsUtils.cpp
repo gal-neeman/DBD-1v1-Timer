@@ -79,8 +79,11 @@ void settingsFromJson(const Json::Value& json, SettingsStruct& settings)
 		settings.colors.lastSecondsColor = colors["last seconds"].asInt();
 		settings.colors.backgroundColor = colors["background"].asInt();
 
-		if (settings.colors.timerColor > 24 || settings.colors.selectedTimerColor > 24 ||
-			settings.colors.lastSecondsColor > 24 || settings.colors.backgroundColor > 24)
+		if (settings.colors.timerColor > 24 || settings.colors.timerColor < 0 ||
+			settings.colors.selectedTimerColor > 24 || settings.colors.selectedTimerColor < 0 ||
+			settings.colors.lastSecondsColor > 24 || settings.colors.lastSecondsColor < 0 ||
+			settings.colors.backgroundColor > 24 || settings.colors.backgroundColor
+			)
 		{
 			settings.colors.timerColor = 9;
 			settings.colors.selectedTimerColor = 6;
