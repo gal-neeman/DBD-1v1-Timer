@@ -6,6 +6,9 @@
 #steam
 steam/
 
+# Claude Code local settings (per-developer, not shared)
+.claude/settings.local.json
+
 # User-specific files
 *.rsuser
 *.suo
