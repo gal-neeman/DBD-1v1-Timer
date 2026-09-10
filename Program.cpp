@@ -32,17 +32,6 @@ HWND hwndMainWindow = nullptr;
 HINSTANCE hInstanceGlobal;
 MainWindow* pGlobalTimerWindow = nullptr;
 
-void appLoop(MainWindow* win)
-{
-	while (win->appRunning)
-	{
-		Sleep(1);
-		win->timer1.updateTime();
-		win->timer2.updateTime();
-		win->draw();
-	}
-}
-
 void exitApp()
 {
 	if (pGlobalTimerWindow) pGlobalTimerWindow->appRunning = false;
@@ -187,9 +176,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		controllerManager->setInputCallback(controllerInputCallback);
 		controllerManager->start();
 
-		// Create a thread for the app loop (ticks)
-		thread appLoopThread(appLoop, &win);
-
 		while (win.appRunning)
 		{
 			// Handle messages
@@ -200,7 +186,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			}
 		}
 
-		appLoopThread.join();
 		controllerManager->stop();
 		return 0;
 	}

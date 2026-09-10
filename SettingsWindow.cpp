@@ -119,7 +119,7 @@ void SettingsWindow::initializeTextControls() const
 	const HWND hwndTextColorBackground = createControl(WC_STATIC, L"Background", titleX, tileHeight_ * 14, titleWidth, tileHeight_);
 
 	// Copyright text
-	const HWND hwndCopyright = createControl(WC_STATIC, L"� Truueh 2025", 10, SIZE_SETTINGS_HEIGHT - 65, 100, 40);
+	const HWND hwndCopyright = createControl(WC_STATIC, L"\u00A9 Truueh 2026", 10, SIZE_SETTINGS_HEIGHT - 65, 100, 40);
 
 	// Apply fonts
 	setControlsFont(hwnd_);

@@ -504,6 +504,8 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 
 			appSettings = getSafeSettingsStruct();
 			appRunning = true;
+
+			SetTimer(hwnd_, 0, 16, nullptr);
 			return 0;
 		}
 		case WM_DESTROY:
@@ -622,6 +624,13 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 		case CONTROLLER_INPUT:
 			handleControllerInput(wParam);
 			break;
+		case WM_TIMER:
+		{
+			timer1.updateTime();
+			timer2.updateTime();
+			draw();
+			break;
+		}
 		default:
 			break;
 		}
