@@ -102,6 +102,7 @@ struct SettingsStruct // With default values
 	bool optionStartOnChange = false;
 	bool optionTransparent = false;
 	bool optionClickThrough = false;
+	int optionLastSecondsTime = 20;
 	ColorsStruct colors;
 };
 

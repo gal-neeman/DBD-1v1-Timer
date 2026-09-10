@@ -22,6 +22,7 @@ Json::Value settingsToJson(const SettingsStruct& settings)
 
 	settingsJson["optionTransparent"] = settings.optionTransparent;
 	settingsJson["optionStartOnChange"] = settings.optionStartOnChange;
+	settingsJson["optionLastSecondsTime"] = settings.optionLastSecondsTime;
 
 	settingsJson["colors"]["timer"] = settings.colors.timerColor;
 	settingsJson["colors"]["selected timer"] = settings.colors.selectedTimerColor;
@@ -53,6 +54,7 @@ void settingsFromJson(const Json::Value& json, SettingsStruct& settings)
 	if (json["optionTransparent"].isBool() && json["optionStartOnChange"].isBool()) {
 		settings.optionTransparent = json["optionTransparent"].asBool();
 		settings.optionStartOnChange = json["optionStartOnChange"].asBool();
+		settings.optionLastSecondsTime = json["optionLastSecondsTime"].asInt();
 	}
 
 	settings.optionClickThrough = false;
