@@ -169,6 +169,7 @@ float MainWindow::getLargestFontsizeFit() const
 		if (FAILED(hr)) {
 			safeRelease(&pTempTextFormat);
 			exitApp();
+			return 0;
 		}
 
 		hr = pWriteFactory_->CreateTextLayout(
@@ -184,6 +185,7 @@ float MainWindow::getLargestFontsizeFit() const
 			safeRelease(&pTempTextFormat);
 			safeRelease(&pTempTextLayout);
 			exitApp();
+			return 0;
 		}
 
 		// retrieve text size
@@ -191,7 +193,10 @@ float MainWindow::getLargestFontsizeFit() const
 		hr = pTempTextLayout->GetMetrics(&layoutMetrics);
 
 		if (FAILED(hr)) {
+			safeRelease(&pTempTextFormat);
+			safeRelease(&pTempTextLayout);
 			exitApp();
+			return 0;
 		}
 
 		safeRelease(&pTempTextFormat);
