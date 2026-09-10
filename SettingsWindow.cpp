@@ -450,6 +450,10 @@ LRESULT SettingsWindow::handleMessage(const UINT wMsg, const WPARAM wParam, cons
 		}
 		case WM_DESTROY:
 			hwnd_ = nullptr;
+			DeleteObject(mouseBitmap_);
+			DeleteObject(controllerBitmap_);
+			mouseBitmap_ = nullptr;
+			controllerBitmap_ = nullptr;
 			return 0;
 		case WM_COMMAND: // Control item clicked
 			handleControlCommand(lParam);
