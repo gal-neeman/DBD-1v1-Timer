@@ -13,7 +13,7 @@ private:
 	HBITMAP controllerBitmap_ = nullptr;
 	HWND hActiveControl_ = nullptr;
 
-	byte rows_ = 17;
+	byte rows_ = 18;
 	byte cols_ = 11;
 
 	int tileHeight_ = SIZE_SETTINGS_HEIGHT / rows_;
@@ -105,6 +105,18 @@ private:
 	@param hCtrl The HWND instance to set the text of.
 	*/
 	void applyHotkeySavedKey(HWND hCtrl);
+
+	/**
+	@brief Set the initial value of a given text control with it's value from the settings
+
+	@param hCtrl The HWND instance to set the text of
+	*/
+	void applyInitialControlTextValue(HWND hCtrl);
+
+	/**
+	@brief Apply the new LastSecondsTime field to the tempSettings_
+	*/
+	void updateTempSettingsLastSeconds();
 
 	/**
 	@brief WindowProcedure for CommonControls controls.
