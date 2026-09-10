@@ -51,10 +51,18 @@ void settingsFromJson(const Json::Value& json, SettingsStruct& settings)
 	}
 
 	// options
-	if (json["optionTransparent"].isBool() && json["optionStartOnChange"].isBool()) {
+	if (
+		json["optionTransparent"].isBool() && 
+		json["optionStartOnChange"].isBool() &&
+		json["optionLastSecondsTime"].isInt()
+		) {
 		settings.optionTransparent = json["optionTransparent"].asBool();
 		settings.optionStartOnChange = json["optionStartOnChange"].asBool();
 		settings.optionLastSecondsTime = json["optionLastSecondsTime"].asInt();
+
+		if (settings.optionLastSecondsTime < 0 || settings.optionLastSecondsTime > 99) {
+			settings.optionLastSecondsTime = 20;
+		}
 	}
 
 	settings.optionClickThrough = false;
