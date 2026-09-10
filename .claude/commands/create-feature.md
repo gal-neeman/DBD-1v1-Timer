@@ -1,4 +1,4 @@
-Use the Linear MCP to create a new Bug issue based on this request: $0
+Use the Linear MCP to create a new Feature issue based on this request: $0
 
 Optional milestone name: $1
 
@@ -11,21 +11,20 @@ If a milestone name was provided:
 - If no reasonable match is found, create a new milestone with the given name in the "DBD 1v1 Timer" project and attach the issue to it.
 If no milestone name was provided, don't set a milestone.
 
-Give the issue a Bug label
-
 Assign the issue to Truueh (me)
 
-Analyze my recent conversation, terminal errors, and open files to automatically fill out this template:
+Give the issue a Feature label
 
-**Context / Expected Behavior:**
-[What the code should be doing]
+Analyze our current conversation to automatically fill out this template:
 
-**Actual Behavior:**
-[What actually happened. Include error messages or stack traces]
+**The Goal:**
+[What are we trying to achieve?]
 
-**Location / Reproduction:**
-- File: [Path to the file]
-- Line / Function: [Specific area]
-- Steps: [Brief steps if applicable]
+**Proposed Implementation:**
+[Technical notes on how to build it, architecture changes, or libraries to use]
+
+**Acceptance Criteria:**
+- [ ] [Requirement 1]
+- [ ] [Requirement 2]
 
 Do not ask me for confirmation if you have enough context. Create the issue immediately in Linear and give me the link.
