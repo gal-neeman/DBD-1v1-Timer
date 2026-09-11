@@ -116,7 +116,7 @@ void SettingsWindow::initializeTextControls() const
 	// Color options names
 	const HWND hwndTextColorTimer = createControl(WC_STATIC, L"Timer", titleX, tileHeight_ * 12, titleWidth, tileHeight_);
 	const HWND hwndTextColorSelectedTimer = createControl(WC_STATIC, L"Selected Timer", titleX, tileHeight_ * 13, titleWidth, tileHeight_);
-	const HWND hwndTextColorWinCon = createControl(WC_STATIC, L"Last 20 Seconds", titleX, tileHeight_ * 14, titleWidth, tileHeight_);
+	const HWND hwndTextColorWinCon = createControl(WC_STATIC, L"Last Seconds Color", titleX, tileHeight_ * 14, titleWidth, tileHeight_);
 	const HWND hwndTextColorBackground = createControl(WC_STATIC, L"Background", titleX, tileHeight_ * 15, titleWidth, tileHeight_);
 
 	// Copyright text
