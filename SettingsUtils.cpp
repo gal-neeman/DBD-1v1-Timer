@@ -6,72 +6,10 @@
 
 using namespace std;
 
-SettingsStruct getSafeSettingsStruct()
+Json::Value settingsToJson(const SettingsStruct& settings)
 {
-	ifstream file(SETTINGS_FILE_NAME);
-	Json::Value actualJson;
-	Json::Reader reader;
-	SettingsStruct settings;
-
-	reader.parse(file, actualJson);
-
-	// hotkeys
-	if (actualJson["start"].isInt() && actualJson["timer1"].isInt() && actualJson["timer2"].isInt() &&
-		actualJson["conStart"].isInt() && actualJson["conTimer1"].isInt() && actualJson["conTimer2"].isInt()
-		&& actualJson["startNoReset"].isInt() && actualJson["conStartNoReset"].isInt())
-	{
-		settings.startKey = actualJson["start"].asInt();
-		settings.timer1Key = actualJson["timer1"].asInt();
-		settings.timer2Key = actualJson["timer2"].asInt();
-		settings.startNoResetKey = actualJson["startNoReset"].asInt();
-
-		settings.conStartKey = actualJson["conStart"].asInt();
-		settings.conTimer1Key = actualJson["conTimer1"].asInt();
-		settings.conTimer2Key = actualJson["conTimer2"].asInt();
-		settings.conStartNoResetKey = actualJson["conStartNoReset"].asInt();
-	}
-
-	// options
-	if (actualJson["optionTransparent"].isBool() && actualJson["optionStartOnChange"].isBool()) {
-		settings.optionTransparent = actualJson["optionTransparent"].asBool();
-		settings.optionStartOnChange = actualJson["optionStartOnChange"].asBool();
-	}
-
-	settings.optionClickThrough = false;
-
-	// colors
-	Json::Value colors = actualJson["colors"];
-	if (colors["timer"].isInt() && colors["selected timer"].isInt()
-		&& colors["last seconds"].isInt() && colors["background"].isInt())
-	{
-		settings.colors.timerColor = colors["timer"].asInt();
-		settings.colors.selectedTimerColor = colors["selected timer"].asInt();
-		settings.colors.lastSecondsColor = colors["last seconds"].asInt();
-		settings.colors.backgroundColor = colors["background"].asInt();
-
-		if (settings.colors.timerColor > 24 || settings.colors.selectedTimerColor > 24 ||
-			settings.colors.lastSecondsColor > 24 || settings.colors.backgroundColor > 24)
-		{
-			settings.colors.timerColor = 9;
-			settings.colors.selectedTimerColor = 6;
-			settings.colors.lastSecondsColor = 1;
-			settings.colors.backgroundColor = 20;
-		}
-	}
-
-	return settings;
-}
-
-void setSettingsStruct(const SettingsStruct& settings)
-{
-	ifstream file(SETTINGS_FILE_NAME);
-
-	// Retrieve existing settings
-	Json::Reader reader;
 	Json::Value settingsJson;
-	reader.parse(file, settingsJson);
 
-	// Change json obj
 	settingsJson["start"] = settings.startKey;
 	settingsJson["timer1"] = settings.timer1Key;
 	settingsJson["timer2"] = settings.timer2Key;
@@ -84,11 +22,94 @@ void setSettingsStruct(const SettingsStruct& settings)
 
 	settingsJson["optionTransparent"] = settings.optionTransparent;
 	settingsJson["optionStartOnChange"] = settings.optionStartOnChange;
+	settingsJson["optionLastSecondsTime"] = settings.optionLastSecondsTime;
 
 	settingsJson["colors"]["timer"] = settings.colors.timerColor;
 	settingsJson["colors"]["selected timer"] = settings.colors.selectedTimerColor;
 	settingsJson["colors"]["last seconds"] = settings.colors.lastSecondsColor;
 	settingsJson["colors"]["background"] = settings.colors.backgroundColor;
+
+	return settingsJson;
+}
+
+void settingsFromJson(const Json::Value& json, SettingsStruct& settings)
+{
+	// hotkeys
+	if (json["start"].isInt() && json["timer1"].isInt() && json["timer2"].isInt() &&
+		json["conStart"].isInt() && json["conTimer1"].isInt() && json["conTimer2"].isInt()
+		&& json["startNoReset"].isInt() && json["conStartNoReset"].isInt())
+	{
+		settings.startKey = json["start"].asInt();
+		settings.timer1Key = json["timer1"].asInt();
+		settings.timer2Key = json["timer2"].asInt();
+		settings.startNoResetKey = json["startNoReset"].asInt();
+
+		settings.conStartKey = json["conStart"].asInt();
+		settings.conTimer1Key = json["conTimer1"].asInt();
+		settings.conTimer2Key = json["conTimer2"].asInt();
+		settings.conStartNoResetKey = json["conStartNoReset"].asInt();
+	}
+
+	// options
+	if (
+		json["optionTransparent"].isBool() && 
+		json["optionStartOnChange"].isBool()) {
+		settings.optionTransparent = json["optionTransparent"].asBool();
+		settings.optionStartOnChange = json["optionStartOnChange"].asBool();
+	}
+
+	// numeric options
+	if (json["optionLastSecondsTime"].isInt()) {
+		settings.optionLastSecondsTime = json["optionLastSecondsTime"].asInt();
+
+		if (settings.optionLastSecondsTime < 0 || settings.optionLastSecondsTime > 99) {
+			settings.optionLastSecondsTime = 20;
+		}
+	}
+
+	settings.optionClickThrough = false;
+
+	// colors
+	Json::Value colors = json["colors"];
+	if (colors["timer"].isInt() && colors["selected timer"].isInt()
+		&& colors["last seconds"].isInt() && colors["background"].isInt())
+	{
+		settings.colors.timerColor = colors["timer"].asInt();
+		settings.colors.selectedTimerColor = colors["selected timer"].asInt();
+		settings.colors.lastSecondsColor = colors["last seconds"].asInt();
+		settings.colors.backgroundColor = colors["background"].asInt();
+
+		if (settings.colors.timerColor > 24 || settings.colors.timerColor < 0 ||
+			settings.colors.selectedTimerColor > 24 || settings.colors.selectedTimerColor < 0 ||
+			settings.colors.lastSecondsColor > 24 || settings.colors.lastSecondsColor < 0 ||
+			settings.colors.backgroundColor > 24 || settings.colors.backgroundColor < 0
+			)
+		{
+			settings.colors.timerColor = 9;
+			settings.colors.selectedTimerColor = 6;
+			settings.colors.lastSecondsColor = 1;
+			settings.colors.backgroundColor = 20;
+		}
+	}
+}
+
+SettingsStruct getSafeSettingsStruct()
+{
+	ifstream file(SETTINGS_FILE_NAME);
+	Json::Value actualJson;
+	Json::Reader reader;
+	SettingsStruct settings;
+
+	reader.parse(file, actualJson);
+
+	settingsFromJson(actualJson, settings);
+
+	return settings;
+}
+
+void setSettingsStruct(const SettingsStruct& settings)
+{
+	const Json::Value settingsJson = settingsToJson(settings);
 
 	// Write to file
 	Json::StreamWriterBuilder builder;
@@ -102,32 +123,8 @@ void setSettingsStruct(const SettingsStruct& settings)
 
 void createSettingsFile()
 {
-	ofstream file(SETTINGS_FILE_NAME);
-
-	ColorsStruct defaultColors;
-
-	SettingsStruct defaultSettings;
-	defaultSettings.colors = defaultColors;
-
-	Json::Value settingsJson;
-	
-	settingsJson["start"] = defaultSettings.startKey;
-	settingsJson["timer1"] = defaultSettings.timer1Key;
-	settingsJson["timer2"] = defaultSettings.timer2Key;
-	settingsJson["startNoReset"] = defaultSettings.startNoResetKey;
-
-	settingsJson["conStart"] = defaultSettings.conStartKey;
-	settingsJson["conTimer1"] = defaultSettings.conTimer1Key;
-	settingsJson["conTimer2"] = defaultSettings.conTimer2Key;
-	settingsJson["conStartNoReset"] = defaultSettings.conStartNoResetKey;
-
-	settingsJson["optionTransparent"] = defaultSettings.optionTransparent;
-	settingsJson["optionStartOnChange"] = defaultSettings.optionStartOnChange;
-
-	settingsJson["colors"]["timer"] = defaultSettings.colors.timerColor;
-	settingsJson["colors"]["selected timer"] = defaultSettings.colors.selectedTimerColor;
-	settingsJson["colors"]["last seconds"] = defaultSettings.colors.lastSecondsColor;
-	settingsJson["colors"]["background"] = defaultSettings.colors.backgroundColor;
+	const SettingsStruct defaultSettings;
+	const Json::Value settingsJson = settingsToJson(defaultSettings);
 
 	// Write to file
 	Json::StreamWriterBuilder builder;

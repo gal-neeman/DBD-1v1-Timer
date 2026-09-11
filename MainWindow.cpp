@@ -26,7 +26,7 @@ HRESULT MainWindow::createGraphicsResources()
 		const D2D1_SIZE_U size = D2D1::SizeU(rc.right, rc.bottom);
 
 		const D2D1_RENDER_TARGET_PROPERTIES rtProperties = D2D1::RenderTargetProperties(
-			D2D1_RENDER_TARGET_TYPE_DEFAULT,
+			D2D1_RENDER_TARGET_TYPE_SOFTWARE,
 			D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE),
 			96.0f, 96.0f,
 			D2D1_RENDER_TARGET_USAGE_NONE,
@@ -35,7 +35,7 @@ HRESULT MainWindow::createGraphicsResources()
 
 		hr = pFactory_->CreateHwndRenderTarget(
 			rtProperties,
-			D2D1::HwndRenderTargetProperties(hwnd_, size),
+			D2D1::HwndRenderTargetProperties(hwnd_, size, D2D1_PRESENT_OPTIONS_IMMEDIATELY),
 			&pRenderTarget_
 		);
 
@@ -169,6 +169,7 @@ float MainWindow::getLargestFontsizeFit() const
 		if (FAILED(hr)) {
 			safeRelease(&pTempTextFormat);
 			exitApp();
+			return 0;
 		}
 
 		hr = pWriteFactory_->CreateTextLayout(
@@ -184,6 +185,7 @@ float MainWindow::getLargestFontsizeFit() const
 			safeRelease(&pTempTextFormat);
 			safeRelease(&pTempTextLayout);
 			exitApp();
+			return 0;
 		}
 
 		// retrieve text size
@@ -191,7 +193,10 @@ float MainWindow::getLargestFontsizeFit() const
 		hr = pTempTextLayout->GetMetrics(&layoutMetrics);
 
 		if (FAILED(hr)) {
+			safeRelease(&pTempTextFormat);
+			safeRelease(&pTempTextLayout);
 			exitApp();
+			return 0;
 		}
 
 		safeRelease(&pTempTextFormat);
@@ -299,8 +304,9 @@ void MainWindow::handlePainting()
 		{
 			// Select color for timer 2
 			ID2D1SolidColorBrush* pBrushTimer_2;
+			int lastSecondsTime = appSettings.optionLastSecondsTime * 1000;
 			if (timer1.getTimeInMillis() > 0
-				&& timer1.getTimeInMillis() - timer2.getTimeInMillis() <= 20000
+				&& timer1.getTimeInMillis() - timer2.getTimeInMillis() <= lastSecondsTime
 				&& (timer2.getTimerState() == TimerState::Running || timer2.getTimerState() == TimerState::Paused)
 				&& timer1.getTimeInMillis() - timer2.getTimeInMillis() > 0)
 			{
@@ -499,6 +505,8 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 
 			appSettings = getSafeSettingsStruct();
 			appRunning = true;
+
+			SetTimer(hwnd_, 0, 16, nullptr);
 			return 0;
 		}
 		case WM_DESTROY:
@@ -565,18 +573,18 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			switch (wParam)
 			{
 			case MENU_SETTINGS:
-				if (pSettingsWindow->window() == nullptr) // dont create multiple settings windows
+				if (settingsWindow.window() == nullptr) // dont create multiple settings windows
 				{
 					// Create and show settings window
-					if (!pSettingsWindow->create(L"Settings - Version 1.4.7", 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
+					if (!settingsWindow.create(L"Settings - Version 1.5.0", 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
 						return 0;
 					}
 
-					ShowWindow(pSettingsWindow->window(), SW_SHOW);
+					ShowWindow(settingsWindow.window(), SW_SHOW);
 				}
 				else
 				{
-					SetForegroundWindow(pSettingsWindow->window());
+					SetForegroundWindow(settingsWindow.window());
 				}
 				return 0;
 			case MENU_QUIT:
@@ -617,6 +625,13 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 		case CONTROLLER_INPUT:
 			handleControllerInput(wParam);
 			break;
+		case WM_TIMER:
+		{
+			timer1.updateTime();
+			timer2.updateTime();
+			draw();
+			break;
+		}
 		default:
 			break;
 		}
@@ -674,9 +689,9 @@ void MainWindow::handleHotKey(const int code)
 
 void MainWindow::handleControllerInput(const WORD buttons) const
 {
-	if (pSettingsWindow->window() != nullptr)
+	if (settingsWindow.window() != nullptr)
 	{
-		SendMessage(pSettingsWindow->window(), CONTROLLER_INPUT, buttons, NULL);
+		SendMessage(settingsWindow.window(), CONTROLLER_INPUT, buttons, NULL);
 		return;
 	}
 

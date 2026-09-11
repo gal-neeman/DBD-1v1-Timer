@@ -123,7 +123,7 @@ public:
 	// Public fields
 	Timer timer1 = Timer();
 	Timer timer2 = Timer();
-	SettingsWindow* pSettingsWindow = nullptr;
+	SettingsWindow settingsWindow;
 
 	// Constructor
 	MainWindow();
