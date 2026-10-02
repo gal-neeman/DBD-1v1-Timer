@@ -20,8 +20,8 @@ Analyze our current conversation to automatically fill out this template:
 **The Goal:**
 [What are we trying to achieve?]
 
-**Proposed Implementation:**
-[Technical notes on how to build it, architecture changes, or libraries to use]
+**Notes:** (Optional, if important notes from the session should be mentioned)
+[Technical notes, constraints, other related information]
 
 **Acceptance Criteria:**
 - [ ] [Requirement 1]
