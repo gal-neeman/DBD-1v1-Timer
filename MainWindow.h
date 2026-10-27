@@ -182,8 +182,4 @@ public:
 	@param buttons The buttons that had a state change.
 	*/
 	void handleControllerInput(WORD buttons) const;
-	/**
-	@brief The function that is called when a WM_PAINT event is registered to the window. This method forwards the task to handlePainting().
-	*/
-	void draw();
 };

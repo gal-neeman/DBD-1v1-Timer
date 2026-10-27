@@ -614,7 +614,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 		{
 			timer1.updateTime();
 			timer2.updateTime();
-			draw();
+			handlePainting();
 			break;
 		}
 		default:
@@ -681,10 +681,6 @@ void MainWindow::handleControllerInput(const WORD buttons) const
 	}
 
 	HotkeyManager::execute(buttons);
-}
-
-void MainWindow::draw() {
-	handlePainting();
 }
 
 ID2D1SolidColorBrush* MainWindow::getTimer2Brush() {
