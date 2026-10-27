@@ -43,6 +43,11 @@ public:
 	TimerState getTimerState() const;
 
 	/**
+	@return True if the timer is currently running, False if it's idle
+	*/
+	bool isRunning() const;
+
+	/**
 	@brief Convert the time from the timer to a wstring format.
 
 	@return A wstring representing the timer's time.

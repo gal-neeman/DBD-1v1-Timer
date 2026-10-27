@@ -119,6 +119,18 @@ private:
 	*/
 	void refreshBrushes();
 
+	/**
+	@brief return a brush for timer 2. if timer 1 is less than optionLastSecondsTime away from timer 2, use a special brush. otherwise use the normal one.
+
+	@return ID2D1SolidColorBrush* A pointer to the brush to apply.
+	*/
+	ID2D1SolidColorBrush* getTimer2Brush() const;
+
+	/**
+	@brief Calling this will cause a WM_PAINT message to be queued for it, which will handle a re-painting of the window
+	*/
+	void requestRedraw() const;
+
 public:
 	// Public fields
 	Timer timer1 = Timer();
@@ -175,8 +187,4 @@ public:
 	@param buttons The buttons that had a state change.
 	*/
 	void handleControllerInput(WORD buttons) const;
-	/**
-	@brief The function that is called when a WM_PAINT event is registered to the window. This method forwards the task to handlePainting().
-	*/
-	void draw();
 };

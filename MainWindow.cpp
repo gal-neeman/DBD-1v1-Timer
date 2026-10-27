@@ -303,21 +303,7 @@ void MainWindow::handlePainting()
 		if (activeTimer_ != nullptr)
 		{
 			// Select color for timer 2
-			ID2D1SolidColorBrush* pBrushTimer_2;
-			int lastSecondsTime = appSettings.optionLastSecondsTime * 1000;
-			if (timer1.getTimeInMillis() > 0
-				&& timer1.getTimeInMillis() - timer2.getTimeInMillis() <= lastSecondsTime
-				&& (timer2.getTimerState() == TimerState::Running || timer2.getTimerState() == TimerState::Paused)
-				&& timer1.getTimeInMillis() - timer2.getTimeInMillis() > 0)
-			{
-				pBrushTimer_2 = pBrushLastSeconds_;
-			}
-			else if (activeTimer_ == &timer2) {
-				pBrushTimer_2 = pBrushSelectedTimer_;
-			}
-			else {
-				pBrushTimer_2 = pBrushTimer_;
-			}
+			ID2D1SolidColorBrush* pBrushTimer_2 = getTimer2Brush();
 
 			// draw timers
 			if (activeTimer_ == &timer1) {
@@ -560,6 +546,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 				adjustRendertargetSize();
 				changeFontSize(getLargestFontsizeFit());
 			}
+			requestRedraw();
 			return 0;
 		}
 		case WM_MOUSEMOVE:
@@ -612,13 +599,20 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 		case WM_SETCURSOR:
 			// disable default automatic cursor change (only manually set it)
 			return 0;
+		case WM_PAINT:
+		{
+			handlePainting();
+			return 0;
+		}
 		case REFRESH_BRUSHES:
 			refreshBrushes();
+			requestRedraw();
 			break;
 		case HOTKEY_HIT:
 		{
 			const int key = (int)wParam;
 			handleHotKey(key);
+			requestRedraw();
 		}
 			break;
 		case CONTROLLER_INPUT:
@@ -626,9 +620,11 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			break;
 		case WM_TIMER:
 		{
-			timer1.updateTime();
-			timer2.updateTime();
-			draw();
+			if (timer1.isRunning() || timer2.isRunning()) {
+				timer1.updateTime();
+				timer2.updateTime();
+				requestRedraw();
+			}
 			break;
 		}
 		default:
@@ -697,6 +693,23 @@ void MainWindow::handleControllerInput(const WORD buttons) const
 	HotkeyManager::execute(buttons);
 }
 
-void MainWindow::draw() {
-	handlePainting();
+ID2D1SolidColorBrush* MainWindow::getTimer2Brush() const {
+	int lastSecondsTime = appSettings.optionLastSecondsTime * 1000;
+	if (timer1.getTimeInMillis() > 0
+		&& timer1.getTimeInMillis() - timer2.getTimeInMillis() <= lastSecondsTime
+		&& (timer2.getTimerState() == TimerState::Running || timer2.getTimerState() == TimerState::Paused)
+		&& timer1.getTimeInMillis() - timer2.getTimeInMillis() > 0)
+	{
+		return pBrushLastSeconds_;
+	}
+	else if (activeTimer_ == &timer2) {
+		return pBrushSelectedTimer_;
+	}
+	else {
+		return pBrushTimer_;
+	}
+}
+
+void MainWindow::requestRedraw() const {
+	InvalidateRect(hwnd_, nullptr, FALSE);
 }
