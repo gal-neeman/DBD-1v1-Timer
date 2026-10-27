@@ -504,12 +504,11 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			createDeviceIndependentResources();
 
 			appSettings = getSafeSettingsStruct();
-			appRunning = true;
 
 			SetTimer(hwnd_, 0, 16, nullptr);
 			return 0;
 		}
-		case WM_DESTROY:
+		case WM_CLOSE:
 		{
 			exitApp();
 			return 0;

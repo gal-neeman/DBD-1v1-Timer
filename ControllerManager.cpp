@@ -2,7 +2,13 @@
 
 ControllerManager::ControllerManager()
 {
-	isRunning_ = false;
+	stopEvent_ = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+}
+
+ControllerManager::~ControllerManager()
+{
+	stop();
+	CloseHandle(stopEvent_);
 }
 
 void ControllerManager::setInputCallback(const std::function<void(WORD)>& callback)
@@ -10,11 +16,11 @@ void ControllerManager::setInputCallback(const std::function<void(WORD)>& callba
 	inputCallback_ = callback;
 }
 
-void ControllerManager::poll()
+bool ControllerManager::poll()
 {
-	const DWORD result = XInputGetState(0, &state_);
+	const bool connected = XInputGetState(0, &state_) == ERROR_SUCCESS;
 
-	if (result == ERROR_SUCCESS)
+	if (connected)
 	{
 		const bool leftTriggerChanged = state_.Gamepad.bLeftTrigger / 255 != previousState_.Gamepad.bLeftTrigger / 255;
 		const bool rightTriggerChanged = state_.Gamepad.bRightTrigger / 255 != previousState_.Gamepad.bRightTrigger / 255;
@@ -41,27 +47,29 @@ void ControllerManager::poll()
 
 		previousState_ = state_;
 	}
+
+	return connected;
 }
 
 void ControllerManager::start()
 {
-	if (isRunning_) return;
+	if (pollingThread_.joinable()) return;
 
-	isRunning_ = true;
+	ResetEvent(stopEvent_);
 
 	pollingThread_ = std::thread([this]()
 	{
-		while (isRunning_)
+		DWORD waitDuration = 0;
+		while (WaitForSingleObject(stopEvent_, waitDuration) == WAIT_TIMEOUT)
 		{
-			poll();
-			Sleep(1);
+			waitDuration = poll() ? CONTROLLER_POLL_INTERVAL_MS : CONTROLLER_DISCONNECTED_POLL_INTERVAL_MS;
 		}
 	});
 }
 
 void ControllerManager::stop()
 {
-	isRunning_ = false;
+	SetEvent(stopEvent_);
 	if (pollingThread_.joinable())
 	{
 		pollingThread_.join();

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "BaseWindow.h"
-#include <atomic>
 #include <functional>
 #include <map>
 #include <thread>
 #include <Xinput.h>
+
+constexpr DWORD CONTROLLER_POLL_INTERVAL_MS = 20;
+constexpr DWORD CONTROLLER_DISCONNECTED_POLL_INTERVAL_MS = 5000;
 
 enum ControllerButtons : USHORT
 {
@@ -61,11 +63,12 @@ private:
 	XINPUT_STATE state_ = {};
 	XINPUT_STATE previousState_ = {};
 	std::function<void(WORD)> inputCallback_;
-	std::atomic<bool> isRunning_;
+	HANDLE stopEvent_;
 	std::thread pollingThread_;
 
 public:
 	ControllerManager();
+	~ControllerManager();
 
 	/**
 	 * @brief Set a callback method to be called for input events.
@@ -89,6 +92,8 @@ public:
 private:
 	/**
 	 * @brief Retreive controller input data.
+	 *
+	 * @return Whether a controller is connected.
 	 */
-	void poll();
+	bool poll();
 };
