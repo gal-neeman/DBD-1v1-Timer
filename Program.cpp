@@ -34,7 +34,6 @@ MainWindow* pGlobalTimerWindow = nullptr;
 
 void exitApp()
 {
-	if (pGlobalTimerWindow) pGlobalTimerWindow->appRunning = false;
 	if (hwndMainWindow) DestroyWindow(hwndMainWindow);
 	PostQuitMessage(0);
 }
@@ -179,14 +178,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		controllerManager->setInputCallback(controllerInputCallback);
 		controllerManager->start();
 
-		while (win.appRunning)
-		{
-			// Handle messages
-			MSG msg = { };
-			while (GetMessage(&msg, nullptr, 0, 0)) {
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
+		// Handle messages
+		MSG msg = { };
+		while (GetMessage(&msg, nullptr, 0, 0)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 		}
 
 		if (hKbHook) UnhookWindowsHookEx(hKbHook);

@@ -11,8 +11,6 @@ public:
 
 	HWND window() const { return hwnd_; }
 
-	bool appRunning = false; // saves if the main window is Running and signal to break the program loop if it's not (exit app)
-
 	// The actual window procedure every message is sent to. responsible for linking windows to class instances and forward messages to their handlers.
 	static LRESULT CALLBACK windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
