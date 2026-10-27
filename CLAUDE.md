@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This is a C++ overlay built on Win32, Direct2D/DirectWrite, and XInput. The JsonCpp amalgamation is vendored in `dist/`; the `include/json/` tree and the root `config.h` are unused leftovers. See README.md for features.
+This is a C++ overlay built on Win32, Direct2D/DirectWrite, and XInput. The JsonCpp amalgamation is vendored in `third_party/`, which is on the include path via `$(ProjectDir)third_party`, so include it as `<json/json.h>`. See README.md for features.
 
 ## Build
 - Open `DBD 1v1 Timer.sln`, which uses MSVC toolset v145. From a Developer PowerShell:

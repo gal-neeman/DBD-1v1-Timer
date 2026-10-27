@@ -2,7 +2,7 @@
 #include "SettingsUtils.h"
 
 #include "HotkeyManager.h"
-#include "dist/json/json.h"
+#include <json/json.h>
 
 using namespace std;
 

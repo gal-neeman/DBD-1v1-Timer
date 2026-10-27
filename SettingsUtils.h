@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Globals.h"
-#include "dist/json/json.h"
+#include <json/json.h>
 
 /**
 @brief Safely retrieves the SettingsStruct from the settings.json file.

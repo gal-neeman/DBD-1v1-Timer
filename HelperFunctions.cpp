@@ -1,5 +1,5 @@
 #include "HelperFunctions.h"
-#include "dist/json/json.h"
+#include <json/json.h>
 #include <fstream>
 #include <Windows.h>
 
