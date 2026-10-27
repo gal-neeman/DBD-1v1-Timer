@@ -70,25 +70,13 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>C:\Users\zorit\Desktop\code\dbd1v1\DBD-1v1-Timer\include;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>C:\Users\zorit\Desktop\code\dbd1v1\DBD-1v1-Timer\include;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>C:\Users\zorit\Desktop\code\dbd1v1\DBD-1v1-Timer\include;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>C:\Users\zorit\Desktop\code\dbd1v1\DBD-1v1-Timer\include;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\zorit\Desktop\code\code\dbd1v1\DBD 1v1 Timer\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)third_party;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -105,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\zorit\Desktop\code\code\dbd1v1\DBD 1v1 Timer\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)third_party;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -121,7 +109,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\zorit\Desktop\code\code\dbd1v1\DBD 1v1 Timer\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)third_party;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -138,7 +126,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\zorit\Desktop\code\code\dbd1v1\DBD 1v1 Timer\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)third_party;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -152,7 +140,7 @@
   <ItemGroup>
     <ClCompile Include="ColorPickerWindow.cpp" />
     <ClCompile Include="CommCtrlUtils.cpp" />
-    <ClCompile Include="dist\JsonCpp.cpp" />
+    <ClCompile Include="third_party\jsoncpp.cpp" />
     <ClCompile Include="HotkeyManager.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="Program.cpp" />

@@ -54,7 +54,7 @@
     <ClCompile Include="Timer.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="dist\JsonCpp.cpp">
+    <ClCompile Include="third_party\jsoncpp.cpp">
       <Filter>Packages</Filter>
     </ClCompile>
     <ClCompile Include="SettingsUtils.cpp">
