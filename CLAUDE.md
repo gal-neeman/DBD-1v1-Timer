@@ -6,7 +6,7 @@ This is a C++ overlay built on Win32, Direct2D/DirectWrite, and XInput. The Json
 - Open `DBD 1v1 Timer.sln`, which uses MSVC toolset v145. From a Developer PowerShell:
   `msbuild "DBD 1v1 Timer.sln" /p:Configuration=Release /p:Platform=x64`
 - There are no tests or linter. Verify a change by building and running the exe.
-- Sources are listed explicitly in `DBD 1v1 Timer.vcxproj` and its `.filters` file, so add new .cpp files there. `HelperFunctions.cpp` is not compiled (it's a dead duplicate of `CommCtrlUtils.cpp`), so editing it has no effect.
+- Sources are listed explicitly in `DBD 1v1 Timer.vcxproj` and its `.filters` file, so add new .cpp files there.
 - Libraries are linked with `#pragma comment(lib, ...)` in `Program.cpp`, not in project settings.
 - Only `DBD 1v1 Timer1.rc` is compiled; `DBD 1v1 Timer.rc` is unused. The `.rc` files are UTF-16, so grep and sed silently find nothing; decode with `iconv -f UTF-16 -t UTF-8` first. The compiled `.rc` loads its bitmaps from absolute paths outside the repo (`...\dbd1v1\concept\*.bmp`).
 - `IDB_MOUSE` and `IDB_CONTROLLER` in `globals.h` hardcode the values of `IDB_BITMAP1` and `IDB_BITMAP2` from `resource.h`. Keep them in sync.
