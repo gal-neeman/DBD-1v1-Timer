@@ -55,5 +55,5 @@ public:
 	@brief Retrieves the window's class name.
 	@return LPCWSTR representing the window's class name.
 	*/
-	LPCWSTR className() const override { return L"Settings Window"; }
+	LPCWSTR className() const override { return L"Color Picker Window"; }
 };
