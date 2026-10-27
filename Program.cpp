@@ -35,6 +35,7 @@ MainWindow* pGlobalTimerWindow = nullptr;
 void exitApp()
 {
 	if (pGlobalTimerWindow) pGlobalTimerWindow->appRunning = false;
+	if (hwndMainWindow) DestroyWindow(hwndMainWindow);
 	PostQuitMessage(0);
 }
 
@@ -165,10 +166,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		applySettings(appSettings);
 
 		// Listen for hotkeys While Running in the background - Install a hook procedure
+		HHOOK hKbHook = nullptr;
+		HHOOK hMouseHook = nullptr;
 		if (!IsDebuggerPresent())
 		{
-			SetWindowsHookEx(WH_KEYBOARD_LL, &kbHook, nullptr, NULL);
-			SetWindowsHookEx(WH_MOUSE_LL, &mouseHook, nullptr, NULL);
+			hKbHook = SetWindowsHookEx(WH_KEYBOARD_LL, &kbHook, nullptr, NULL);
+			hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, &mouseHook, nullptr, NULL);
 		}
 
 		// Controller support
@@ -185,6 +188,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 				DispatchMessage(&msg);
 			}
 		}
+
+		// Unhook before stopping the controller thread, so input isn't stalled while it finishes sleeping
+		if (hKbHook) UnhookWindowsHookEx(hKbHook);
+		if (hMouseHook) UnhookWindowsHookEx(hMouseHook);
 
 		controllerManager->stop();
 		return 0;

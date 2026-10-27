@@ -7,6 +7,9 @@
 #include <thread>
 #include <Xinput.h>
 
+constexpr DWORD CONTROLLER_POLL_INTERVAL_MS = 20;
+constexpr DWORD CONTROLLER_DISCONNECTED_POLL_INTERVAL_MS = 10000;
+
 enum ControllerButtons : USHORT
 {
 	A = CONTROLLER_A,
@@ -89,6 +92,8 @@ public:
 private:
 	/**
 	 * @brief Retreive controller input data.
+	 *
+	 * @return Whether a controller is connected.
 	 */
-	void poll();
+	bool poll();
 };

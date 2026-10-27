@@ -10,11 +10,11 @@ void ControllerManager::setInputCallback(const std::function<void(WORD)>& callba
 	inputCallback_ = callback;
 }
 
-void ControllerManager::poll()
+bool ControllerManager::poll()
 {
-	const DWORD result = XInputGetState(0, &state_);
+	const bool connected = XInputGetState(0, &state_) == ERROR_SUCCESS;
 
-	if (result == ERROR_SUCCESS)
+	if (connected)
 	{
 		const bool leftTriggerChanged = state_.Gamepad.bLeftTrigger / 255 != previousState_.Gamepad.bLeftTrigger / 255;
 		const bool rightTriggerChanged = state_.Gamepad.bRightTrigger / 255 != previousState_.Gamepad.bRightTrigger / 255;
@@ -41,6 +41,8 @@ void ControllerManager::poll()
 
 		previousState_ = state_;
 	}
+
+	return connected;
 }
 
 void ControllerManager::start()
@@ -53,8 +55,8 @@ void ControllerManager::start()
 	{
 		while (isRunning_)
 		{
-			poll();
-			Sleep(1);
+			DWORD sleepDuration = poll() ? CONTROLLER_POLL_INTERVAL_MS : CONTROLLER_DISCONNECTED_POLL_INTERVAL_MS;
+			Sleep(sleepDuration);
 		}
 	});
 }
