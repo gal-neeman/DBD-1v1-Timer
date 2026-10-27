@@ -546,7 +546,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 				adjustRendertargetSize();
 				changeFontSize(getLargestFontsizeFit());
 			}
-			InvalidateRect(hwnd_, nullptr, FALSE);
+			requestRedraw();
 			return 0;
 		}
 		case WM_MOUSEMOVE:
@@ -693,7 +693,7 @@ void MainWindow::handleControllerInput(const WORD buttons) const
 	HotkeyManager::execute(buttons);
 }
 
-ID2D1SolidColorBrush* MainWindow::getTimer2Brush() {
+ID2D1SolidColorBrush* MainWindow::getTimer2Brush() const {
 	int lastSecondsTime = appSettings.optionLastSecondsTime * 1000;
 	if (timer1.getTimeInMillis() > 0
 		&& timer1.getTimeInMillis() - timer2.getTimeInMillis() <= lastSecondsTime

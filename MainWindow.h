@@ -124,7 +124,7 @@ private:
 
 	@return ID2D1SolidColorBrush* A pointer to the brush to apply.
 	*/
-	ID2D1SolidColorBrush* getTimer2Brush();
+	ID2D1SolidColorBrush* getTimer2Brush() const;
 
 	/**
 	@brief Calling this will cause a WM_PAINT message to be queued for it, which will handle a re-painting of the window
