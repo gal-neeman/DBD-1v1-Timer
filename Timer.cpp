@@ -155,3 +155,7 @@ void Timer::draw(
 			pBrush);
 	}
 }
+
+bool Timer::isRunning() const {
+	return timerState_ == TimerState::Running;
+}

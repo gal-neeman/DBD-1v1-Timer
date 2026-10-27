@@ -546,6 +546,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 				adjustRendertargetSize();
 				changeFontSize(getLargestFontsizeFit());
 			}
+			InvalidateRect(hwnd_, nullptr, FALSE);
 			return 0;
 		}
 		case WM_MOUSEMOVE:
@@ -598,13 +599,20 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 		case WM_SETCURSOR:
 			// disable default automatic cursor change (only manually set it)
 			return 0;
+		case WM_PAINT:
+		{
+			handlePainting();
+			return 0;
+		}
 		case REFRESH_BRUSHES:
 			refreshBrushes();
+			requestRedraw();
 			break;
 		case HOTKEY_HIT:
 		{
 			const int key = (int)wParam;
 			handleHotKey(key);
+			requestRedraw();
 		}
 			break;
 		case CONTROLLER_INPUT:
@@ -612,9 +620,11 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			break;
 		case WM_TIMER:
 		{
-			timer1.updateTime();
-			timer2.updateTime();
-			handlePainting();
+			if (timer1.isRunning() || timer2.isRunning()) {
+				timer1.updateTime();
+				timer2.updateTime();
+				requestRedraw();
+			}
 			break;
 		}
 		default:
@@ -698,4 +708,8 @@ ID2D1SolidColorBrush* MainWindow::getTimer2Brush() {
 	else {
 		return pBrushTimer_;
 	}
+}
+
+void MainWindow::requestRedraw() const {
+	InvalidateRect(hwnd_, nullptr, FALSE);
 }

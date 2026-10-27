@@ -126,6 +126,11 @@ private:
 	*/
 	ID2D1SolidColorBrush* getTimer2Brush();
 
+	/**
+	@brief Calling this will cause a WM_PAINT message to be queued for it, which will handle a re-painting of the window
+	*/
+	void requestRedraw() const;
+
 public:
 	// Public fields
 	Timer timer1 = Timer();
