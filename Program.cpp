@@ -189,7 +189,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			}
 		}
 
-		// Unhook before stopping the controller thread, so input isn't stalled while it finishes sleeping
 		if (hKbHook) UnhookWindowsHookEx(hKbHook);
 		if (hMouseHook) UnhookWindowsHookEx(hMouseHook);
 

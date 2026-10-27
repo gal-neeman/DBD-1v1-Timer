@@ -2,7 +2,13 @@
 
 ControllerManager::ControllerManager()
 {
-	isRunning_ = false;
+	stopEvent_ = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+}
+
+ControllerManager::~ControllerManager()
+{
+	stop();
+	CloseHandle(stopEvent_);
 }
 
 void ControllerManager::setInputCallback(const std::function<void(WORD)>& callback)
@@ -47,23 +53,23 @@ bool ControllerManager::poll()
 
 void ControllerManager::start()
 {
-	if (isRunning_) return;
+	if (pollingThread_.joinable()) return;
 
-	isRunning_ = true;
+	ResetEvent(stopEvent_);
 
 	pollingThread_ = std::thread([this]()
 	{
-		while (isRunning_)
+		DWORD waitDuration = 0;
+		while (WaitForSingleObject(stopEvent_, waitDuration) == WAIT_TIMEOUT)
 		{
-			DWORD sleepDuration = poll() ? CONTROLLER_POLL_INTERVAL_MS : CONTROLLER_DISCONNECTED_POLL_INTERVAL_MS;
-			Sleep(sleepDuration);
+			waitDuration = poll() ? CONTROLLER_POLL_INTERVAL_MS : CONTROLLER_DISCONNECTED_POLL_INTERVAL_MS;
 		}
 	});
 }
 
 void ControllerManager::stop()
 {
-	isRunning_ = false;
+	SetEvent(stopEvent_);
 	if (pollingThread_.joinable())
 	{
 		pollingThread_.join();
