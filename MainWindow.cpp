@@ -303,21 +303,7 @@ void MainWindow::handlePainting()
 		if (activeTimer_ != nullptr)
 		{
 			// Select color for timer 2
-			ID2D1SolidColorBrush* pBrushTimer_2;
-			int lastSecondsTime = appSettings.optionLastSecondsTime * 1000;
-			if (timer1.getTimeInMillis() > 0
-				&& timer1.getTimeInMillis() - timer2.getTimeInMillis() <= lastSecondsTime
-				&& (timer2.getTimerState() == TimerState::Running || timer2.getTimerState() == TimerState::Paused)
-				&& timer1.getTimeInMillis() - timer2.getTimeInMillis() > 0)
-			{
-				pBrushTimer_2 = pBrushLastSeconds_;
-			}
-			else if (activeTimer_ == &timer2) {
-				pBrushTimer_2 = pBrushSelectedTimer_;
-			}
-			else {
-				pBrushTimer_2 = pBrushTimer_;
-			}
+			ID2D1SolidColorBrush* pBrushTimer_2 = getTimer2Brush();
 
 			// draw timers
 			if (activeTimer_ == &timer1) {
@@ -699,4 +685,21 @@ void MainWindow::handleControllerInput(const WORD buttons) const
 
 void MainWindow::draw() {
 	handlePainting();
+}
+
+ID2D1SolidColorBrush* MainWindow::getTimer2Brush() {
+	int lastSecondsTime = appSettings.optionLastSecondsTime * 1000;
+	if (timer1.getTimeInMillis() > 0
+		&& timer1.getTimeInMillis() - timer2.getTimeInMillis() <= lastSecondsTime
+		&& (timer2.getTimerState() == TimerState::Running || timer2.getTimerState() == TimerState::Paused)
+		&& timer1.getTimeInMillis() - timer2.getTimeInMillis() > 0)
+	{
+		return pBrushLastSeconds_;
+	}
+	else if (activeTimer_ == &timer2) {
+		return pBrushSelectedTimer_;
+	}
+	else {
+		return pBrushTimer_;
+	}
 }
