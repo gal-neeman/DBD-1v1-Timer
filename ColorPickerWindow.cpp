@@ -75,7 +75,8 @@ void ColorPickerWindow::initializeWindow()
 		(HMENU)CID_CANCEL, nullptr, nullptr
 	);
 
-	setControlsFont(hwnd_);
+	controlsFont_ = createControlsFont();
+	setControlsFont(hwnd_, controlsFont_);
 }
 
 void ColorPickerWindow::updateSettings() const
@@ -143,6 +144,10 @@ LRESULT ColorPickerWindow::handleMessage(const UINT wMsg, const WPARAM wParam, c
 		}
 		case WM_DESTROY:
 			hwnd_ = nullptr;
+			return 0;
+		case WM_NCDESTROY: // Sent after the child controls are destroyed
+			DeleteObject(controlsFont_);
+			controlsFont_ = nullptr;
 			return 0;
 		case WM_COMMAND: // Control item clicked
 			handleControlCommand(lParam);

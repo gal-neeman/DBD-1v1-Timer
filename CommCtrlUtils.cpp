@@ -9,24 +9,25 @@ BOOL CALLBACK controlProc(const HWND hControl, const LPARAM lParam)
 	return true;
 }
 
-void setTitleFont(const HWND hControl)
+HFONT createTitleFont()
 {
-	const HFONT hFont = CreateFont(
+	return CreateFont(
 		16, 0, 0, 0, FW_BLACK, FALSE, FALSE, FALSE,
 		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
 		DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial"
 	);
-
-	SendMessage(hControl, WM_SETFONT, (WPARAM)hFont, TRUE);
 }
 
-void setControlsFont(const HWND hWnd)
+HFONT createControlsFont()
 {
-	const HFONT hFont = CreateFont(
+	return CreateFont(
 		16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
 		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
 		DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial"
 	);
+}
 
+void setControlsFont(const HWND hWnd, const HFONT hFont)
+{
 	EnumChildWindows(hWnd, controlProc, (LPARAM)hFont);
 }

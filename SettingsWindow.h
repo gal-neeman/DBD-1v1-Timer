@@ -11,6 +11,9 @@ private:
 	SettingsStruct tempSettings_ = {};
 	HBITMAP mouseBitmap_ = nullptr;
 	HBITMAP controllerBitmap_ = nullptr;
+	HFONT controlsFont_ = nullptr;
+	HFONT titleFont_ = nullptr;
+	HFONT copyrightFont_ = nullptr;
 	HWND hActiveControl_ = nullptr;
 
 	byte rows_ = 18;
@@ -28,6 +31,16 @@ private:
 	@brief Initializes the bitmaps for the settings window.
 	*/
 	void initializeBitmaps();
+
+	/**
+	@brief Creates the fonts for the settings window's controls.
+	*/
+	void initializeFonts();
+
+	/**
+	@brief Deletes the fonts created by initializeFonts. Should only be called after the controls are destroyed.
+	*/
+	void deleteFonts();
 
 	/**
 	@brief Displays the bitmaps of the settings window. (controller & mouse images)
@@ -70,13 +83,6 @@ private:
 		int x, int y, int width, int height, 
 		int id = NULL, long additionalStyle = 0
 	) const;
-
-	/**
-	@brief Sets the "copyright" font to a given control.
-
-	@param hControl The handle to the control to set the font of.
-	*/
-	static void setCopyrightFont(HWND hControl);
 
 	/**
 	@brief Method that handles interaction with controls.

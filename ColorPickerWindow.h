@@ -9,6 +9,7 @@ private:
 	// Variables
 	HWND hColorButtons_[PALETTE_SIZE] = {};
 	HWND hPreviewColorButton_ = nullptr;
+	HFONT controlsFont_ = nullptr;
 	int previewColorIndex_ = NULL;
 
 	/**

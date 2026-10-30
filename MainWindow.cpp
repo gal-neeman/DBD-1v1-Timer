@@ -580,6 +580,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			InsertMenu(hMenu, 0, MF_BYPOSITION | MF_STRING, MENU_SETTINGS, L"Settings");
 			SetForegroundWindow(hwnd_);
 			TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_TOPALIGN, mouseX, mouseY, 0, hwnd_, nullptr);
+			DestroyMenu(hMenu);
 			return 0;
 		}
 		case WM_SETCURSOR:

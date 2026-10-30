@@ -14,6 +14,9 @@ void SettingsWindow::initializeWindow()
 	// retrieve settings
 	tempSettings_ = appSettings;
 
+	// Set up fonts
+	initializeFonts();
+
 	// Set up text
 	initializeTextControls();
 
@@ -28,6 +31,27 @@ void SettingsWindow::initializeBitmaps()
 {
 	mouseBitmap_ = loadBitmapResource(IDB_MOUSE);
 	controllerBitmap_ = loadBitmapResource(IDB_CONTROLLER);
+}
+
+void SettingsWindow::initializeFonts()
+{
+	controlsFont_ = createControlsFont();
+	titleFont_ = createTitleFont();
+	copyrightFont_ = CreateFont(
+		14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+		DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial"
+	);
+}
+
+void SettingsWindow::deleteFonts()
+{
+	DeleteObject(controlsFont_);
+	DeleteObject(titleFont_);
+	DeleteObject(copyrightFont_);
+	controlsFont_ = nullptr;
+	titleFont_ = nullptr;
+	copyrightFont_ = nullptr;
 }
 
 void SettingsWindow::displayBitmaps() const
@@ -85,8 +109,8 @@ void SettingsWindow::initializeTextControls() const
 {
 	constexpr int breaklineOffsetY = 25;
 
-	const int headerX = tileWidth_ * (cols_ / 2) - 10;
-	const int headerWidth = tileWidth_ + 10;
+	const int headerX = tileWidth_ * (cols_ / 2) - 20;
+	const int headerWidth = tileWidth_ + 30;
 	constexpr int headerHeight = 20;
 
 	const int titleWidth = tileWidth_ * 6;
@@ -123,10 +147,10 @@ void SettingsWindow::initializeTextControls() const
 	const HWND hwndCopyright = createControl(WC_STATIC, L"\u00A9 Truueh 2026", 10, SIZE_SETTINGS_HEIGHT - 65, 100, 40);
 
 	// Apply fonts
-	setControlsFont(hwnd_);
-	setTitleFont(hwndTitleColors);
-	setTitleFont(hwndTitleHotkeys);
-	setCopyrightFont(hwndCopyright);
+	SendMessage(hwndTitleColors, WM_SETFONT, (WPARAM)titleFont_, TRUE);
+	SendMessage(hwndTitleHotkeys, WM_SETFONT, (WPARAM)titleFont_, TRUE);
+	SendMessage(hwndTitleOptions, WM_SETFONT, (WPARAM)titleFont_, TRUE);
+	SendMessage(hwndCopyright, WM_SETFONT, (WPARAM)copyrightFont_, TRUE);
 }
 
 void SettingsWindow::initializeButtonControls()
@@ -176,9 +200,6 @@ void SettingsWindow::initializeButtonControls()
 	HWND hwndOkButton = createControl(WC_BUTTON, L"OK", SIZE_SETTINGS_WIDTH - 160, SIZE_SETTINGS_HEIGHT - 80, 50, 25, CID_OK);
 	HWND hwndCancelButton = createControl(WC_BUTTON, L"CANCEL", SIZE_SETTINGS_WIDTH - 100, SIZE_SETTINGS_HEIGHT - 80, 70, 25, CID_CANCEL);
 
-	// Apply font
-	setControlsFont(hwnd_);
-	
 	// Apply currently set hotkeys
 	for (const HWND hCtrl : hotkeys) {
 		applyHotkeySavedKey(hCtrl);
@@ -205,21 +226,13 @@ HWND SettingsWindow::createControl(
 		WS_VISIBLE | WS_CHILDWINDOW | additionalStyle, x,
 		y, width, height, hwnd_, (HMENU)id, nullptr, nullptr);
 
+	// Apply the default font (specific controls override it after creation)
+	SendMessage(ctrlHwnd, WM_SETFONT, (WPARAM)controlsFont_, TRUE);
+
 	// Add custom control window proc
 	SetWindowSubclass(ctrlHwnd, ctrlWndProc, 1, 0);
 
 	return ctrlHwnd;
-}
-
-void SettingsWindow::setCopyrightFont(const HWND hControl)
-{
-	HFONT hFont = CreateFont(
-		14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-		DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial"
-	);
-
-	SendMessage(hControl, WM_SETFONT, (WPARAM)hFont, TRUE);
 }
 
 void SettingsWindow::updateTempSettingsLastSeconds() {
@@ -493,6 +506,9 @@ LRESULT SettingsWindow::handleMessage(const UINT wMsg, const WPARAM wParam, cons
 			controllerBitmap_ = nullptr;
 			return 0;
 		}
+		case WM_NCDESTROY: // Sent after the child controls are destroyed
+			deleteFonts();
+			return 0;
 		case WM_COMMAND: // Control item clicked
 			handleControlCommand(lParam);
 			return 0;
