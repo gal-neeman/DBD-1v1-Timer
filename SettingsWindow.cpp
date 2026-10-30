@@ -144,7 +144,7 @@ void SettingsWindow::initializeTextControls() const
 	const HWND hwndTextColorBackground = createControl(WC_STATIC, L"Background", titleX, tileHeight_ * 15, titleWidth, tileHeight_);
 
 	// Copyright text
-	const HWND hwndCopyright = createControl(WC_STATIC, L"\u00A9 Truueh 2026", 10, SIZE_SETTINGS_HEIGHT - 65, 100, 40);
+	const HWND hwndCopyright = createControl(WC_STATIC, L"\u00A9 Truueh 2026", 10, SIZE_SETTINGS_HEIGHT - 71, 100, 17);
 
 	// Apply fonts
 	SendMessage(hwndTitleColors, WM_SETFONT, (WPARAM)titleFont_, TRUE);
@@ -157,38 +157,40 @@ void SettingsWindow::initializeButtonControls()
 {
 	const int xHotkey = tileWidth_ * ((cols_ / 2) + 1);
 	const int xHotkeyCon = tileWidth_ * ((cols_ / 2) + 3) + 10;
-	const int xColorButton = tileWidth_ * ((cols_ / 2) + 2);
-	const int widthColorButton = tileWidth_ * 3;
 	const int heightColorButton = tileHeight_ / 2;
-	const int widthHotkey = tileWidth_ * 2;
-	const int heightHotkey = tileHeight_ / 2;
-	const int widthNumeric = tileWidth_ * 2;
-	const int heightNumeric = tileHeight_ / 2;
+	constexpr int widthHotkey = 75;
+	const int widthColorButton = tileWidth_ * 3;
+	const int xColorButton = xHotkeyCon + widthHotkey - widthColorButton;
+	constexpr int heightHotkey = 23;
+	constexpr int widthNumeric = 75;
+	constexpr int heightNumeric = 23;
+	constexpr int offsetY = 3; // Centers 23px controls on their 17px text labels
 	const int xNumeric = tileWidth_ * ((cols_ / 2) + 3) + 10;
-	constexpr int sizeCheckbox = 15;
-	constexpr int xCheckbox = SIZE_SETTINGS_WIDTH - 70;
+	constexpr int widthCheckbox = 13; // Same as the glyph, so its right edge is the control's right edge
+	constexpr int heightCheckbox = 17; // Same as the text labels, so the glyph is centered on them
+	const int xCheckbox = xNumeric + widthNumeric - widthCheckbox;
 
 	HWND hotkeys[8];
 	HWND colorButtons[4];
 
 	// Hotkeys
 		// Mouse
-	hotkeys[0] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 2, widthHotkey, heightHotkey, CID_START, BS_FLAT); // Start key
-	hotkeys[3] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 3, widthHotkey, heightHotkey, CID_START_NO_RESET, BS_FLAT); // Start no reset key
-	hotkeys[1] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 4, widthHotkey, heightHotkey, CID_TIMER1, BS_FLAT); // Timer 1 key
-	hotkeys[2] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 5, widthHotkey, heightHotkey, CID_TIMER2, BS_FLAT); // Timer 2 key
+	hotkeys[0] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 2 - offsetY, widthHotkey, heightHotkey, CID_START, BS_FLAT); // Start key
+	hotkeys[3] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 3 - offsetY, widthHotkey, heightHotkey, CID_START_NO_RESET, BS_FLAT); // Start no reset key
+	hotkeys[1] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 4 - offsetY, widthHotkey, heightHotkey, CID_TIMER1, BS_FLAT); // Timer 1 key
+	hotkeys[2] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 5 - offsetY, widthHotkey, heightHotkey, CID_TIMER2, BS_FLAT); // Timer 2 key
 
 		// Controller
-	hotkeys[4] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 2, widthHotkey, heightHotkey, CID_CON_START, BS_FLAT); // Start key
-	hotkeys[7] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 3, widthHotkey, heightHotkey, CID_CON_START_NO_RESET, BS_FLAT); // Start no reset key
-	hotkeys[5] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 4, widthHotkey, heightHotkey, CID_CON_TIMER1, BS_FLAT); // Timer 1 key
-	hotkeys[6] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 5, widthHotkey, heightHotkey, CID_CON_TIMER2, BS_FLAT); // Timer 2 key
+	hotkeys[4] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 2 - offsetY, widthHotkey, heightHotkey, CID_CON_START, BS_FLAT); // Start key
+	hotkeys[7] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 3 - offsetY, widthHotkey, heightHotkey, CID_CON_START_NO_RESET, BS_FLAT); // Start no reset key
+	hotkeys[5] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 4 - offsetY, widthHotkey, heightHotkey, CID_CON_TIMER1, BS_FLAT); // Timer 1 key
+	hotkeys[6] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 5 - offsetY, widthHotkey, heightHotkey, CID_CON_TIMER2, BS_FLAT); // Timer 2 key
 
 	// Checkbox buttons
-	const HWND hCbStartOnChange = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 7, sizeCheckbox, sizeCheckbox, CID_STARTONCHANGE_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
-	const HWND hCbTransparentBg = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 8, sizeCheckbox, sizeCheckbox, CID_TRANSPARENT_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
-	const HWND hCbClickthrough = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 9, sizeCheckbox, sizeCheckbox, CID_CLICKTHROUGH_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
-	const HWND hOptLastSecondsTime = createControl(WC_EDIT, L"", xNumeric, tileHeight_ * 10, widthNumeric, heightNumeric, CID_LAST_SECONDS_TIME, ES_NUMBER | ES_CENTER);
+	const HWND hCbStartOnChange = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 7, widthCheckbox, heightCheckbox, CID_STARTONCHANGE_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
+	const HWND hCbTransparentBg = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 8, widthCheckbox, heightCheckbox, CID_TRANSPARENT_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
+	const HWND hCbClickthrough = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 9, widthCheckbox, heightCheckbox, CID_CLICKTHROUGH_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
+	const HWND hOptLastSecondsTime = createControl(WC_EDIT, L"", xNumeric, tileHeight_ * 10 - offsetY, widthNumeric, heightNumeric, CID_LAST_SECONDS_TIME, ES_NUMBER | ES_CENTER | WS_BORDER);
 
 	// Color buttons
 	colorButtons[0] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 12, widthColorButton, heightColorButton, CID_TIMER_COLOR, BS_OWNERDRAW);
@@ -197,8 +199,8 @@ void SettingsWindow::initializeButtonControls()
 	colorButtons[3] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 15, widthColorButton, heightColorButton, CID_BACKGROUND_COLOR, BS_OWNERDRAW);
 
 	// Initialize exit controls
-	HWND hwndOkButton = createControl(WC_BUTTON, L"Save", SIZE_SETTINGS_WIDTH - 180, SIZE_SETTINGS_HEIGHT - 80, 70, 25, CID_OK);
-	HWND hwndCancelButton = createControl(WC_BUTTON, L"Cancel", SIZE_SETTINGS_WIDTH - 100, SIZE_SETTINGS_HEIGHT - 80, 70, 25, CID_CANCEL);
+	HWND hwndOkButton = createControl(WC_BUTTON, L"Save", SIZE_SETTINGS_WIDTH - 184, SIZE_SETTINGS_HEIGHT - 78, 75, 28, CID_OK);
+	HWND hwndCancelButton = createControl(WC_BUTTON, L"Cancel", SIZE_SETTINGS_WIDTH - 102, SIZE_SETTINGS_HEIGHT - 78, 75, 28, CID_CANCEL);
 
 	// Apply currently set hotkeys
 	for (const HWND hCtrl : hotkeys) {
