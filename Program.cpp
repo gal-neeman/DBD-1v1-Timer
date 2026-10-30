@@ -29,7 +29,6 @@ using std::thread; using std::wstring;
 SettingsStruct appSettings;
 HBRUSH hBrushes[25];
 HWND hwndMainWindow = nullptr;
-HINSTANCE hInstanceGlobal;
 MainWindow* pGlobalTimerWindow = nullptr;
 
 void exitApp()
@@ -133,9 +132,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	try
 	{
 		disableFullscreenOptimizations();
-
-		// Global hInstance variable (declared in globals.h)
-		hInstanceGlobal = hInstance;
 
 		// Create settings file on program first run
 		if (!settingsFileExists())
