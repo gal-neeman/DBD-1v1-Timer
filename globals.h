@@ -69,6 +69,11 @@ constexpr UINT16 SIZE_SETTINGS_HEIGHT = 660;
 constexpr UINT16 SIZE_COLORPICKER_WIDTH = 270;
 constexpr UINT16 SIZE_COLORPICKER_HEIGHT = 350;
 
+// Fonts
+constexpr WCHAR FONT_NAME_TIMER[] = L"Segoe UI";
+constexpr WCHAR FONT_NAME_CONTROLS[] = L"Segoe UI";
+constexpr WCHAR FONT_NAME_TITLE[] = L"Segoe UI Semibold";
+
 // Bitmaps
 constexpr byte IDB_MOUSE = 110;
 constexpr byte IDB_CONTROLLER = 111;

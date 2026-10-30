@@ -62,14 +62,14 @@ void ColorPickerWindow::initializeWindow()
 
 	// Initialize exit controls
 	HWND hwndOkButton = CreateWindowEx(
-		0, WC_BUTTON, L"OK", 
-		WS_VISIBLE | WS_CHILDWINDOW, SIZE_COLORPICKER_WIDTH - 150,
-		SIZE_COLORPICKER_HEIGHT - 70, 50, 25, hwnd_, 
+		0, WC_BUTTON, L"Ok",
+		WS_VISIBLE | WS_CHILDWINDOW, SIZE_COLORPICKER_WIDTH - 170,
+		SIZE_COLORPICKER_HEIGHT - 70, 70, 25, hwnd_,
 		(HMENU)CID_OK, nullptr, nullptr
 	);
 
 	HWND hwndCancelButton = CreateWindowEx(
-		0, WC_BUTTON, L"CANCEL", 
+		0, WC_BUTTON, L"Cancel",
 		WS_VISIBLE | WS_CHILDWINDOW, SIZE_COLORPICKER_WIDTH - 90, 
 		SIZE_COLORPICKER_HEIGHT - 70, 70, 25, hwnd_, 
 		(HMENU)CID_CANCEL, nullptr, nullptr

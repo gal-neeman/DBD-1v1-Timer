@@ -73,11 +73,10 @@ HRESULT MainWindow::createDeviceIndependentResources()
 		if (SUCCEEDED(hr) && pTextFormat_ == nullptr)
 		{
 			// Set up text format
-			static constexpr WCHAR fontName[] = L"Sitka";
 			static constexpr int fontSize = 34;
 
 			hr = pWriteFactory_->CreateTextFormat(
-				fontName,
+				FONT_NAME_TIMER,
 				nullptr,
 				DWRITE_FONT_WEIGHT_BOLD,
 				DWRITE_FONT_STYLE_NORMAL,
@@ -107,10 +106,8 @@ HRESULT MainWindow::changeFontSize(const float fontSize)
 {
 	safeRelease(&pTextFormat_);
 
-	static constexpr WCHAR fontName[] = L"Sitka";
-
 	HRESULT hr = pWriteFactory_->CreateTextFormat(
-		fontName,
+		FONT_NAME_TIMER,
 		nullptr,
 		DWRITE_FONT_WEIGHT_BOLD,
 		DWRITE_FONT_STYLE_NORMAL,
@@ -143,7 +140,6 @@ float MainWindow::getLargestFontsizeFit() const
 	int high = 1000;
 	int mid = 0;
 	int bestFit = 10;
-	constexpr WCHAR fontFamily[] = L"Sitka";
 
 	constexpr wchar_t text[] = L"";
 
@@ -153,7 +149,7 @@ float MainWindow::getLargestFontsizeFit() const
 		mid = (low + high) / 2;
 
 		HRESULT hr = pWriteFactory_->CreateTextFormat(
-			fontFamily,
+			FONT_NAME_TIMER,
 			nullptr,
 			pTextFormat_->GetFontWeight(),
 			pTextFormat_->GetFontStyle(),

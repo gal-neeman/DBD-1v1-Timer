@@ -38,9 +38,9 @@ void SettingsWindow::initializeFonts()
 	controlsFont_ = createControlsFont();
 	titleFont_ = createTitleFont();
 	copyrightFont_ = CreateFont(
-		14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+		16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
 		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-		DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial"
+		DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, FONT_NAME_CONTROLS
 	);
 }
 
@@ -197,8 +197,8 @@ void SettingsWindow::initializeButtonControls()
 	colorButtons[3] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 15, widthColorButton, heightColorButton, CID_BACKGROUND_COLOR, BS_OWNERDRAW);
 
 	// Initialize exit controls
-	HWND hwndOkButton = createControl(WC_BUTTON, L"OK", SIZE_SETTINGS_WIDTH - 160, SIZE_SETTINGS_HEIGHT - 80, 50, 25, CID_OK);
-	HWND hwndCancelButton = createControl(WC_BUTTON, L"CANCEL", SIZE_SETTINGS_WIDTH - 100, SIZE_SETTINGS_HEIGHT - 80, 70, 25, CID_CANCEL);
+	HWND hwndOkButton = createControl(WC_BUTTON, L"Save", SIZE_SETTINGS_WIDTH - 180, SIZE_SETTINGS_HEIGHT - 80, 70, 25, CID_OK);
+	HWND hwndCancelButton = createControl(WC_BUTTON, L"Cancel", SIZE_SETTINGS_WIDTH - 100, SIZE_SETTINGS_HEIGHT - 80, 70, 25, CID_CANCEL);
 
 	// Apply currently set hotkeys
 	for (const HWND hCtrl : hotkeys) {
