@@ -657,8 +657,9 @@ void MainWindow::handleHotKey(const int code)
 			activeTimer_->stopTimer();
 		else
 			activeTimer_->startTimer();
+
+		return; // Skip the start / stop / reset below, which would act on the timer a second time
 	}
-		break;
 	default:
 		break;
 	}
