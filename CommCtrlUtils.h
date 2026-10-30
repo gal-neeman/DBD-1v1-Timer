@@ -2,18 +2,27 @@
 #include "BaseWindow.h"
 
 /**
-@brief Set a specific control's font (title style).
+@brief Create the title style font. The caller owns it and must delete it after the controls using it are destroyed.
 
-@param hControl The control to change the font of.
+@return The font that was created.
 */
-void setTitleFont(const HWND hControl);
+HFONT createTitleFont();
 
 /**
-@brief Apply the default font to a specific window's child controls.
+@brief Create the default controls font. The caller owns it and must delete it after the controls using it are destroyed.
+
+@return The font that was created.
+*/
+HFONT createControlsFont();
+
+/**
+@brief Apply a font to a specific window's child controls.
 
 @param hWnd The handle to the window who's child controls will be affected.
+
+@param hFont The font to apply. The caller still owns it.
 */
-void setControlsFont(const HWND hWnd);
+void setControlsFont(const HWND hWnd, const HFONT hFont);
 
 /**
 @brief A procedure for windows of type "control", used to assign a font.

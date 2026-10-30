@@ -5,12 +5,11 @@
 #include "ResourceUtils.h"
 #include "Program.h"
 
+using Microsoft::WRL::ComPtr;
 
 MainWindow::MainWindow() = default;
 
-MainWindow::~MainWindow() {
-	discardGraphicsResources();
-}
+MainWindow::~MainWindow() = default;
 
 HRESULT MainWindow::createGraphicsResources()
 {
@@ -66,18 +65,17 @@ HRESULT MainWindow::createDeviceIndependentResources()
 	if (pWriteFactory_ == nullptr)
 	{
 		if (pWriteFactory_ == nullptr) {
-			hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(pWriteFactory_)
-				, reinterpret_cast<IUnknown**>(&pWriteFactory_));
+			hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory)
+				, reinterpret_cast<IUnknown**>(pWriteFactory_.GetAddressOf()));
 		}
 
 		if (SUCCEEDED(hr) && pTextFormat_ == nullptr)
 		{
 			// Set up text format
-			static constexpr WCHAR fontName[] = L"Sitka";
 			static constexpr int fontSize = 34;
 
 			hr = pWriteFactory_->CreateTextFormat(
-				fontName,
+				FONT_NAME_TIMER,
 				nullptr,
 				DWRITE_FONT_WEIGHT_BOLD,
 				DWRITE_FONT_STYLE_NORMAL,
@@ -105,12 +103,8 @@ HRESULT MainWindow::createDeviceIndependentResources()
 
 HRESULT MainWindow::changeFontSize(const float fontSize)
 {
-	safeRelease(&pTextFormat_);
-
-	static constexpr WCHAR fontName[] = L"Sitka";
-
 	HRESULT hr = pWriteFactory_->CreateTextFormat(
-		fontName,
+		FONT_NAME_TIMER,
 		nullptr,
 		DWRITE_FONT_WEIGHT_BOLD,
 		DWRITE_FONT_STYLE_NORMAL,
@@ -136,14 +130,10 @@ HRESULT MainWindow::changeFontSize(const float fontSize)
 
 float MainWindow::getLargestFontsizeFit() const
 {
-	IDWriteTextFormat* pTempTextFormat;
-	IDWriteTextLayout* pTempTextLayout;
-
 	int low = 1;
 	int high = 1000;
 	int mid = 0;
 	int bestFit = 10;
-	constexpr WCHAR fontFamily[] = L"Sitka";
 
 	constexpr wchar_t text[] = L"";
 
@@ -152,8 +142,11 @@ float MainWindow::getLargestFontsizeFit() const
 	{
 		mid = (low + high) / 2;
 
+		ComPtr<IDWriteTextFormat> pTempTextFormat;
+		ComPtr<IDWriteTextLayout> pTempTextLayout;
+
 		HRESULT hr = pWriteFactory_->CreateTextFormat(
-			fontFamily,
+			FONT_NAME_TIMER,
 			nullptr,
 			pTextFormat_->GetFontWeight(),
 			pTextFormat_->GetFontStyle(),
@@ -164,7 +157,6 @@ float MainWindow::getLargestFontsizeFit() const
 		);
 
 		if (FAILED(hr)) {
-			safeRelease(&pTempTextFormat);
 			exitApp();
 			return 0;
 		}
@@ -172,15 +164,13 @@ float MainWindow::getLargestFontsizeFit() const
 		hr = pWriteFactory_->CreateTextLayout(
 			text,
 			(UINT32)wcslen(text),
-			pTempTextFormat,
+			pTempTextFormat.Get(),
 			winSize_[0],
 			winSize_[1],
 			&pTempTextLayout
 		);
 
 		if (FAILED(hr)) {
-			safeRelease(&pTempTextFormat);
-			safeRelease(&pTempTextLayout);
 			exitApp();
 			return 0;
 		}
@@ -190,14 +180,9 @@ float MainWindow::getLargestFontsizeFit() const
 		hr = pTempTextLayout->GetMetrics(&layoutMetrics);
 
 		if (FAILED(hr)) {
-			safeRelease(&pTempTextFormat);
-			safeRelease(&pTempTextLayout);
 			exitApp();
 			return 0;
 		}
-
-		safeRelease(&pTempTextFormat);
-		safeRelease(&pTempTextLayout);
 
 		int winHeight = winSize_[1];
 
@@ -218,13 +203,13 @@ float MainWindow::getLargestFontsizeFit() const
 
 void MainWindow::discardGraphicsResources()
 {
-	safeRelease(&pFactory_);
-	safeRelease(&pRenderTarget_);
-	safeRelease(&pBrushTimer_);
-	safeRelease(&pBrushSelectedTimer_);
-	safeRelease(&pBrushLastSeconds_);
-	safeRelease(&pWriteFactory_);
-	safeRelease(&pTextFormat_);
+	pFactory_.Reset();
+	pRenderTarget_.Reset();
+	pBrushTimer_.Reset();
+	pBrushSelectedTimer_.Reset();
+	pBrushLastSeconds_.Reset();
+	pWriteFactory_.Reset();
+	pTextFormat_.Reset();
 }
 
 HRESULT MainWindow::adjustRendertargetSize() const
@@ -304,17 +289,17 @@ void MainWindow::handlePainting()
 
 			// draw timers
 			if (activeTimer_ == &timer1) {
-				timer1.draw(pRenderTarget_, pTextFormat_, rect1, pBrushSelectedTimer_);
+				timer1.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect1, pBrushSelectedTimer_.Get());
 			}
 			else {
-				timer1.draw(pRenderTarget_, pTextFormat_, rect1, pBrushTimer_);
+				timer1.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect1, pBrushTimer_.Get());
 			}
-			timer2.draw(pRenderTarget_, pTextFormat_, rect2, pBrushTimer_2);
+			timer2.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect2, pBrushTimer_2);
 		}
 		else
 		{
-			timer1.draw(pRenderTarget_, pTextFormat_, rect1, pBrushTimer_);
-			timer2.draw(pRenderTarget_, pTextFormat_, rect2, pBrushTimer_);
+			timer1.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect1, pBrushTimer_.Get());
+			timer2.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect2, pBrushTimer_.Get());
 		}
 	}
 
@@ -471,7 +456,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 		{
 		case WM_CREATE:
 		{
-			if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &pFactory_))) {
+			if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, pFactory_.GetAddressOf()))) {
 				return -1;
 			}
 			createGraphicsResources();
@@ -548,7 +533,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 				if (settingsWindow.window() == nullptr) // dont create multiple settings windows
 				{
 					// Create and show settings window
-					if (!settingsWindow.create(L"Settings - Version 1.5.0", 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
+					if (!settingsWindow.create(SETTINGS_WINDOW_TITLE, 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
 						return 0;
 					}
 
@@ -580,6 +565,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			InsertMenu(hMenu, 0, MF_BYPOSITION | MF_STRING, MENU_SETTINGS, L"Settings");
 			SetForegroundWindow(hwnd_);
 			TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_TOPALIGN, mouseX, mouseY, 0, hwnd_, nullptr);
+			DestroyMenu(hMenu);
 			return 0;
 		}
 		case WM_SETCURSOR:
@@ -709,13 +695,13 @@ ID2D1SolidColorBrush* MainWindow::getTimer2Brush() const {
 		&& (timer2.getTimerState() == TimerState::Running || timer2.getTimerState() == TimerState::Paused)
 		&& timer1.getTimeInMillis() - timer2.getTimeInMillis() > 0)
 	{
-		return pBrushLastSeconds_;
+		return pBrushLastSeconds_.Get();
 	}
 	else if (activeTimer_ == &timer2) {
-		return pBrushSelectedTimer_;
+		return pBrushSelectedTimer_.Get();
 	}
 	else {
-		return pBrushTimer_;
+		return pBrushTimer_.Get();
 	}
 }
 

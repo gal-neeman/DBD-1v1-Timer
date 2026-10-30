@@ -62,20 +62,21 @@ void ColorPickerWindow::initializeWindow()
 
 	// Initialize exit controls
 	HWND hwndOkButton = CreateWindowEx(
-		0, WC_BUTTON, L"OK", 
-		WS_VISIBLE | WS_CHILDWINDOW, SIZE_COLORPICKER_WIDTH - 150,
-		SIZE_COLORPICKER_HEIGHT - 70, 50, 25, hwnd_, 
+		0, WC_BUTTON, L"Ok",
+		WS_VISIBLE | WS_CHILDWINDOW, SIZE_COLORPICKER_WIDTH - 177,
+		SIZE_COLORPICKER_HEIGHT - 78, 75, 28, hwnd_,
 		(HMENU)CID_OK, nullptr, nullptr
 	);
 
 	HWND hwndCancelButton = CreateWindowEx(
-		0, WC_BUTTON, L"CANCEL", 
-		WS_VISIBLE | WS_CHILDWINDOW, SIZE_COLORPICKER_WIDTH - 90, 
-		SIZE_COLORPICKER_HEIGHT - 70, 70, 25, hwnd_, 
+		0, WC_BUTTON, L"Cancel",
+		WS_VISIBLE | WS_CHILDWINDOW, SIZE_COLORPICKER_WIDTH - 95, 
+		SIZE_COLORPICKER_HEIGHT - 78, 75, 28, hwnd_, 
 		(HMENU)CID_CANCEL, nullptr, nullptr
 	);
 
-	setControlsFont(hwnd_);
+	controlsFont_ = createControlsFont();
+	setControlsFont(hwnd_, controlsFont_);
 }
 
 void ColorPickerWindow::updateSettings() const
@@ -143,6 +144,10 @@ LRESULT ColorPickerWindow::handleMessage(const UINT wMsg, const WPARAM wParam, c
 		}
 		case WM_DESTROY:
 			hwnd_ = nullptr;
+			return 0;
+		case WM_NCDESTROY: // Sent after the child controls are destroyed
+			DeleteObject(controlsFont_);
+			controlsFont_ = nullptr;
 			return 0;
 		case WM_COMMAND: // Control item clicked
 			handleControlCommand(lParam);
