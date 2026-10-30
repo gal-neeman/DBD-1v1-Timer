@@ -47,7 +47,7 @@ This is a C++ overlay built on Win32, Direct2D/DirectWrite, and XInput. The Json
 ## Version bump
 Update these places:
 - `DBD 1v1 Timer1.rc`: FILEVERSION, PRODUCTVERSION, and the `FileVersion`/`ProductVersion` strings.
-- The Settings window title in `MainWindow.cpp` (`"Settings - Version x.y.z"`).
+- `APP_VERSION` in `globals.h`, which the Settings window title is built from.
 
 ## Workflow
 - Issues live in the Linear project "DBD 1v1 Timer", through the Linear server in `.mcp.json`. Commands in `.claude/commands/`: `/create-feature`, `/create-bug`, `/pr`, `/cr`.

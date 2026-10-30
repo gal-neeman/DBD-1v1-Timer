@@ -69,6 +69,10 @@ constexpr UINT16 SIZE_SETTINGS_HEIGHT = 660;
 constexpr UINT16 SIZE_COLORPICKER_WIDTH = 270;
 constexpr UINT16 SIZE_COLORPICKER_HEIGHT = 350;
 
+// Version
+#define APP_VERSION L"1.5.0"
+constexpr WCHAR SETTINGS_WINDOW_TITLE[] = L"Settings - Version " APP_VERSION;
+
 // Fonts
 constexpr WCHAR FONT_NAME_TIMER[] = L"Segoe UI";
 constexpr WCHAR FONT_NAME_CONTROLS[] = L"Segoe UI";
