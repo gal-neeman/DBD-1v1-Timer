@@ -4,29 +4,12 @@
 #include <json/json.h>
 
 /**
-@brief Safely retrieves the SettingsStruct from the settings.json file.
-		Handles errors in the settings.json file and resets it if need be.
+@brief Safely loads the saved settings from the settings.json file. Should only be called once, on startup.
+		A missing or malformed file leaves the given struct's existing values in place.
 
-@return The SettingsStruct representing the saved settings from the settings.json file.
+@param settings The settings struct to load into.
 */
-SettingsStruct getSafeSettingsStruct();
-
-/**
-@brief Writes the settings from the given SettingsStruct to the settings.json file.
-
-@param settings The settings struct to save to the file.
-*/
-void setSettingsStruct(const SettingsStruct& settings);
-
-/**
-@brief Initial creation of the settings.json file.
-*/
-void createSettingsFile();
-
-/**
-@return Wether settings.json exists or not.
-*/
-bool settingsFileExists();
+void loadSettingsFromFile(SettingsStruct& settings);
 
 /**
 @brief Save settings to local variable and json file (also apply temporary settings).

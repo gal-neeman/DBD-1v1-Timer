@@ -3,7 +3,6 @@
 #include "Globals.h"
 #include "HotkeyManager.h"
 #include "ResourceUtils.h"
-#include "SettingsUtils.h"
 #include "Program.h"
 
 
@@ -41,12 +40,10 @@ HRESULT MainWindow::createGraphicsResources()
 
 		if (SUCCEEDED(hr)) {
 			// Extract ColorF from HBRUSH
-			const SettingsStruct settings = getSafeSettingsStruct();
-
-			const D2D1_COLOR_F timerColor = hBrushToColorf(hBrushes[settings.colors.timerColor]);
-			const D2D1_COLOR_F selectedTimerColor = hBrushToColorf(hBrushes[settings.colors.selectedTimerColor]);
-			const D2D1_COLOR_F lastSecondsColor = hBrushToColorf(hBrushes[settings.colors.lastSecondsColor]);
-			backgroundColor_ = hBrushToColorf(hBrushes[settings.colors.backgroundColor]);
+			const D2D1_COLOR_F timerColor = hBrushToColorf(hBrushes[appSettings.colors.timerColor]);
+			const D2D1_COLOR_F selectedTimerColor = hBrushToColorf(hBrushes[appSettings.colors.selectedTimerColor]);
+			const D2D1_COLOR_F lastSecondsColor = hBrushToColorf(hBrushes[appSettings.colors.lastSecondsColor]);
+			backgroundColor_ = hBrushToColorf(hBrushes[appSettings.colors.backgroundColor]);
 
 			// timer color brush
 			hr = pRenderTarget_->CreateSolidColorBrush(timerColor, &pBrushTimer_);
@@ -454,22 +451,17 @@ D2D1_COLOR_F MainWindow::hBrushToColorf(const HBRUSH hBrush) {
 
 void MainWindow::refreshBrushes()
 {
-	// retrieve brushes colors
-	const SettingsStruct settings = getSafeSettingsStruct();
-
-	LOGBRUSH logBrush;
-
 	// timer color
-	pBrushTimer_->SetColor(hBrushToColorf(hBrushes[settings.colors.timerColor]));
+	pBrushTimer_->SetColor(hBrushToColorf(hBrushes[appSettings.colors.timerColor]));
 
 	// selected timer color
-	pBrushSelectedTimer_->SetColor(hBrushToColorf(hBrushes[settings.colors.selectedTimerColor]));
+	pBrushSelectedTimer_->SetColor(hBrushToColorf(hBrushes[appSettings.colors.selectedTimerColor]));
 
 	// last seconds color
-	pBrushLastSeconds_->SetColor(hBrushToColorf(hBrushes[settings.colors.lastSecondsColor]));
+	pBrushLastSeconds_->SetColor(hBrushToColorf(hBrushes[appSettings.colors.lastSecondsColor]));
 
 	// background color
-	backgroundColor_ = hBrushToColorf(hBrushes[settings.colors.backgroundColor]);
+	backgroundColor_ = hBrushToColorf(hBrushes[appSettings.colors.backgroundColor]);
 }
 
 LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LPARAM lParam)
@@ -488,8 +480,6 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			}
 			createGraphicsResources();
 			createDeviceIndependentResources();
-
-			appSettings = getSafeSettingsStruct();
 
 			SetTimer(hwnd_, 0, 16, nullptr);
 			return 0;

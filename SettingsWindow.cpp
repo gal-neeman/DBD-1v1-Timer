@@ -12,7 +12,7 @@
 void SettingsWindow::initializeWindow()
 {
 	// retrieve settings
-	tempSettings_ = getSafeSettingsStruct();
+	tempSettings_ = appSettings;
 
 	// Set up text
 	initializeTextControls();

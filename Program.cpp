@@ -132,11 +132,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	{
 		disableFullscreenOptimizations();
 
-		// Create settings file on program first run
-		if (!settingsFileExists())
-		{
-			createSettingsFile();
-		}
+		// Load saved settings (WM_CREATE calls createGraphicsResources, which reads the colors)
+		loadSettingsFromFile(appSettings);
 
 		// Initiate common controls lib
 		InitCommonControls();

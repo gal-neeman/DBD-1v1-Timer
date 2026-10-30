@@ -94,21 +94,18 @@ void settingsFromJson(const Json::Value& json, SettingsStruct& settings)
 	}
 }
 
-SettingsStruct getSafeSettingsStruct()
+void loadSettingsFromFile(SettingsStruct& settings)
 {
 	ifstream file(SETTINGS_FILE_NAME);
 	Json::Value actualJson;
 	Json::Reader reader;
-	SettingsStruct settings;
 
 	reader.parse(file, actualJson);
 
 	settingsFromJson(actualJson, settings);
-
-	return settings;
 }
 
-void setSettingsStruct(const SettingsStruct& settings)
+static void saveSettingsToFile(const SettingsStruct& settings)
 {
 	const Json::Value settingsJson = settingsToJson(settings);
 
@@ -122,30 +119,8 @@ void setSettingsStruct(const SettingsStruct& settings)
 	writer->write(settingsJson, &outputFileStream);
 }
 
-void createSettingsFile()
-{
-	const SettingsStruct defaultSettings;
-	const Json::Value settingsJson = settingsToJson(defaultSettings);
-
-	// Write to file
-	Json::StreamWriterBuilder builder;
-
-	builder["commentStyle"] = "None";
-	builder["indentation"] = "   ";
-	std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-	std::ofstream outputFileStream(SETTINGS_FILE_NAME);
-	writer->write(settingsJson, &outputFileStream);
-}
-
-bool settingsFileExists() {
-	const string name = SETTINGS_FILE_NAME;
-
-	const ifstream f(name.c_str());
-	return f.good();
-}
-
 void applySettings(const SettingsStruct& settings) {
-	setSettingsStruct(settings); // write to json file (settings.json)
+	saveSettingsToFile(settings); // write to json file (settings.json)
 	appSettings = settings; // save global settings variable
 	HotkeyManager::setHotkeysMap(appSettings); // initialize hotkeys map
 

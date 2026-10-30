@@ -23,16 +23,16 @@ class MainWindow : public BaseWindow<MainWindow>
 {
 private:
 	// Resources
-	ID2D1Factory* pFactory_;
-	ID2D1HwndRenderTarget* pRenderTarget_;
-	ID2D1SolidColorBrush* pBrushTimer_;
-	ID2D1SolidColorBrush* pBrushSelectedTimer_;
-	ID2D1SolidColorBrush* pBrushLastSeconds_;
+	ID2D1Factory* pFactory_ = nullptr;
+	ID2D1HwndRenderTarget* pRenderTarget_ = nullptr;
+	ID2D1SolidColorBrush* pBrushTimer_ = nullptr;
+	ID2D1SolidColorBrush* pBrushSelectedTimer_ = nullptr;
+	ID2D1SolidColorBrush* pBrushLastSeconds_ = nullptr;
 	D2D1_COLOR_F backgroundColor_;
-	
+
 	// Writing Resources
-	IDWriteFactory* pWriteFactory_;
-	IDWriteTextFormat* pTextFormat_;
+	IDWriteFactory* pWriteFactory_ = nullptr;
+	IDWriteTextFormat* pTextFormat_ = nullptr;
 
 	// Fields
 	Timer* activeTimer_ = &timer1;

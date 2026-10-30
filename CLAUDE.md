@@ -37,7 +37,7 @@ This is a C++ overlay built on Win32, Direct2D/DirectWrite, and XInput. The Json
 - The settings file is `Settings.json` in the **working directory** (`SETTINGS_FILE_NAME`). The `settings.json` in the repo is only a sample.
 - `settingsFromJson` validates each group of fields separately (hotkeys, bool options, numeric options, colors). If a group is invalid, the whole group falls back to defaults. The fallback values there repeat the struct defaults in `globals.h` as literals, so change both together.
 - Colors are stored as indexes 0–24 into `hBrushes`, not as RGB values.
-- `MainWindow` re-reads the file with `getSafeSettingsStruct` to build its brushes instead of using `appSettings`. So `applySettings` must write the file before `REFRESH_BRUSHES` is sent.
+- `appSettings` is the only runtime source of settings. The file is read once, by `loadSettingsFromFile` in `wWinMain` before the main window is created, and after that is only written, by `applySettings`.
 - **Adding a setting:**
   1. Add the field and its default to `SettingsStruct` in `globals.h`.
   2. Update `settingsToJson` and `settingsFromJson`, including validation and a fallback.
