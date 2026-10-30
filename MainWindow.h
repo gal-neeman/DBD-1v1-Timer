@@ -1,6 +1,7 @@
 #pragma once
 #include <d2d1.h>
 #include <dwrite.h>
+#include <wrl/client.h>
 #include "BaseWindow.h"
 #include "Timer.h"
 #include "SettingsWindow.h"
@@ -23,16 +24,16 @@ class MainWindow : public BaseWindow<MainWindow>
 {
 private:
 	// Resources
-	ID2D1Factory* pFactory_ = nullptr;
-	ID2D1HwndRenderTarget* pRenderTarget_ = nullptr;
-	ID2D1SolidColorBrush* pBrushTimer_ = nullptr;
-	ID2D1SolidColorBrush* pBrushSelectedTimer_ = nullptr;
-	ID2D1SolidColorBrush* pBrushLastSeconds_ = nullptr;
+	Microsoft::WRL::ComPtr<ID2D1Factory> pFactory_;
+	Microsoft::WRL::ComPtr<ID2D1HwndRenderTarget> pRenderTarget_;
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> pBrushTimer_;
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> pBrushSelectedTimer_;
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> pBrushLastSeconds_;
 	D2D1_COLOR_F backgroundColor_;
 
 	// Writing Resources
-	IDWriteFactory* pWriteFactory_ = nullptr;
-	IDWriteTextFormat* pTextFormat_ = nullptr;
+	Microsoft::WRL::ComPtr<IDWriteFactory> pWriteFactory_;
+	Microsoft::WRL::ComPtr<IDWriteTextFormat> pTextFormat_;
 
 	// Fields
 	Timer* activeTimer_ = &timer1;

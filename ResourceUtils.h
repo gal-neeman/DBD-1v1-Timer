@@ -12,15 +12,6 @@ constexpr COLORREF PALETTE[PALETTE_SIZE] = {
 	RGB(1, 1, 1), RGB(35, 35, 35), RGB(85, 85, 85), RGB(182, 176, 169), RGB(237, 231, 224)
 };
 
-template <class T> void safeRelease(T** ppT)
-{
-	if (*ppT)
-	{
-		(*ppT)->Release();
-		*ppT = nullptr;
-	}
-}
-
 /**
 @brief Load a bitmap resource.
 
