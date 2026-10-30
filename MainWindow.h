@@ -187,4 +187,11 @@ public:
 	@param buttons The buttons that had a state change.
 	*/
 	void handleControllerInput(WORD buttons) const;
+
+	/**
+	@brief Apply the window related settings (transparency and click through) to the main window.
+
+	@param settings The settings to apply.
+	*/
+	void applyWindowSettings(const SettingsStruct& settings) const;
 };

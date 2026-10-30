@@ -639,6 +639,29 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 	return DefWindowProc(window(), wMsg, wParam, lParam);
 }
 
+void MainWindow::applyWindowSettings(const SettingsStruct& settings) const
+{
+	// transparency
+	if (settings.optionTransparent) { // add transparent effect
+		SetLayeredWindowAttributes(hwnd_, 0, 0, LWA_COLORKEY);
+	}
+	else { // remove transparent effect
+		SetLayeredWindowAttributes(hwnd_, 0, 255, LWA_ALPHA);
+	}
+
+	// click through
+	if (settings.optionClickThrough) { // make click through
+		// Get the current window style
+		LONG style = GetWindowLong(hwnd_, GWL_EXSTYLE);
+
+		// Add the new style to the current styles
+		style |= WS_EX_TRANSPARENT;
+
+		// Set the new style
+		SetWindowLong(hwnd_, GWL_EXSTYLE, style);
+	}
+}
+
 void MainWindow::handleHotKey(const int code)
 {
 	bool isActivateTimer = appSettings.optionStartOnChange;

@@ -2,6 +2,7 @@
 #include "SettingsUtils.h"
 
 #include "HotkeyManager.h"
+#include "Program.h"
 #include <json/json.h>
 
 using namespace std;
@@ -148,25 +149,7 @@ void applySettings(const SettingsStruct& settings) {
 	appSettings = settings; // save global settings variable
 	HotkeyManager::setHotkeysMap(appSettings); // initialize hotkeys map
 
-	if (hwndMainWindow != nullptr) {
-		// transparency
-		if (appSettings.optionTransparent) { // add transparent effect
-			SetLayeredWindowAttributes(hwndMainWindow, 0, 0, LWA_COLORKEY);
-		}
-		else { // remove transparent effect
-			SetLayeredWindowAttributes(hwndMainWindow, 0, 255, LWA_ALPHA);
-		}
-
-		// click through
-		if (appSettings.optionClickThrough) { // make click through
-			// Get the current window style
-			LONG style = GetWindowLong(hwndMainWindow, GWL_EXSTYLE);
-
-			// Add the new style to the current styles
-			style |= WS_EX_TRANSPARENT;
-
-			// Set the new style
-			SetWindowLong(hwndMainWindow, GWL_EXSTYLE, style);
-		}
+	if (pGlobalTimerWindow != nullptr) {
+		pGlobalTimerWindow->applyWindowSettings(appSettings);
 	}
 }

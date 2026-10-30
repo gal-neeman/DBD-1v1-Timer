@@ -28,12 +28,11 @@ using std::thread; using std::wstring;
 // Global variable assignment (defined in MainWindow.h)
 SettingsStruct appSettings;
 HBRUSH hBrushes[25];
-HWND hwndMainWindow = nullptr;
 MainWindow* pGlobalTimerWindow = nullptr;
 
 void exitApp()
 {
-	if (hwndMainWindow) DestroyWindow(hwndMainWindow);
+	if (pGlobalTimerWindow) DestroyWindow(pGlobalTimerWindow->window());
 	PostQuitMessage(0);
 }
 
@@ -100,7 +99,7 @@ LRESULT CALLBACK kbHook(const int nCode, const WPARAM wParam, const LPARAM lPara
 
 void controllerInputCallback(const WORD buttons)
 {
-	SendMessage(hwndMainWindow, CONTROLLER_INPUT ,buttons, NULL);
+	SendMessage(pGlobalTimerWindow->window(), CONTROLLER_INPUT ,buttons, NULL);
 }
 
 static void disableFullscreenOptimizations() {
@@ -155,7 +154,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 		// global variables for timer
 		pGlobalTimerWindow = &win;
-		hwndMainWindow = win.window();
 
 		// Apply saved settings
 		applySettings(appSettings);
