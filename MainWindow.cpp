@@ -3,7 +3,6 @@
 #include "Globals.h"
 #include "HotkeyManager.h"
 #include "ResourceUtils.h"
-#include "SettingsUtils.h"
 #include "Program.h"
 
 
@@ -40,13 +39,11 @@ HRESULT MainWindow::createGraphicsResources()
 		);
 
 		if (SUCCEEDED(hr)) {
-			// Extract ColorF from HBRUSH
-			const SettingsStruct settings = getSafeSettingsStruct();
-
-			const D2D1_COLOR_F timerColor = hBrushToColorf(hBrushes[settings.colors.timerColor]);
-			const D2D1_COLOR_F selectedTimerColor = hBrushToColorf(hBrushes[settings.colors.selectedTimerColor]);
-			const D2D1_COLOR_F lastSecondsColor = hBrushToColorf(hBrushes[settings.colors.lastSecondsColor]);
-			backgroundColor_ = hBrushToColorf(hBrushes[settings.colors.backgroundColor]);
+			// Extract ColorF from the palette
+			const D2D1_COLOR_F timerColor = paletteToColorf(appSettings.colors.timerColor);
+			const D2D1_COLOR_F selectedTimerColor = paletteToColorf(appSettings.colors.selectedTimerColor);
+			const D2D1_COLOR_F lastSecondsColor = paletteToColorf(appSettings.colors.lastSecondsColor);
+			backgroundColor_ = paletteToColorf(appSettings.colors.backgroundColor);
 
 			// timer color brush
 			hr = pRenderTarget_->CreateSolidColorBrush(timerColor, &pBrushTimer_);
@@ -443,33 +440,24 @@ void MainWindow::handleMouseMovement(const LPARAM lParam) const {
 	}
 }
 
-D2D1_COLOR_F MainWindow::hBrushToColorf(const HBRUSH hBrush) {
-	LOGBRUSH logBrush;
-
-	// timer color
-	GetObject(hBrush, sizeof(LOGBRUSH), &logBrush);
-	const COLORREF color = logBrush.lbColor; // Extract COLORREF
+D2D1_COLOR_F MainWindow::paletteToColorf(const int colorIndex) {
+	const COLORREF color = PALETTE[colorIndex];
 	return D2D1::ColorF(GetRValue(color) / 255.0f, GetGValue(color) / 255.0f, GetBValue(color) / 255.0f);
 }
 
 void MainWindow::refreshBrushes()
 {
-	// retrieve brushes colors
-	const SettingsStruct settings = getSafeSettingsStruct();
-
-	LOGBRUSH logBrush;
-
 	// timer color
-	pBrushTimer_->SetColor(hBrushToColorf(hBrushes[settings.colors.timerColor]));
+	pBrushTimer_->SetColor(paletteToColorf(appSettings.colors.timerColor));
 
 	// selected timer color
-	pBrushSelectedTimer_->SetColor(hBrushToColorf(hBrushes[settings.colors.selectedTimerColor]));
+	pBrushSelectedTimer_->SetColor(paletteToColorf(appSettings.colors.selectedTimerColor));
 
 	// last seconds color
-	pBrushLastSeconds_->SetColor(hBrushToColorf(hBrushes[settings.colors.lastSecondsColor]));
+	pBrushLastSeconds_->SetColor(paletteToColorf(appSettings.colors.lastSecondsColor));
 
 	// background color
-	backgroundColor_ = hBrushToColorf(hBrushes[settings.colors.backgroundColor]);
+	backgroundColor_ = paletteToColorf(appSettings.colors.backgroundColor);
 }
 
 LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LPARAM lParam)
@@ -488,8 +476,6 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			}
 			createGraphicsResources();
 			createDeviceIndependentResources();
-
-			appSettings = getSafeSettingsStruct();
 
 			SetTimer(hwnd_, 0, 16, nullptr);
 			return 0;
@@ -637,6 +623,29 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 	}
 
 	return DefWindowProc(window(), wMsg, wParam, lParam);
+}
+
+void MainWindow::applyWindowSettings(const SettingsStruct& settings) const
+{
+	// transparency
+	if (settings.optionTransparent) { // add transparent effect
+		SetLayeredWindowAttributes(hwnd_, 0, 0, LWA_COLORKEY);
+	}
+	else { // remove transparent effect
+		SetLayeredWindowAttributes(hwnd_, 0, 255, LWA_ALPHA);
+	}
+
+	// click through
+	if (settings.optionClickThrough) { // make click through
+		// Get the current window style
+		LONG style = GetWindowLong(hwnd_, GWL_EXSTYLE);
+
+		// Add the new style to the current styles
+		style |= WS_EX_TRANSPARENT;
+
+		// Set the new style
+		SetWindowLong(hwnd_, GWL_EXSTYLE, style);
+	}
 }
 
 void MainWindow::handleHotKey(const int code)

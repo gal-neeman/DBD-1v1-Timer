@@ -108,7 +108,4 @@ struct SettingsStruct // With default values
 };
 
 // Variables
-extern HINSTANCE hInstanceGlobal;
-extern HBRUSH hBrushes[25];
 extern SettingsStruct appSettings;
-extern HWND hwndMainWindow;

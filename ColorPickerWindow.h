@@ -1,13 +1,13 @@
 #pragma once
 #include "BaseWindow.h"
+#include "ResourceUtils.h"
 
 // Class for the color picker window
 class ColorPickerWindow : public BaseWindow<ColorPickerWindow>
 {
 private:
 	// Variables
-	HWND hColorButtons_[25] = {};
-	HBRUSH hPreviewColor_ = nullptr;
+	HWND hColorButtons_[PALETTE_SIZE] = {};
 	HWND hPreviewColorButton_ = nullptr;
 	int previewColorIndex_ = NULL;
 

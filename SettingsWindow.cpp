@@ -12,7 +12,7 @@
 void SettingsWindow::initializeWindow()
 {
 	// retrieve settings
-	tempSettings_ = getSafeSettingsStruct();
+	tempSettings_ = appSettings;
 
 	// Set up text
 	initializeTextControls();
@@ -315,8 +315,8 @@ void SettingsWindow::colorHandles(const LPARAM lParam) const
 {
 	const LPDRAWITEMSTRUCT pDis = (LPDRAWITEMSTRUCT)lParam;
 	// In case of invalid color index (to prevent index out of range)
-	if (tempSettings_.colors.timerColor > 24) {
-		FillRect(pDis->hDC, &pDis->rcItem, hBrushes[0]);
+	if (tempSettings_.colors.timerColor >= PALETTE_SIZE) {
+		fillRectWithPaletteColor(pDis->hDC, pDis->rcItem, 0);
 		return;
 	}
 
@@ -324,16 +324,16 @@ void SettingsWindow::colorHandles(const LPARAM lParam) const
 	switch (pDis->CtlID)
 	{
 	case CID_TIMER_COLOR:
-		FillRect(pDis->hDC, &pDis->rcItem, hBrushes[tempSettings_.colors.timerColor]);
+		fillRectWithPaletteColor(pDis->hDC, pDis->rcItem, tempSettings_.colors.timerColor);
 		break;
 	case CID_SELECTED_TIMER_COLOR:
-		FillRect(pDis->hDC, &pDis->rcItem, hBrushes[tempSettings_.colors.selectedTimerColor]);
+		fillRectWithPaletteColor(pDis->hDC, pDis->rcItem, tempSettings_.colors.selectedTimerColor);
 		break;
 	case CID_LAST_SECONDS_COLOR:
-		FillRect(pDis->hDC, &pDis->rcItem, hBrushes[tempSettings_.colors.lastSecondsColor]);
+		fillRectWithPaletteColor(pDis->hDC, pDis->rcItem, tempSettings_.colors.lastSecondsColor);
 		break;
 	case CID_BACKGROUND_COLOR:
-		FillRect(pDis->hDC, &pDis->rcItem, hBrushes[tempSettings_.colors.backgroundColor]);
+		fillRectWithPaletteColor(pDis->hDC, pDis->rcItem, tempSettings_.colors.backgroundColor);
 		break;
 	default:
 		break;

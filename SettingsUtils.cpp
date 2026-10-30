@@ -2,6 +2,8 @@
 #include "SettingsUtils.h"
 
 #include "HotkeyManager.h"
+#include "Program.h"
+#include "ResourceUtils.h"
 #include <json/json.h>
 
 using namespace std;
@@ -79,10 +81,10 @@ void settingsFromJson(const Json::Value& json, SettingsStruct& settings)
 		settings.colors.lastSecondsColor = colors["last seconds"].asInt();
 		settings.colors.backgroundColor = colors["background"].asInt();
 
-		if (settings.colors.timerColor > 24 || settings.colors.timerColor < 0 ||
-			settings.colors.selectedTimerColor > 24 || settings.colors.selectedTimerColor < 0 ||
-			settings.colors.lastSecondsColor > 24 || settings.colors.lastSecondsColor < 0 ||
-			settings.colors.backgroundColor > 24 || settings.colors.backgroundColor < 0
+		if (settings.colors.timerColor >= PALETTE_SIZE || settings.colors.timerColor < 0 ||
+			settings.colors.selectedTimerColor >= PALETTE_SIZE || settings.colors.selectedTimerColor < 0 ||
+			settings.colors.lastSecondsColor >= PALETTE_SIZE || settings.colors.lastSecondsColor < 0 ||
+			settings.colors.backgroundColor >= PALETTE_SIZE || settings.colors.backgroundColor < 0
 			)
 		{
 			settings.colors.timerColor = 9;
@@ -93,21 +95,18 @@ void settingsFromJson(const Json::Value& json, SettingsStruct& settings)
 	}
 }
 
-SettingsStruct getSafeSettingsStruct()
+void loadSettingsFromFile(SettingsStruct& settings)
 {
 	ifstream file(SETTINGS_FILE_NAME);
 	Json::Value actualJson;
 	Json::Reader reader;
-	SettingsStruct settings;
 
 	reader.parse(file, actualJson);
 
 	settingsFromJson(actualJson, settings);
-
-	return settings;
 }
 
-void setSettingsStruct(const SettingsStruct& settings)
+static void saveSettingsToFile(const SettingsStruct& settings)
 {
 	const Json::Value settingsJson = settingsToJson(settings);
 
@@ -121,52 +120,12 @@ void setSettingsStruct(const SettingsStruct& settings)
 	writer->write(settingsJson, &outputFileStream);
 }
 
-void createSettingsFile()
-{
-	const SettingsStruct defaultSettings;
-	const Json::Value settingsJson = settingsToJson(defaultSettings);
-
-	// Write to file
-	Json::StreamWriterBuilder builder;
-
-	builder["commentStyle"] = "None";
-	builder["indentation"] = "   ";
-	std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-	std::ofstream outputFileStream(SETTINGS_FILE_NAME);
-	writer->write(settingsJson, &outputFileStream);
-}
-
-bool settingsFileExists() {
-	const string name = SETTINGS_FILE_NAME;
-
-	const ifstream f(name.c_str());
-	return f.good();
-}
-
 void applySettings(const SettingsStruct& settings) {
-	setSettingsStruct(settings); // write to json file (settings.json)
+	saveSettingsToFile(settings); // write to json file (settings.json)
 	appSettings = settings; // save global settings variable
 	HotkeyManager::setHotkeysMap(appSettings); // initialize hotkeys map
 
-	if (hwndMainWindow != nullptr) {
-		// transparency
-		if (appSettings.optionTransparent) { // add transparent effect
-			SetLayeredWindowAttributes(hwndMainWindow, 0, 0, LWA_COLORKEY);
-		}
-		else { // remove transparent effect
-			SetLayeredWindowAttributes(hwndMainWindow, 0, 255, LWA_ALPHA);
-		}
-
-		// click through
-		if (appSettings.optionClickThrough) { // make click through
-			// Get the current window style
-			LONG style = GetWindowLong(hwndMainWindow, GWL_EXSTYLE);
-
-			// Add the new style to the current styles
-			style |= WS_EX_TRANSPARENT;
-
-			// Set the new style
-			SetWindowLong(hwndMainWindow, GWL_EXSTYLE, style);
-		}
+	if (pGlobalTimerWindow != nullptr) {
+		pGlobalTimerWindow->applyWindowSettings(appSettings);
 	}
 }

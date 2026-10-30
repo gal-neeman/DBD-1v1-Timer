@@ -27,14 +27,11 @@ using std::thread; using std::wstring;
 
 // Global variable assignment (defined in MainWindow.h)
 SettingsStruct appSettings;
-HBRUSH hBrushes[25];
-HWND hwndMainWindow = nullptr;
-HINSTANCE hInstanceGlobal;
 MainWindow* pGlobalTimerWindow = nullptr;
 
 void exitApp()
 {
-	if (hwndMainWindow) DestroyWindow(hwndMainWindow);
+	if (pGlobalTimerWindow) DestroyWindow(pGlobalTimerWindow->window());
 	PostQuitMessage(0);
 }
 
@@ -101,7 +98,7 @@ LRESULT CALLBACK kbHook(const int nCode, const WPARAM wParam, const LPARAM lPara
 
 void controllerInputCallback(const WORD buttons)
 {
-	SendMessage(hwndMainWindow, CONTROLLER_INPUT ,buttons, NULL);
+	SendMessage(pGlobalTimerWindow->window(), CONTROLLER_INPUT ,buttons, NULL);
 }
 
 static void disableFullscreenOptimizations() {
@@ -134,20 +131,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	{
 		disableFullscreenOptimizations();
 
-		// Global hInstance variable (declared in globals.h)
-		hInstanceGlobal = hInstance;
-
-		// Create settings file on program first run
-		if (!settingsFileExists())
-		{
-			createSettingsFile();
-		}
+		// Load saved settings (WM_CREATE calls createGraphicsResources, which reads the colors)
+		loadSettingsFromFile(appSettings);
 
 		// Initiate common controls lib
 		InitCommonControls();
-
-		// Initialize brushes
-		initializeBrushes();
 
 		if (!win.create(L"Timer", 0, 0, 285, 40, WS_EX_TOPMOST | WS_EX_LAYERED, WS_POPUP)) {
 			return 0;
@@ -159,7 +147,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 		// global variables for timer
 		pGlobalTimerWindow = &win;
-		hwndMainWindow = win.window();
 
 		// Apply saved settings
 		applySettings(appSettings);

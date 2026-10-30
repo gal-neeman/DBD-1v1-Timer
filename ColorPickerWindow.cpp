@@ -40,19 +40,15 @@ void ColorPickerWindow::initializeColorButtons()
 	switch (controlId)
 	{
 	case CID_TIMER_COLOR:
-		hPreviewColor_ = hBrushes[pTempSettings->colors.timerColor];
 		previewColorIndex_ = pTempSettings->colors.timerColor;
 		break;
 	case CID_SELECTED_TIMER_COLOR:
-		hPreviewColor_ = hBrushes[pTempSettings->colors.selectedTimerColor];
 		previewColorIndex_ = pTempSettings->colors.selectedTimerColor;
 		break;
 	case CID_LAST_SECONDS_COLOR:
-		hPreviewColor_ = hBrushes[pTempSettings->colors.lastSecondsColor];
 		previewColorIndex_ = pTempSettings->colors.lastSecondsColor;
 		break;
 	case CID_BACKGROUND_COLOR:
-		hPreviewColor_ = hBrushes[pTempSettings->colors.backgroundColor];
 		previewColorIndex_ = pTempSettings->colors.backgroundColor;
 		break;
 	default:
@@ -112,9 +108,8 @@ void ColorPickerWindow::handleControlCommand(const LPARAM lParam)
 	const int cid = GetDlgCtrlID(hwndCtrl); // retrieve control ID
 
 	// clicked a color
-	if (cid >= 0 && cid < 25)
+	if (cid >= 0 && cid < PALETTE_SIZE)
 	{
-		hPreviewColor_ = hBrushes[cid];
 		previewColorIndex_ = cid;
 		RedrawWindow(hwnd_, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW);
 		return;
@@ -157,11 +152,11 @@ LRESULT ColorPickerWindow::handleMessage(const UINT wMsg, const WPARAM wParam, c
 			const LPDRAWITEMSTRUCT pDis = (LPDRAWITEMSTRUCT)lParam;
 			if (pDis->CtlID == CID_COLOR_PREVIEW)
 			{
-				FillRect(pDis->hDC, &pDis->rcItem, hPreviewColor_);
+				fillRectWithPaletteColor(pDis->hDC, pDis->rcItem, previewColorIndex_);
 			}
 			else
 			{
-				FillRect(pDis->hDC, &pDis->rcItem, hBrushes[pDis->CtlID]);
+				fillRectWithPaletteColor(pDis->hDC, pDis->rcItem, pDis->CtlID);
 			}
 
 			return 0;

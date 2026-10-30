@@ -23,16 +23,16 @@ class MainWindow : public BaseWindow<MainWindow>
 {
 private:
 	// Resources
-	ID2D1Factory* pFactory_;
-	ID2D1HwndRenderTarget* pRenderTarget_;
-	ID2D1SolidColorBrush* pBrushTimer_;
-	ID2D1SolidColorBrush* pBrushSelectedTimer_;
-	ID2D1SolidColorBrush* pBrushLastSeconds_;
+	ID2D1Factory* pFactory_ = nullptr;
+	ID2D1HwndRenderTarget* pRenderTarget_ = nullptr;
+	ID2D1SolidColorBrush* pBrushTimer_ = nullptr;
+	ID2D1SolidColorBrush* pBrushSelectedTimer_ = nullptr;
+	ID2D1SolidColorBrush* pBrushLastSeconds_ = nullptr;
 	D2D1_COLOR_F backgroundColor_;
-	
+
 	// Writing Resources
-	IDWriteFactory* pWriteFactory_;
-	IDWriteTextFormat* pTextFormat_;
+	IDWriteFactory* pWriteFactory_ = nullptr;
+	IDWriteTextFormat* pTextFormat_ = nullptr;
 
 	// Fields
 	Timer* activeTimer_ = &timer1;
@@ -106,13 +106,13 @@ private:
 	void handleMouseMovement(LPARAM lParam) const;
 
 	/**
-	@brief Get the COLORF value of an HBRUSH type.
+	@brief Get the COLORF value of a color from the palette.
 
-	@param hBrush The HBRUSH to retrieve a COLORF from.
+	@param colorIndex The index of the color in the palette.
 
-	@return D2D1_COLOR_F value of the given HBRUSH.
+	@return D2D1_COLOR_F value of the given color.
 	*/
-	static D2D1_COLOR_F hBrushToColorf(HBRUSH hBrush);
+	static D2D1_COLOR_F paletteToColorf(int colorIndex);
 	
 	/**
 	@brief Retrieve and apply the colors from the settings file to the timer brushes.
@@ -187,4 +187,11 @@ public:
 	@param buttons The buttons that had a state change.
 	*/
 	void handleControllerInput(WORD buttons) const;
+
+	/**
+	@brief Apply the window related settings (transparency and click through) to the main window.
+
+	@param settings The settings to apply.
+	*/
+	void applyWindowSettings(const SettingsStruct& settings) const;
 };
