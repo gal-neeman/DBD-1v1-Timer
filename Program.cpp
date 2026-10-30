@@ -27,7 +27,6 @@ using std::thread; using std::wstring;
 
 // Global variable assignment (defined in MainWindow.h)
 SettingsStruct appSettings;
-HBRUSH hBrushes[25];
 MainWindow* pGlobalTimerWindow = nullptr;
 
 void exitApp()
@@ -137,9 +136,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 		// Initiate common controls lib
 		InitCommonControls();
-
-		// Initialize brushes
-		initializeBrushes();
 
 		if (!win.create(L"Timer", 0, 0, 285, 40, WS_EX_TOPMOST | WS_EX_LAYERED, WS_POPUP)) {
 			return 0;

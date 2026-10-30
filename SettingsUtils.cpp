@@ -3,6 +3,7 @@
 
 #include "HotkeyManager.h"
 #include "Program.h"
+#include "ResourceUtils.h"
 #include <json/json.h>
 
 using namespace std;
@@ -80,10 +81,10 @@ void settingsFromJson(const Json::Value& json, SettingsStruct& settings)
 		settings.colors.lastSecondsColor = colors["last seconds"].asInt();
 		settings.colors.backgroundColor = colors["background"].asInt();
 
-		if (settings.colors.timerColor > 24 || settings.colors.timerColor < 0 ||
-			settings.colors.selectedTimerColor > 24 || settings.colors.selectedTimerColor < 0 ||
-			settings.colors.lastSecondsColor > 24 || settings.colors.lastSecondsColor < 0 ||
-			settings.colors.backgroundColor > 24 || settings.colors.backgroundColor < 0
+		if (settings.colors.timerColor >= PALETTE_SIZE || settings.colors.timerColor < 0 ||
+			settings.colors.selectedTimerColor >= PALETTE_SIZE || settings.colors.selectedTimerColor < 0 ||
+			settings.colors.lastSecondsColor >= PALETTE_SIZE || settings.colors.lastSecondsColor < 0 ||
+			settings.colors.backgroundColor >= PALETTE_SIZE || settings.colors.backgroundColor < 0
 			)
 		{
 			settings.colors.timerColor = 9;

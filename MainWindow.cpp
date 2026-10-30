@@ -39,11 +39,11 @@ HRESULT MainWindow::createGraphicsResources()
 		);
 
 		if (SUCCEEDED(hr)) {
-			// Extract ColorF from HBRUSH
-			const D2D1_COLOR_F timerColor = hBrushToColorf(hBrushes[appSettings.colors.timerColor]);
-			const D2D1_COLOR_F selectedTimerColor = hBrushToColorf(hBrushes[appSettings.colors.selectedTimerColor]);
-			const D2D1_COLOR_F lastSecondsColor = hBrushToColorf(hBrushes[appSettings.colors.lastSecondsColor]);
-			backgroundColor_ = hBrushToColorf(hBrushes[appSettings.colors.backgroundColor]);
+			// Extract ColorF from the palette
+			const D2D1_COLOR_F timerColor = paletteToColorf(appSettings.colors.timerColor);
+			const D2D1_COLOR_F selectedTimerColor = paletteToColorf(appSettings.colors.selectedTimerColor);
+			const D2D1_COLOR_F lastSecondsColor = paletteToColorf(appSettings.colors.lastSecondsColor);
+			backgroundColor_ = paletteToColorf(appSettings.colors.backgroundColor);
 
 			// timer color brush
 			hr = pRenderTarget_->CreateSolidColorBrush(timerColor, &pBrushTimer_);
@@ -440,28 +440,24 @@ void MainWindow::handleMouseMovement(const LPARAM lParam) const {
 	}
 }
 
-D2D1_COLOR_F MainWindow::hBrushToColorf(const HBRUSH hBrush) {
-	LOGBRUSH logBrush;
-
-	// timer color
-	GetObject(hBrush, sizeof(LOGBRUSH), &logBrush);
-	const COLORREF color = logBrush.lbColor; // Extract COLORREF
+D2D1_COLOR_F MainWindow::paletteToColorf(const int colorIndex) {
+	const COLORREF color = PALETTE[colorIndex];
 	return D2D1::ColorF(GetRValue(color) / 255.0f, GetGValue(color) / 255.0f, GetBValue(color) / 255.0f);
 }
 
 void MainWindow::refreshBrushes()
 {
 	// timer color
-	pBrushTimer_->SetColor(hBrushToColorf(hBrushes[appSettings.colors.timerColor]));
+	pBrushTimer_->SetColor(paletteToColorf(appSettings.colors.timerColor));
 
 	// selected timer color
-	pBrushSelectedTimer_->SetColor(hBrushToColorf(hBrushes[appSettings.colors.selectedTimerColor]));
+	pBrushSelectedTimer_->SetColor(paletteToColorf(appSettings.colors.selectedTimerColor));
 
 	// last seconds color
-	pBrushLastSeconds_->SetColor(hBrushToColorf(hBrushes[appSettings.colors.lastSecondsColor]));
+	pBrushLastSeconds_->SetColor(paletteToColorf(appSettings.colors.lastSecondsColor));
 
 	// background color
-	backgroundColor_ = hBrushToColorf(hBrushes[appSettings.colors.backgroundColor]);
+	backgroundColor_ = paletteToColorf(appSettings.colors.backgroundColor);
 }
 
 LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LPARAM lParam)

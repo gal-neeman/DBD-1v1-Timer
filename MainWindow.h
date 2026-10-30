@@ -106,13 +106,13 @@ private:
 	void handleMouseMovement(LPARAM lParam) const;
 
 	/**
-	@brief Get the COLORF value of an HBRUSH type.
+	@brief Get the COLORF value of a color from the palette.
 
-	@param hBrush The HBRUSH to retrieve a COLORF from.
+	@param colorIndex The index of the color in the palette.
 
-	@return D2D1_COLOR_F value of the given HBRUSH.
+	@return D2D1_COLOR_F value of the given color.
 	*/
-	static D2D1_COLOR_F hBrushToColorf(HBRUSH hBrush);
+	static D2D1_COLOR_F paletteToColorf(int colorIndex);
 	
 	/**
 	@brief Retrieve and apply the colors from the settings file to the timer brushes.

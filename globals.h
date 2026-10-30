@@ -108,5 +108,4 @@ struct SettingsStruct // With default values
 };
 
 // Variables
-extern HBRUSH hBrushes[25];
 extern SettingsStruct appSettings;

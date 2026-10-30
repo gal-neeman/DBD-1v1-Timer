@@ -30,13 +30,13 @@ This is a C++ overlay built on Win32, Direct2D/DirectWrite, and XInput. The Json
 ## Deliberate choices that look wrong
 - The D2D render target is `D2D1_RENDER_TARGET_TYPE_SOFTWARE` with `D2D1_PRESENT_OPTIONS_IMMEDIATELY` on purpose: ReShade hooks hardware render targets, which causes stutter. Don't switch it back to hardware as an optimization.
 - `wWinMain` writes a registry AppCompat flag that disables fullscreen optimizations. This is also a stutter fix.
-- Transparency is a color key on pure black: when transparent, the window is cleared to `RGB(0,0,0)`. Palette index 20 is `RGB(1,1,1)` so the "black" color isn't keyed out. Never put pure black in the palette (`initializeBrushes` in `ResourceUtils.cpp`).
+- Transparency is a color key on pure black: when transparent, the window is cleared to `RGB(0,0,0)`. Palette index 20 is `RGB(1,1,1)` so the "black" color isn't keyed out. Never put pure black in the palette (`PALETTE` in `ResourceUtils.h`).
 - `optionClickThrough` is never saved and is reset to false on load, so a user can't lock themselves out of the window.
 
 ## Settings
 - The settings file is `Settings.json` in the **working directory** (`SETTINGS_FILE_NAME`). The `settings.json` in the repo is only a sample.
 - `settingsFromJson` validates each group of fields separately (hotkeys, bool options, numeric options, colors). If a group is invalid, the whole group falls back to defaults. The fallback values there repeat the struct defaults in `globals.h` as literals, so change both together.
-- Colors are stored as indexes 0–24 into `hBrushes`, not as RGB values.
+- Colors are stored as indexes 0–24 into `PALETTE`, not as RGB values.
 - `appSettings` is the only runtime source of settings. The file is read once, by `loadSettingsFromFile` in `wWinMain` before the main window is created, and after that is only written, by `applySettings`.
 - **Adding a setting:**
   1. Add the field and its default to `SettingsStruct` in `globals.h`.
