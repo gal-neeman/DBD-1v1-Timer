@@ -123,10 +123,10 @@
     <Image Include="icon\appIcon.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\concept\MouseIcon.bmp">
+    <Image Include="icon\MouseIcon.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\concept\ControllerIcon.bmp">
+    <Image Include="icon\ControllerIcon.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
