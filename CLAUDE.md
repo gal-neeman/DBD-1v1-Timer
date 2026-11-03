@@ -1,10 +1,11 @@
 # CLAUDE.md
 
-This is a C++ overlay built on Win32, Direct2D/DirectWrite, and XInput. The JsonCpp amalgamation is vendored in `third_party/`, which is on the include path via `$(ProjectDir)third_party`, so include it as `<json/json.h>`. See README.md for features.
+This is a C++20 overlay built on Win32, Direct2D/DirectWrite, and XInput. The JsonCpp amalgamation is vendored in `third_party/`, which is on the include path via `$(ProjectDir)third_party`, so include it as `<json/json.h>`. See README.md for features.
 
 ## Build
 - Open `DBD 1v1 Timer.sln`, which uses MSVC toolset v145. From a Developer PowerShell:
   `msbuild "DBD 1v1 Timer.sln" /p:Configuration=Release /p:Platform=x64`
+- Every configuration compiles as C++20 (`<LanguageStandard>stdcpp20</LanguageStandard>` in each `ClCompile` block of the `.vcxproj`). A new configuration needs it too; without it, MSVC falls back to C++14.
 - There are no tests or linter. Verify a change by building and running the exe.
 - Sources are listed explicitly in `DBD 1v1 Timer.vcxproj` and its `.filters` file, so add new .cpp files there.
 - Libraries are linked with `#pragma comment(lib, ...)` in `Program.cpp`, not in project settings.
