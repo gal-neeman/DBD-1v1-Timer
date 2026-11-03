@@ -166,7 +166,7 @@
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="DBD 1v1 Timer1.rc" />
+    <ResourceCompile Include="DBD 1v1 Timer.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="icon\ControllerIcon.bmp" />

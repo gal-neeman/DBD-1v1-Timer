@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by DBD 1v1 Timer1.rc
+// Used by DBD 1v1 Timer.rc
 //
 #define IDI_ICON1                       101
 #define IDB_BITMAP1                     110

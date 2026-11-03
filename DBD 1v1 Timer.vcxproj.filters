@@ -115,7 +115,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="DBD 1v1 Timer1.rc">
+    <ResourceCompile Include="DBD 1v1 Timer.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
