@@ -1,5 +1,6 @@
 #pragma once
 #include "Globals.h"
+#include "resource.h"
 #include <Windows.h>
 
 // Template class for specific window's classes to inherit from
@@ -58,6 +59,7 @@ public:
 		wc.hInstance = nullptr;
 		wc.hbrBackground = (HBRUSH)(COLOR_3DFACE + 1);
 		wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+		wc.hIcon = LoadIcon(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_ICON1)); // title bar / taskbar icon
 
 		RegisterClass(&wc);
 

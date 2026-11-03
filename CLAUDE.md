@@ -8,7 +8,7 @@ This is a C++ overlay built on Win32, Direct2D/DirectWrite, and XInput. The Json
 - There are no tests or linter. Verify a change by building and running the exe.
 - Sources are listed explicitly in `DBD 1v1 Timer.vcxproj` and its `.filters` file, so add new .cpp files there.
 - Libraries are linked with `#pragma comment(lib, ...)` in `Program.cpp`, not in project settings.
-- Only `DBD 1v1 Timer1.rc` is compiled; `DBD 1v1 Timer.rc` is unused. The `.rc` files are UTF-16, so grep and sed silently find nothing; decode with `iconv -f UTF-16 -t UTF-8` first. The compiled `.rc` loads its bitmaps from absolute paths outside the repo (`...\dbd1v1\concept\*.bmp`).
+- The resource script is `DBD 1v1 Timer.rc`. It is UTF-16LE with a BOM and CRLF line endings, so grep and sed silently find nothing; decode with `iconv -f UTF-16 -t UTF-8` first. Git Bash's sed also strips the CRs, so edit it with a script that preserves the encoding and line endings. The compiled `.rc` loads the app icon and bitmaps from `icon\` by relative path. The bitmaps are 25×25, the size they're drawn at; the 400×400 originals live outside the repo in `..\concept\`.
 - `IDB_MOUSE` and `IDB_CONTROLLER` in `globals.h` hardcode the values of `IDB_BITMAP1` and `IDB_BITMAP2` from `resource.h`. Keep them in sync.
 - The global keyboard and mouse hooks are skipped when a debugger is attached, so hotkeys don't work under the VS debugger.
 
@@ -46,7 +46,7 @@ This is a C++ overlay built on Win32, Direct2D/DirectWrite, and XInput. The Json
 
 ## Version bump
 Update these places:
-- `DBD 1v1 Timer1.rc`: FILEVERSION, PRODUCTVERSION, and the `FileVersion`/`ProductVersion` strings.
+- `DBD 1v1 Timer.rc`: FILEVERSION, PRODUCTVERSION, and the `FileVersion`/`ProductVersion` strings.
 - `APP_VERSION` in `globals.h`, which the Settings window title is built from.
 
 ## Workflow
