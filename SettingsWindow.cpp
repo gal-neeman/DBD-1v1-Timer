@@ -166,6 +166,8 @@ void SettingsWindow::initializeButtonControls()
 	constexpr int widthCheckbox = 13; // Same as the glyph, so its right edge is the control's right edge
 	constexpr int heightCheckbox = 17; // Same as the text labels, so the glyph is centered on them
 	const int xCheckbox = xNumeric + widthNumeric - widthCheckbox;
+	constexpr int widthLastSecondsInput = 30;
+	const int xLastSecondsInput = xNumeric + widthNumeric - widthLastSecondsInput;
 
 	HWND hotkeys[8];
 	HWND colorButtons[4];
@@ -187,7 +189,7 @@ void SettingsWindow::initializeButtonControls()
 	const HWND hCbStartOnChange = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 7, widthCheckbox, heightCheckbox, CID_STARTONCHANGE_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
 	const HWND hCbTransparentBg = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 8, widthCheckbox, heightCheckbox, CID_TRANSPARENT_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
 	const HWND hCbClickthrough = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 9, widthCheckbox, heightCheckbox, CID_CLICKTHROUGH_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
-	const HWND hOptLastSecondsTime = createControl(WC_EDIT, L"", xNumeric, tileHeight_ * 10 - offsetY, widthNumeric, heightNumeric, CID_LAST_SECONDS_TIME, ES_NUMBER | ES_CENTER | WS_BORDER);
+	const HWND hOptLastSecondsTime = createControl(WC_EDIT, L"", xLastSecondsInput, tileHeight_ * 10 - offsetY, widthLastSecondsInput, heightNumeric, CID_LAST_SECONDS_TIME, ES_NUMBER | ES_CENTER | WS_BORDER);
 
 	// Color buttons
 	colorButtons[0] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 12, widthColorButton, heightColorButton, CID_TIMER_COLOR, BS_OWNERDRAW);
