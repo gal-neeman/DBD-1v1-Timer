@@ -70,7 +70,7 @@ constexpr UINT16 SIZE_COLORPICKER_WIDTH = 270;
 constexpr UINT16 SIZE_COLORPICKER_HEIGHT = 350;
 
 // Version
-#define APP_VERSION L"1.5.0"
+#define APP_VERSION L"1.5.1"
 constexpr WCHAR SETTINGS_WINDOW_TITLE[] = L"Settings - Version " APP_VERSION;
 
 // Fonts

@@ -29,4 +29,4 @@ Right click anywhere on the program surface to open a menu to either quit or ent
 ## Finally
 * This project is still open to development, although the released version is stable and working without issues.
 * If you do find a bug, or have a suggestion, please feel free to email me at: truuehsoft@outlook.com
-* This project was created entirely in c++ using microsoft's WINAPI, the D2D1 library for graphics, and the DWRITE library for text representation. If you are a developer, I hope you can appreciate the meaning of this :)
+* This project was created entirely in C++20 using microsoft's WINAPI, the D2D1 library for graphics, and the DWRITE library for text representation. If you are a developer, I hope you can appreciate the meaning of this :)

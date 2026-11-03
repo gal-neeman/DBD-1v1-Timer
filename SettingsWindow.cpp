@@ -61,7 +61,6 @@ void SettingsWindow::displayBitmaps() const
 	const int mouseY = tileHeight_;
 	const int controllerX = tileWidth_ * ((cols_ / 2) + 4) + 10 - bitmapSize / 2;
 	const int controllerY = tileHeight_;
-	constexpr int originalBitmapSize = 400;
 	constexpr COLORREF ignoreColor = RGB(100, 100, 100);
 
 	PAINTSTRUCT ps;
@@ -70,33 +69,31 @@ void SettingsWindow::displayBitmaps() const
 	// Create a compatible device context
 	const HDC hMemDc = CreateCompatibleDC(hdc);
 
-	// Select the mouse bitmap into the memory DC
-	HGDIOBJ oldBitmap = SelectObject(hMemDc, mouseBitmap_);
+	// Keep the DC's original bitmap so it can be restored before deleting the DC
+	const HGDIOBJ oldBitmap = SelectObject(hMemDc, mouseBitmap_);
 
-	// Scale bitmaps
-	TransparentBlt(hdc,
-	mouseX, mouseY,			 // Target x, y coordinates
-		bitmapSize,				         // Target width
-		bitmapSize,						 // Target height
-		hMemDc,
-		0, 0,			         // Source x, y coordinates
-		originalBitmapSize,				 // Source width
-		originalBitmapSize,				 // Source height
-		ignoreColor);
+	// Scale a bitmap from its actual size to bitmapSize; TransparentBlt draws nothing if the source rect is out of bounds
+	const auto drawBitmap = [&](const HBITMAP bitmap, const int x, const int y)
+	{
+		BITMAP bm;
+		if (!bitmap || !GetObject(bitmap, sizeof(bm), &bm)) {
+			return;
+		}
 
-	// Select the controller bitmap into the memory DC
-	oldBitmap = SelectObject(hMemDc, controllerBitmap_);
+		SelectObject(hMemDc, bitmap);
+		TransparentBlt(hdc,
+			x, y,						// Target x, y coordinates
+			bitmapSize,					// Target width
+			bitmapSize,					// Target height
+			hMemDc,
+			0, 0,						// Source x, y coordinates
+			bm.bmWidth,					// Source width
+			bm.bmHeight,				// Source height
+			ignoreColor);
+	};
 
-	// Scale bitmaps
-	TransparentBlt(hdc,
-		controllerX, controllerY,			// Target x, y coordinates
-		bitmapSize,									// Target width
-		bitmapSize,								   	// Target height
-		hMemDc,
-		0, 0,							     // Source x, y coordinates
-		originalBitmapSize,							 // Source width
-		originalBitmapSize,							 // Source height
-		ignoreColor);
+	drawBitmap(mouseBitmap_, mouseX, mouseY);
+	drawBitmap(controllerBitmap_, controllerX, controllerY);
 
 	// Cleanup
 	SelectObject(hMemDc, oldBitmap);
@@ -169,6 +166,8 @@ void SettingsWindow::initializeButtonControls()
 	constexpr int widthCheckbox = 13; // Same as the glyph, so its right edge is the control's right edge
 	constexpr int heightCheckbox = 17; // Same as the text labels, so the glyph is centered on them
 	const int xCheckbox = xNumeric + widthNumeric - widthCheckbox;
+	constexpr int widthLastSecondsInput = 30;
+	const int xLastSecondsInput = xNumeric + widthNumeric - widthLastSecondsInput;
 
 	HWND hotkeys[8];
 	HWND colorButtons[4];
@@ -190,7 +189,7 @@ void SettingsWindow::initializeButtonControls()
 	const HWND hCbStartOnChange = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 7, widthCheckbox, heightCheckbox, CID_STARTONCHANGE_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
 	const HWND hCbTransparentBg = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 8, widthCheckbox, heightCheckbox, CID_TRANSPARENT_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
 	const HWND hCbClickthrough = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 9, widthCheckbox, heightCheckbox, CID_CLICKTHROUGH_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
-	const HWND hOptLastSecondsTime = createControl(WC_EDIT, L"", xNumeric, tileHeight_ * 10 - offsetY, widthNumeric, heightNumeric, CID_LAST_SECONDS_TIME, ES_NUMBER | ES_CENTER | WS_BORDER);
+	const HWND hOptLastSecondsTime = createControl(WC_EDIT, L"", xLastSecondsInput, tileHeight_ * 10 - offsetY, widthLastSecondsInput, heightNumeric, CID_LAST_SECONDS_TIME, ES_NUMBER | ES_CENTER | WS_BORDER);
 
 	// Color buttons
 	colorButtons[0] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 12, widthColorButton, heightColorButton, CID_TIMER_COLOR, BS_OWNERDRAW);
