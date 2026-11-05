@@ -544,6 +544,21 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 					SetForegroundWindow(settingsWindow.window());
 				}
 				return 0;
+			case MENU_STATISTICS:
+				if (statisticsWindow.window() == nullptr) // dont create multiple statistics windows
+				{
+					// Create and show statistics window
+					if (!statisticsWindow.create(STATISTICS_WINDOW_TITLE, 500, 200, SIZE_STATISTICS_WIDTH, SIZE_STATISTICS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, hwnd_, nullptr, nullptr, nullptr)) {
+						return 0;
+					}
+
+					ShowWindow(statisticsWindow.window(), SW_SHOW);
+				}
+				else
+				{
+					SetForegroundWindow(statisticsWindow.window());
+				}
+				return 0;
 			case MENU_QUIT:
 				exitApp();
 				return 0;
@@ -562,6 +577,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			HMENU hMenu = CreatePopupMenu();
 			InsertMenu(hMenu, 0, MF_BYPOSITION | MF_STRING, MENU_QUIT, L"Quit");
 			InsertMenu(hMenu, 0, MF_BYPOSITION | MF_SEPARATOR, 100, L"");
+			InsertMenu(hMenu, 0, MF_BYPOSITION | MF_STRING, MENU_STATISTICS, L"DBDLeague Stats");
 			InsertMenu(hMenu, 0, MF_BYPOSITION | MF_STRING, MENU_SETTINGS, L"Settings");
 			SetForegroundWindow(hwnd_);
 			TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_TOPALIGN, mouseX, mouseY, 0, hwnd_, nullptr);

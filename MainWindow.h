@@ -5,6 +5,7 @@
 #include "BaseWindow.h"
 #include "Timer.h"
 #include "SettingsWindow.h"
+#include "StatisticsWindow.h"
 
 enum MousePos : uint8_t
 {
@@ -137,6 +138,7 @@ public:
 	Timer timer1 = Timer();
 	Timer timer2 = Timer();
 	SettingsWindow settingsWindow;
+	StatisticsWindow statisticsWindow;
 
 	// Constructor
 	MainWindow();

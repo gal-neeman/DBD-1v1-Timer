@@ -19,6 +19,7 @@ constexpr byte CID_CON_START_NO_RESET = 117;
 constexpr byte CID_LAST_SECONDS_TIME = 118;
 constexpr byte MENU_QUIT = 1;
 constexpr byte MENU_SETTINGS = 0;
+constexpr byte MENU_STATISTICS = 2;
 constexpr byte KEY_START = 0;
 constexpr byte KEY_START_NO_RESET = 5;
 constexpr byte KEY_TIMER1 = 1;
@@ -68,10 +69,13 @@ constexpr UINT16 SIZE_SETTINGS_WIDTH = 400;
 constexpr UINT16 SIZE_SETTINGS_HEIGHT = 660;
 constexpr UINT16 SIZE_COLORPICKER_WIDTH = 270;
 constexpr UINT16 SIZE_COLORPICKER_HEIGHT = 350;
+constexpr UINT16 SIZE_STATISTICS_WIDTH = 500;
+constexpr UINT16 SIZE_STATISTICS_HEIGHT = 500;
 
 // Version
 #define APP_VERSION L"1.5.1"
 constexpr WCHAR SETTINGS_WINDOW_TITLE[] = L"Settings - Version " APP_VERSION;
+constexpr WCHAR STATISTICS_WINDOW_TITLE[] = L"DBDLeague Statistics";
 
 // Fonts
 constexpr WCHAR FONT_NAME_TIMER[] = L"Segoe UI";
