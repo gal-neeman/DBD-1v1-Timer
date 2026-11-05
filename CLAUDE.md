@@ -8,6 +8,7 @@ This is a C++20 overlay built on Win32, Direct2D/DirectWrite, and XInput. The Js
 - Every configuration compiles as C++20 (`<LanguageStandard>stdcpp20</LanguageStandard>` in each `ClCompile` block of the `.vcxproj`). A new configuration needs it too; without it, MSVC falls back to C++14.
 - There are no tests or linter. Verify a change by building and running the exe.
 - Sources are listed explicitly in `DBD 1v1 Timer.vcxproj` and its `.filters` file, so add new .cpp files there.
+- Older code is flat in the project root. New feature code goes in a feature folder (e.g. `TimerApi/Http/`) with a matching filter. `$(ProjectDir)` is on the include path, so always include relative to the project root: `"TimerApi/Http/HttpClient.h"`, `"globals.h"`.
 - Libraries are linked with `#pragma comment(lib, ...)` in `Program.cpp`, not in project settings.
 - The resource script is `DBD 1v1 Timer.rc`. It is UTF-16LE with a BOM and CRLF line endings, so grep and sed silently find nothing; decode with `iconv -f UTF-16 -t UTF-8` first. Git Bash's sed also strips the CRs, so edit it with a script that preserves the encoding and line endings. The compiled `.rc` loads the app icon and bitmaps from `icon\` by relative path. The bitmaps are 25×25, the size they're drawn at; the 400×400 originals live outside the repo in `..\concept\`.
 - `IDB_MOUSE` and `IDB_CONTROLLER` in `globals.h` hardcode the values of `IDB_BITMAP1` and `IDB_BITMAP2` from `resource.h`. Keep them in sync.
@@ -19,6 +20,7 @@ This is a C++20 overlay built on Win32, Direct2D/DirectWrite, and XInput. The Js
   - `ControllerManager`, which polls controller index 0 on its own thread. It maps XInput and PlayStation button bits to `CONTROLLER_*` codes (5000–5015) and delivers them with `SendMessage(CONTROLLER_INPUT)`.
 
   `HotkeyManager::execute` then `PostMessage`s `HOTKEY_HIT` to `MainWindow::handleHotKey`. While the settings window is open, controller input goes to it instead, for rebinding.
+- **Timer API HTTP:** `HttpWorker` (`TimerApi/Http/`) starts in `wWinMain` and runs queued jobs on one thread through a blocking WinHTTP `HttpClient`. Any `HttpError` sets the global `timerApiEnabled` to false; the app never exits over it. `stop()` closes the in-flight request handle to abort it, then joins, so quitting is instant. Never call `HttpClient` on the UI thread.
 - **Timing is single-threaded:** `SetTimer` fires every 16 ms; each `WM_TIMER` calls `Timer::updateTime()` on both timers, then redraws.
 - **Windows** derive from the CRTP template `BaseWindow<T>` (`BaseWindow.h`). Each window type needs a unique `className()`. `RegisterClass` failures are ignored, so a duplicate name silently reuses the other class's window procedure.
 - **Hotkey capture in Settings:** `SettingsWindow::ctrlWndProc` subclasses every control. While a binding is active, it forwards mouse clicks to the settings window, which is how mouse buttons can be bound.

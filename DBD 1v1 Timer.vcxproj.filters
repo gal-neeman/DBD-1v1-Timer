@@ -37,6 +37,12 @@
     <Filter Include="Source Files\Input">
       <UniqueIdentifier>{3c46b243-eb40-485b-96f1-6bccd441078a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TimerApi">
+      <UniqueIdentifier>{8f3a1c52-6d2e-4b7a-9e41-2c5d7b0a9f13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TimerApi\Http">
+      <UniqueIdentifier>{b71e04d9-3a6c-4f25-8d90-5e2a6c1f7b48}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Program.cpp">
@@ -74,6 +80,12 @@
     </ClCompile>
     <ClCompile Include="ControllerManager.cpp">
       <Filter>Source Files\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="TimerApi\Http\HttpClient.cpp">
+      <Filter>TimerApi\Http</Filter>
+    </ClCompile>
+    <ClCompile Include="TimerApi\Http\HttpWorker.cpp">
+      <Filter>TimerApi\Http</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -118,6 +130,12 @@
     </ClInclude>
     <ClInclude Include="ControllerManager.h">
       <Filter>Header Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerApi\Http\HttpClient.h">
+      <Filter>TimerApi\Http</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerApi\Http\HttpWorker.h">
+      <Filter>TimerApi\Http</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

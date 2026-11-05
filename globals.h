@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <string>
 #include <Windows.h>
 
@@ -77,6 +78,14 @@ constexpr UINT16 SIZE_STATISTICS_HEIGHT = 500;
 constexpr WCHAR SETTINGS_WINDOW_TITLE[] = L"Settings - Version " APP_VERSION;
 constexpr WCHAR STATISTICS_WINDOW_TITLE[] = L"DBDLeague Statistics";
 
+// Timer API. Host name only, no scheme: HTTPS is the HttpClient default.
+// Release builds (NDEBUG) use production; Debug builds use staging.
+#ifdef NDEBUG
+constexpr WCHAR TIMER_API_HOST[] = L"api.example.com"; // TODO: set the production API host
+#else
+constexpr WCHAR TIMER_API_HOST[] = L"dbd1v1-api-staging.truuehsoft.com";
+#endif
+
 // Fonts
 constexpr WCHAR FONT_NAME_TIMER[] = L"Segoe UI";
 constexpr WCHAR FONT_NAME_CONTROLS[] = L"Segoe UI";
@@ -122,3 +131,6 @@ struct SettingsStruct // With default values
 
 // Variables
 extern SettingsStruct appSettings;
+// Whether the timer API is available. Set to false when a request to it fails.
+// Atomic because the HTTP worker thread writes it while the UI thread reads it.
+extern std::atomic<bool> timerApiEnabled;
