@@ -4,6 +4,9 @@
 #include "HotkeyManager.h"
 #include "ResourceUtils.h"
 #include "Program.h"
+#include "TimerApi/Dtos/StatusDto.h"
+#include "TimerApi/Dtos/PlayerDetailsDto.h"
+#include <memory>
 
 using Microsoft::WRL::ComPtr;
 
@@ -606,6 +609,16 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 		case CONTROLLER_INPUT:
 			handleControllerInput(wParam);
 			break;
+		case TIMER_API_STATUS_RESPONSE:
+		{
+			const std::unique_ptr<StatusDto> status(reinterpret_cast<StatusDto*>(lParam));
+			break;
+		}
+		case TIMER_API_PLAYER_RESPONSE:
+		{
+			const std::unique_ptr<PlayerDetailsDto> playerDetails(reinterpret_cast<PlayerDetailsDto*>(lParam));
+			break;
+		}
 		case WM_TIMER:
 		{
 			if (timer1.isRunning() || timer2.isRunning()) {

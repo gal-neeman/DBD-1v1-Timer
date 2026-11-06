@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <string>
 #include <Windows.h>
 
@@ -90,6 +91,9 @@ constexpr byte IDB_CONTROLLER = 111;
 constexpr int REFRESH_BRUSHES(WM_APP + 1);
 constexpr int HOTKEY_HIT(WM_APP + 2);
 constexpr int CONTROLLER_INPUT(WM_APP + 3);
+// Timer API results. lParam is a heap-allocated DTO the receiving window must take ownership of.
+constexpr int TIMER_API_STATUS_RESPONSE(WM_APP + 4); // StatusDto*
+constexpr int TIMER_API_PLAYER_RESPONSE(WM_APP + 5); // PlayerDetailsDto*, or 0 if the player wasn't found
 
 // Configuration File Names
 #define SETTINGS_FILE_NAME "Settings.json"
@@ -122,3 +126,7 @@ struct SettingsStruct // With default values
 
 // Variables
 extern SettingsStruct appSettings;
+// Whether the timer API can be used. Starts false; the status request sets it to statusEnabled,
+// and any failed request sets it back to false.
+// Atomic because the HTTP worker thread writes it while the UI thread reads it.
+extern std::atomic<bool> timerApiEnabled;

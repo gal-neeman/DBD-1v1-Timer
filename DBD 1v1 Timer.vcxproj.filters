@@ -37,6 +37,18 @@
     <Filter Include="Source Files\Input">
       <UniqueIdentifier>{3c46b243-eb40-485b-96f1-6bccd441078a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TimerApi">
+      <UniqueIdentifier>{8f3a1c52-6d2e-4b7a-9e41-2c5d7b0a9f13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TimerApi\Dtos">
+      <UniqueIdentifier>{c4d8e2a1-7b3f-4e96-a5d0-1f8b3c6e2d74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TimerApi\Mappers">
+      <UniqueIdentifier>{e9a27f63-2c84-4b1d-9e05-6d3a8f1c4b92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TimerApi\Http">
+      <UniqueIdentifier>{b71e04d9-3a6c-4f25-8d90-5e2a6c1f7b48}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Program.cpp">
@@ -74,6 +86,21 @@
     </ClCompile>
     <ClCompile Include="ControllerManager.cpp">
       <Filter>Source Files\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="TimerApi\Http\HttpClient.cpp">
+      <Filter>TimerApi\Http</Filter>
+    </ClCompile>
+    <ClCompile Include="TimerApi\Http\HttpWorker.cpp">
+      <Filter>TimerApi\Http</Filter>
+    </ClCompile>
+    <ClCompile Include="TimerApi\TimerApiService.cpp">
+      <Filter>TimerApi</Filter>
+    </ClCompile>
+    <ClCompile Include="TimerApi\Mappers\JsonHelpers.cpp">
+      <Filter>TimerApi\Mappers</Filter>
+    </ClCompile>
+    <ClCompile Include="TimerApi\Mappers\DtoMappers.cpp">
+      <Filter>TimerApi\Mappers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -118,6 +145,27 @@
     </ClInclude>
     <ClInclude Include="ControllerManager.h">
       <Filter>Header Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerApi\Http\HttpClient.h">
+      <Filter>TimerApi\Http</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerApi\Http\HttpWorker.h">
+      <Filter>TimerApi\Http</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerApi\TimerApiService.h">
+      <Filter>TimerApi</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerApi\Mappers\JsonHelpers.h">
+      <Filter>TimerApi\Mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerApi\Mappers\DtoMappers.h">
+      <Filter>TimerApi\Mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerApi\Dtos\StatusDto.h">
+      <Filter>TimerApi\Dtos</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerApi\Dtos\PlayerDetailsDto.h">
+      <Filter>TimerApi\Dtos</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -16,12 +16,14 @@
 
 #include "ControllerManager.h"
 #include "HotkeyManager.h"
+#include "TimerApi/TimerApiService.h"
 
 #pragma comment(lib, "Msimg32.lib")
 #pragma comment (lib, "d2d1")
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "dwrite.lib")
 #pragma comment(lib, "Xinput.lib")
+#pragma comment(lib, "winhttp.lib")
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 using std::thread; using std::wstring;
@@ -29,6 +31,7 @@ using std::thread; using std::wstring;
 // Global variable assignment (defined in MainWindow.h)
 SettingsStruct appSettings;
 MainWindow* pGlobalTimerWindow = nullptr;
+std::atomic<bool> timerApiEnabled = false; // set to true by an enabled status response
 
 void exitApp()
 {
@@ -166,6 +169,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		controllerManager->setInputCallback(controllerInputCallback);
 		controllerManager->start();
 
+		// Timer API requests run on their own thread; results are posted back to the window.
+		timerApi.start();
+		timerApi.getStatus(win.window());
+
 		// Handle messages
 		MSG msg = { };
 		while (GetMessage(&msg, nullptr, 0, 0)) {
@@ -176,11 +183,14 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		if (hKbHook) UnhookWindowsHookEx(hKbHook);
 		if (hMouseHook) UnhookWindowsHookEx(hMouseHook);
 
+		timerApi.stop();
 		controllerManager->stop();
 		return 0;
 	}
 	catch (const std::exception& e)
 	{
+		// timerApi is a global, so unwinding doesn't stop it. Abort any request and join now.
+		timerApi.stop();
 		exitApp();
 	}
 }
