@@ -78,14 +78,6 @@ constexpr UINT16 SIZE_STATISTICS_HEIGHT = 500;
 constexpr WCHAR SETTINGS_WINDOW_TITLE[] = L"Settings - Version " APP_VERSION;
 constexpr WCHAR STATISTICS_WINDOW_TITLE[] = L"DBDLeague Statistics";
 
-// Timer API. Host name only, no scheme: HTTPS is the HttpClient default.
-// Release builds (NDEBUG) use production; Debug builds use staging.
-#ifdef NDEBUG
-constexpr WCHAR TIMER_API_HOST[] = L"api.example.com"; // TODO: set the production API host
-#else
-constexpr WCHAR TIMER_API_HOST[] = L"dbd1v1-api-staging.truuehsoft.com";
-#endif
-
 // Fonts
 constexpr WCHAR FONT_NAME_TIMER[] = L"Segoe UI";
 constexpr WCHAR FONT_NAME_CONTROLS[] = L"Segoe UI";
@@ -99,6 +91,9 @@ constexpr byte IDB_CONTROLLER = 111;
 constexpr int REFRESH_BRUSHES(WM_APP + 1);
 constexpr int HOTKEY_HIT(WM_APP + 2);
 constexpr int CONTROLLER_INPUT(WM_APP + 3);
+// Timer API results. lParam is a heap-allocated DTO the receiving window must take ownership of.
+constexpr int TIMER_API_STATUS_RESPONSE(WM_APP + 4); // StatusDto*
+constexpr int TIMER_API_PLAYER_RESPONSE(WM_APP + 5); // PlayerDetailsDto*, or 0 if the player wasn't found
 
 // Configuration File Names
 #define SETTINGS_FILE_NAME "Settings.json"
@@ -131,6 +126,7 @@ struct SettingsStruct // With default values
 
 // Variables
 extern SettingsStruct appSettings;
-// Whether the timer API is available. Set to false when a request to it fails.
+// Whether the timer API can be used. Starts false; the status request sets it to statusEnabled,
+// and any failed request sets it back to false.
 // Atomic because the HTTP worker thread writes it while the UI thread reads it.
 extern std::atomic<bool> timerApiEnabled;

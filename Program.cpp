@@ -16,7 +16,7 @@
 
 #include "ControllerManager.h"
 #include "HotkeyManager.h"
-#include "TimerApi/Http/HttpWorker.h"
+#include "TimerApi/TimerApiService.h"
 
 #pragma comment(lib, "Msimg32.lib")
 #pragma comment (lib, "d2d1")
@@ -31,7 +31,7 @@ using std::thread; using std::wstring;
 // Global variable assignment (defined in MainWindow.h)
 SettingsStruct appSettings;
 MainWindow* pGlobalTimerWindow = nullptr;
-std::atomic<bool> timerApiEnabled = true;
+std::atomic<bool> timerApiEnabled = false; // set to true by an enabled status response
 
 void exitApp()
 {
@@ -169,11 +169,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		controllerManager->setInputCallback(controllerInputCallback);
 		controllerManager->start();
 
-		// Timer API requests run on their own thread. If anything throws below,
-		// unwinding destroys the worker, which aborts the in-flight request and joins.
-		std::unique_ptr<HttpWorker> httpWorker(std::make_unique<HttpWorker>(TIMER_API_HOST));
-		httpWorker->start();
-		// TODO: enqueue status request
+		// Timer API requests run on their own thread; results are posted back to the window.
+		timerApi.start();
+		timerApi.getStatus(win.window());
 
 		// Handle messages
 		MSG msg = { };
@@ -185,12 +183,14 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		if (hKbHook) UnhookWindowsHookEx(hKbHook);
 		if (hMouseHook) UnhookWindowsHookEx(hMouseHook);
 
-		httpWorker->stop();
+		timerApi.stop();
 		controllerManager->stop();
 		return 0;
 	}
 	catch (const std::exception& e)
 	{
+		// timerApi is a global, so unwinding doesn't stop it. Abort any request and join now.
+		timerApi.stop();
 		exitApp();
 	}
 }

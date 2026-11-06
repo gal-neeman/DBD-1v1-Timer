@@ -13,7 +13,7 @@ HttpWorker::~HttpWorker()
 
 void HttpWorker::start()
 {
-	if (thread_.joinable() || !timerApiEnabled) return;
+	if (thread_.joinable()) return;
 
 	try
 	{
@@ -30,7 +30,7 @@ void HttpWorker::start()
 
 void HttpWorker::enqueue(Job job)
 {
-	if (!thread_.joinable() || !timerApiEnabled) return;
+	if (!thread_.joinable()) return;
 
 	{
 		std::lock_guard lock(mutex_);

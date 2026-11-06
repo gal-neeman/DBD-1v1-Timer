@@ -10,7 +10,7 @@
 #include <thread>
 
 // Runs HTTP jobs one at a time on a single long-lived thread, so requests never block the UI.
-// An HttpError thrown by a job sets timerApiEnabled to false; the app keeps running.
+// Any exception thrown by a job sets timerApiEnabled to false; the app keeps running.
 class HttpWorker
 {
 public:
@@ -41,8 +41,7 @@ public:
 	void start();
 
 	/**
-	 * @brief Queue a job to run on the worker thread. Ignored if the worker isn't running
-	 * or the timer API is disabled.
+	 * @brief Queue a job to run on the worker thread. Ignored if the worker isn't running.
 	 *
 	 * @param job Receives the client to send requests with. Runs on the worker thread.
 	 */

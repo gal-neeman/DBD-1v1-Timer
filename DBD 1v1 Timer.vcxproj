@@ -146,6 +146,9 @@
     <ClCompile Include="CommCtrlUtils.cpp" />
     <ClCompile Include="TimerApi\Http\HttpClient.cpp" />
     <ClCompile Include="TimerApi\Http\HttpWorker.cpp" />
+    <ClCompile Include="TimerApi\TimerApiService.cpp" />
+    <ClCompile Include="TimerApi\Mappers\JsonHelpers.cpp" />
+    <ClCompile Include="TimerApi\Mappers\DtoMappers.cpp" />
     <ClCompile Include="third_party\jsoncpp.cpp" />
     <ClCompile Include="HotkeyManager.cpp" />
     <ClCompile Include="MainWindow.cpp" />
@@ -163,6 +166,11 @@
     <ClInclude Include="CommCtrlUtils.h" />
     <ClInclude Include="TimerApi\Http\HttpClient.h" />
     <ClInclude Include="TimerApi\Http\HttpWorker.h" />
+    <ClInclude Include="TimerApi\TimerApiService.h" />
+    <ClInclude Include="TimerApi\Mappers\JsonHelpers.h" />
+    <ClInclude Include="TimerApi\Mappers\DtoMappers.h" />
+    <ClInclude Include="TimerApi\Dtos\StatusDto.h" />
+    <ClInclude Include="TimerApi\Dtos\PlayerDetailsDto.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="HotkeyManager.h" />
     <ClInclude Include="MainWindow.h" />

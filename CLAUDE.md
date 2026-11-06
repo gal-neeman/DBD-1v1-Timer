@@ -20,7 +20,12 @@ This is a C++20 overlay built on Win32, Direct2D/DirectWrite, and XInput. The Js
   - `ControllerManager`, which polls controller index 0 on its own thread. It maps XInput and PlayStation button bits to `CONTROLLER_*` codes (5000–5015) and delivers them with `SendMessage(CONTROLLER_INPUT)`.
 
   `HotkeyManager::execute` then `PostMessage`s `HOTKEY_HIT` to `MainWindow::handleHotKey`. While the settings window is open, controller input goes to it instead, for rebinding.
-- **Timer API HTTP:** `HttpWorker` (`TimerApi/Http/`) starts in `wWinMain` and runs queued jobs on one thread through a blocking WinHTTP `HttpClient`. Any `HttpError` sets the global `timerApiEnabled` to false; the app never exits over it. `stop()` closes the in-flight request handle to abort it, then joins, so quitting is instant. Never call `HttpClient` on the UI thread.
+- **Timer API:** call it only through the global `timerApi` (`TimerApi/TimerApiService.h`), which `wWinMain` starts and stops. The API host (Debug uses staging, Release uses production) and the `/api/v1` base path live in `TimerApiService.cpp`.
+  - Each method takes an `HWND replyTo` and returns immediately. The request runs on the `HttpWorker` thread through a blocking WinHTTP `HttpClient` (`TimerApi/Http/`). The result is posted as a `new` DTO in `lParam` (`TIMER_API_STATUS_RESPONSE`, `TIMER_API_PLAYER_RESPONSE`), and the receiving window must take ownership with `std::unique_ptr`.
+  - JSON is mapped to DTOs (`TimerApi/Dtos/`) by `TimerApi/Mappers/`. The `read*` helpers check every type, so a bad response throws `TimerApiError` instead of crashing.
+  - `timerApiEnabled` starts false. The service's status job sets it to `statusEnabled` on the worker thread before posting the result, so windows never set it. Only `getStatus` runs while it is false.
+  - Any failure sets `timerApiEnabled` to false, and nothing is posted: an `HttpError`, a non-2xx status (except a 404 for a player, which posts `lParam = 0`), or a body that doesn't map. The app never exits over it.
+  - `stop()` closes the in-flight request handle to abort it, then joins, so quitting is instant. Never call `HttpClient` on the UI thread.
 - **Timing is single-threaded:** `SetTimer` fires every 16 ms; each `WM_TIMER` calls `Timer::updateTime()` on both timers, then redraws.
 - **Windows** derive from the CRTP template `BaseWindow<T>` (`BaseWindow.h`). Each window type needs a unique `className()`. `RegisterClass` failures are ignored, so a duplicate name silently reuses the other class's window procedure.
 - **Hotkey capture in Settings:** `SettingsWindow::ctrlWndProc` subclasses every control. While a binding is active, it forwards mouse clicks to the settings window, which is how mouse buttons can be bound.
