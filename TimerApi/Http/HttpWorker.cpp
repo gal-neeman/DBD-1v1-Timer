@@ -68,10 +68,6 @@ void HttpWorker::run(const std::stop_token stopToken)
 		{
 			job(*client_);
 		}
-		catch (const HttpError&)
-		{
-			if (!stopToken.stop_requested()) timerApiEnabled = false;
-		}
 		catch (...)
 		{
 			// An exception escaping a thread calls std::terminate, so never let one through.
