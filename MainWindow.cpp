@@ -162,10 +162,11 @@ void MainWindow::constrainSizingRect(const WPARAM edge, RECT* rect) const
 
 void MainWindow::handleResize(const UINT width, const UINT height)
 {
-	float fWidth = static_cast<float>(width);
-	float fHeight = static_cast<float>(height);
-	winSize_[0] = fWidth;
-	winSize_[1] = fHeight;
+	winSize_[0] = static_cast<int>(width);
+	winSize_[1] = static_cast<int>(height);
+
+	const float fWidth = static_cast<float>(width);
+	const float fHeight = static_cast<float>(height);
 	scale_ = (std::min)(fWidth / SIZE_MAIN_WIDTH, fHeight / SIZE_MAIN_HEIGHT);
 
 	// WM_SIZE can arrive before the render target exists
