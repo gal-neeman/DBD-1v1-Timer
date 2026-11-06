@@ -141,7 +141,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		// Initiate common controls lib
 		InitCommonControls();
 
-		if (!win.create(L"Timer", 0, 0, 285, 40, WS_EX_TOPMOST | WS_EX_LAYERED, WS_POPUP)) {
+		if (!win.create(L"Timer", 0, 0, SIZE_MAIN_WIDTH, SIZE_MAIN_HEIGHT,WS_EX_TOPMOST | WS_EX_LAYERED, WS_POPUP)) {
 			return 0;
 		}
 

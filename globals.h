@@ -66,6 +66,8 @@ constexpr USHORT PS_CONTROLLER_X = 16384;
 constexpr USHORT PS_CONTROLLER_Y = 32768;
 
 // Global Sizes
+constexpr UINT16 SIZE_MAIN_WIDTH = 285;	// main window base size (scale 1.0)
+constexpr UINT16 SIZE_MAIN_HEIGHT = 40;
 constexpr UINT16 SIZE_SETTINGS_WIDTH = 400;
 constexpr UINT16 SIZE_SETTINGS_HEIGHT = 660;
 constexpr UINT16 SIZE_COLORPICKER_WIDTH = 270;

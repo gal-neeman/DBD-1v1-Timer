@@ -7,19 +7,6 @@
 #include "SettingsWindow.h"
 #include "StatisticsWindow.h"
 
-enum MousePos : uint8_t
-{
-	TopLeft,
-	Top,
-	TopRight,
-	Right,
-	BottomRight,
-	Bottom,
-	BottomLeft,
-	Left,
-	None
-};
-
 // The class responsible for the main window of the app
 class MainWindow : public BaseWindow<MainWindow>
 {
@@ -36,14 +23,15 @@ private:
 	Microsoft::WRL::ComPtr<IDWriteFactory> pWriteFactory_;
 	Microsoft::WRL::ComPtr<IDWriteTextFormat> pTextFormat_;
 
+	// Resize constants
+	static constexpr int RESIZE_GRIP = 8; // size in pixels of the square resize area in each corner
+	static constexpr float MIN_SCALE = 0.5f;
+	static constexpr float MAX_SCALE = 4.0f;
+
 	// Fields
 	Timer* activeTimer_ = &timer1;
-	BOOL mouseDown_ = false;
-	int clickMousePos_[2] = { 0, 0 };
-	bool isResizing_ = false;
-	int dir_ = -1;
-	int spaceOffset_ = 8;
-	
+	float scale_ = 1.0f; // current window size relative to SIZE_MAIN_WIDTH x SIZE_MAIN_HEIGHT
+
 	/**
 	@brief Creates the graphic resources for the main window.
 
@@ -59,53 +47,42 @@ private:
 	HRESULT createDeviceIndependentResources();
 
 	/**
-	@brief Set a new font size for the timers.
-
-	@return HRESULT representing the success of the operation.
-	*/
-	HRESULT changeFontSize(float fontSize);
-
-	/**
-	@return The largest font size that can fit the window in it's current proportions.
-	*/
-	float getLargestFontsizeFit() const;
-
-	/**
 	@brief Dispose of graphic resources.
 	*/
 	void discardGraphicsResources();
 
 	/**
-	@brief Adjust the render target's size after the window has been resized.
+	@brief Handles WM_NCHITTEST: the corners resize the window, everywhere else is client area.
 
-	@return HRESULT representing the success of the operation.
+	@param lParam The cursor position in screen coordinates, forwarded from WM_NCHITTEST.
+
+	@return The HT* code for the cursor position.
 	*/
-	HRESULT adjustRendertargetSize() const;
+	LRESULT hitTest(LPARAM lParam) const;
 
 	/**
-	@brief Get the MousePos enum value of the mouse's direction.
+	@brief Handles WM_SIZING: locks the window to the base aspect ratio and the scale limits,
+	keeping the corner opposite to the dragged one in place.
 
-	@param lParam Contains information on the mouse's state. Should be forwarded from a message handler.
+	@param edge The WMSZ_* edge being dragged, forwarded from WM_SIZING.
 
-	@param windowPos A RECT representing the main window's current proportions.
-
-	@return The MousePos enum value of the mouse's direction.
+	@param rect The proposed window rect, adjusted in place.
 	*/
-	MousePos getMouseDir(LPARAM lParam, RECT windowPos) const;
+	void constrainSizingRect(WPARAM edge, RECT* rect) const;
+
+	/**
+	@brief Handles WM_SIZE: updates the scale and resizes the render target.
+
+	@param width The new client width.
+
+	@param height The new client height.
+	*/
+	void handleResize(UINT width, UINT height);
 
 	/**
 	@brief The method responsible for drawing to the main window and invoking the timer to draw to it aswell.
 	*/
 	void handlePainting();
-
-	/**
-	@brief Handles mouse movements, including changing the cursor according to it's position in the window, 
-	and detecting clicks to apply resize logic.
-
-	@param lParam Contains information on the mouse's state and position. 
-	This argument should be forwarded to this function by the message handler.
-	*/
-	void handleMouseMovement(LPARAM lParam) const;
 
 	/**
 	@brief Get the COLORF value of a color from the palette.

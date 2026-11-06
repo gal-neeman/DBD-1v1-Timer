@@ -7,6 +7,8 @@
 #include "TimerApi/Dtos/StatusDto.h"
 #include "TimerApi/Dtos/PlayerDetailsDto.h"
 #include <memory>
+#include <algorithm>
+#include <cmath>
 
 using Microsoft::WRL::ComPtr;
 
@@ -104,106 +106,6 @@ HRESULT MainWindow::createDeviceIndependentResources()
 	return hr;
 }
 
-HRESULT MainWindow::changeFontSize(const float fontSize)
-{
-	HRESULT hr = pWriteFactory_->CreateTextFormat(
-		FONT_NAME_TIMER,
-		nullptr,
-		DWRITE_FONT_WEIGHT_BOLD,
-		DWRITE_FONT_STYLE_NORMAL,
-		DWRITE_FONT_STRETCH_EXTRA_EXPANDED,
-		fontSize,
-		L"",
-		&pTextFormat_
-	);
-
-	if (SUCCEEDED(hr))
-	{
-		// Center the text horizontally and vertically.
-		hr = pTextFormat_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
-
-		if (SUCCEEDED(hr))
-		{
-			hr = pTextFormat_->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_FAR);
-		}
-	}
-
-	return hr;
-}
-
-float MainWindow::getLargestFontsizeFit() const
-{
-	int low = 1;
-	int high = 1000;
-	int mid = 0;
-	int bestFit = 10;
-
-	constexpr wchar_t text[] = L"";
-
-	// Binary search for the best fit font size for the new window size
-	while (low <= high)
-	{
-		mid = (low + high) / 2;
-
-		ComPtr<IDWriteTextFormat> pTempTextFormat;
-		ComPtr<IDWriteTextLayout> pTempTextLayout;
-
-		HRESULT hr = pWriteFactory_->CreateTextFormat(
-			FONT_NAME_TIMER,
-			nullptr,
-			pTextFormat_->GetFontWeight(),
-			pTextFormat_->GetFontStyle(),
-			pTextFormat_->GetFontStretch(),
-			mid,
-			L"",
-			&pTempTextFormat
-		);
-
-		if (FAILED(hr)) {
-			exitApp();
-			return 0;
-		}
-
-		hr = pWriteFactory_->CreateTextLayout(
-			text,
-			(UINT32)wcslen(text),
-			pTempTextFormat.Get(),
-			winSize_[0],
-			winSize_[1],
-			&pTempTextLayout
-		);
-
-		if (FAILED(hr)) {
-			exitApp();
-			return 0;
-		}
-
-		// retrieve text size
-		DWRITE_TEXT_METRICS layoutMetrics;
-		hr = pTempTextLayout->GetMetrics(&layoutMetrics);
-
-		if (FAILED(hr)) {
-			exitApp();
-			return 0;
-		}
-
-		int winHeight = winSize_[1];
-
-		if (layoutMetrics.height > winHeight) {
-			high = mid - 1;
-		}
-		else if (layoutMetrics.height < winHeight) {
-			bestFit = mid;
-			low = mid + 1;
-		}
-		else {
-			return mid;
-		}
-	}
-
-	return bestFit;
-}
-
 void MainWindow::discardGraphicsResources()
 {
 	pFactory_.Reset();
@@ -215,55 +117,64 @@ void MainWindow::discardGraphicsResources()
 	pTextFormat_.Reset();
 }
 
-HRESULT MainWindow::adjustRendertargetSize() const
+LRESULT MainWindow::hitTest(const LPARAM lParam) const
 {
-	const D2D1_SIZE_U newSize = D2D1::SizeU(winSize_[0], winSize_[1]);
-	return pRenderTarget_->Resize(newSize);
+	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	ScreenToClient(hwnd_, &pt);
+
+	RECT rc;
+	GetClientRect(hwnd_, &rc);
+
+	const bool left = pt.x < RESIZE_GRIP;
+	const bool right = pt.x >= rc.right - RESIZE_GRIP;
+	const bool top = pt.y < RESIZE_GRIP;
+	const bool bottom = pt.y >= rc.bottom - RESIZE_GRIP;
+
+	// Only the corners resize, so the window scales diagonally
+	if (top && left) return HTTOPLEFT;
+	if (top && right) return HTTOPRIGHT;
+	if (bottom && left) return HTBOTTOMLEFT;
+	if (bottom && right) return HTBOTTOMRIGHT;
+
+	return HTCLIENT; // dragged from WM_LBUTTONDOWN
 }
 
-MousePos MainWindow::getMouseDir(const LPARAM lParam, const RECT windowPos) const {
-	const int currPos[2] = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-	const int width = windowPos.right - windowPos.left;
-	const int height = windowPos.bottom - windowPos.top;
+void MainWindow::constrainSizingRect(const WPARAM edge, RECT* rect) const
+{
+	const float scaleX = static_cast<float>(rect->right - rect->left) / SIZE_MAIN_WIDTH;
+	const float scaleY = static_cast<float>(rect->bottom - rect->top) / SIZE_MAIN_HEIGHT;
+	const float scale = std::clamp((std::max)(scaleX, scaleY), MIN_SCALE, MAX_SCALE);
 
-	if (currPos[0] <= spaceOffset_) // Left
-	{
-		if (currPos[1] <= spaceOffset_) { // Top Left
-			return MousePos::TopLeft;
-		}
-		else if (currPos[1] >= height - spaceOffset_) { // Bottom Left
-			SetCursor(LoadCursor(nullptr, IDC_SIZENESW));
-			return MousePos::BottomLeft;
-		}
-		else { // Left
-			SetCursor(LoadCursor(nullptr, IDC_SIZEWE));
-			return MousePos::Left;
-		}
-	}
-	else if (currPos[0] >= width - spaceOffset_) { // Right
-		if (currPos[1] <= spaceOffset_) { // Top Right
-			SetCursor(LoadCursor(nullptr, IDC_SIZENESW));
-			return MousePos::TopRight;
-		}
-		else if (currPos[1] >= height - spaceOffset_) { // Bottom Right
-			SetCursor(LoadCursor(nullptr, IDC_SIZENWSE));
-			return MousePos::BottomRight;
-		}
-		else { // Right
-			SetCursor(LoadCursor(nullptr, IDC_SIZEWE));
-			return MousePos::Right;
-		}
-	}
-	else if (currPos[1] >= height - spaceOffset_) { // Bottom
-		SetCursor(LoadCursor(nullptr, IDC_SIZENS));
-		return MousePos::Bottom;
-	}
-	else if (currPos[1] <= spaceOffset_) // Top
-	{
-		return MousePos::Top;
+	const LONG width = std::lround(SIZE_MAIN_WIDTH * scale);
+	const LONG height = std::lround(SIZE_MAIN_HEIGHT * scale);
+
+	// Keep the corner opposite to the dragged one in place
+	if (edge == WMSZ_LEFT || edge == WMSZ_TOPLEFT || edge == WMSZ_BOTTOMLEFT)
+		rect->left = rect->right - width;
+	else
+		rect->right = rect->left + width;
+
+	if (edge == WMSZ_TOP || edge == WMSZ_TOPLEFT || edge == WMSZ_TOPRIGHT)
+		rect->top = rect->bottom - height;
+	else
+		rect->bottom = rect->top + height;
+}
+
+void MainWindow::handleResize(const UINT width, const UINT height)
+{
+	winSize_[0] = static_cast<int>(width);
+	winSize_[1] = static_cast<int>(height);
+
+	const float fWidth = static_cast<float>(width);
+	const float fHeight = static_cast<float>(height);
+	scale_ = (std::min)(fWidth / SIZE_MAIN_WIDTH, fHeight / SIZE_MAIN_HEIGHT);
+
+	// WM_SIZE can arrive before the render target exists
+	if (pRenderTarget_ != nullptr) {
+		pRenderTarget_->Resize(D2D1::SizeU(width, height));
 	}
 
-	return MousePos::None;
+	requestRedraw();
 }
 
 void MainWindow::handlePainting()
@@ -280,8 +191,12 @@ void MainWindow::handlePainting()
 		pRenderTarget_->Clear(backgroundColor_);
 	}
 
-	const D2D1_RECT_F rect1 = D2D1::RectF(0, 0, winSize_[0] / 2, winSize_[1]);
-	const D2D1_RECT_F rect2 = D2D1::RectF(winSize_[0] / 2, 0, winSize_[0], winSize_[1]);
+	// Lay out in base units and scale everything to the window size
+	pRenderTarget_->SetTransform(D2D1::Matrix3x2F::Scale(scale_, scale_));
+
+	constexpr float halfWidth = SIZE_MAIN_WIDTH / 2.0f;
+	const D2D1_RECT_F rect1 = D2D1::RectF(0, 0, halfWidth, SIZE_MAIN_HEIGHT);
+	const D2D1_RECT_F rect2 = D2D1::RectF(halfWidth, 0, SIZE_MAIN_WIDTH, SIZE_MAIN_HEIGHT);
 
 	if (pWriteFactory_ != nullptr)
 	{
@@ -315,119 +230,6 @@ void MainWindow::handlePainting()
 	EndPaint(hwnd_, &ps);
 }
 
-void MainWindow::handleMouseMovement(const LPARAM lParam) const {
-	// variables
-	RECT windowPos;
-	GetWindowRect(hwnd_, &windowPos);
-	const int currPos[2] = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-
-	switch (getMouseDir(lParam, windowPos))
-	{
-	case MousePos::TopLeft:
-		SetCursor(LoadCursor(nullptr, IDC_SIZENWSE));
-		break;
-	case MousePos::Top:
-		SetCursor(LoadCursor(nullptr, IDC_SIZENS));
-		break;
-	case MousePos::TopRight:
-		SetCursor(LoadCursor(nullptr, IDC_SIZENESW));
-		break;
-	case MousePos::Right:
-		SetCursor(LoadCursor(nullptr, IDC_SIZEWE));
-		break;
-	case MousePos::BottomRight:
-		SetCursor(LoadCursor(nullptr, IDC_SIZENWSE));
-		break;
-	case MousePos::Bottom:
-		SetCursor(LoadCursor(nullptr, IDC_SIZENS));
-		break;
-	case MousePos::BottomLeft:
-		SetCursor(LoadCursor(nullptr, IDC_SIZENESW));
-		break;
-	case MousePos::Left:
-		SetCursor(LoadCursor(nullptr, IDC_SIZEWE));
-		break;
-	case MousePos::None:
-		SetCursor(LoadCursor(nullptr, IDC_ARROW));
-		break;
-	}
-
-	if (dir_ == -1) // if not hovering resize area:
-	{
-		if (mouseDown_ && !isResizing_) // dragging the window
-		{
-			// drag window
-			const int xToMove = windowPos.left + (currPos[0] - clickMousePos_[0]);
-			const int yToMove = windowPos.top + (currPos[1] - clickMousePos_[1]);
-
-			SetWindowPos(hwnd_, nullptr, xToMove, yToMove, winSize_[0], winSize_[1], 0);
-		}
-	}
-
-	if (mouseDown_ && isResizing_) // if isResizing_
-	{
-		int newWidth = winSize_[0]; int newHeight = winSize_[1];
-		int newX = windowPos.left; int newY = windowPos.top;
-
-		// isResizing_ logic
-		switch (dir_)
-		{
-		case 0: // horizontal
-			if (currPos[1] <= spaceOffset_) // resetting size from the Top side
-			{
-				newY = windowPos.top + (currPos[1] - clickMousePos_[1]);
-				newHeight = windowPos.bottom - windowPos.top - (currPos[1] - clickMousePos_[1]);
-			}
-			else // resetting size from the Bottom side
-			{
-				newHeight = winSize_[1] + currPos[1] - clickMousePos_[1];
-			}
-			break;
-		case 1: // vertical
-		{
-			if (currPos[0] <= spaceOffset_) // resetting size from the Left side
-			{
-				newX = windowPos.left + (currPos[0] - clickMousePos_[0]);
-				newWidth = (windowPos.right - windowPos.left) - (currPos[0] - clickMousePos_[0]);
-			}
-			else // resetting size from the Right side
-			{
-				newWidth = winSize_[0] + currPos[0] - clickMousePos_[0];
-			}
-		}
-		break;
-		case 2:
-			if (currPos[0] <= spaceOffset_) // resetting size from the Left side
-			{
-				newX = windowPos.left + (currPos[0] - clickMousePos_[0]);
-				newWidth = (windowPos.right - windowPos.left) - (currPos[0] - clickMousePos_[0]);
-			}
-			else // resetting size from the Right side
-			{
-				newWidth = winSize_[0] + currPos[0] - clickMousePos_[0];
-			}
-			if (currPos[1] <= spaceOffset_) // resetting size from the Top side
-			{
-				newY = windowPos.top + (currPos[1] - clickMousePos_[1]);
-				newHeight = (windowPos.bottom - windowPos.top) - (currPos[1] - clickMousePos_[1]);
-			}
-			else // resetting size from the Bottom side
-			{
-				newHeight = winSize_[1] + currPos[1] - clickMousePos_[1];
-			}
-			break;
-		default:
-			return;
-		}
-
-		if (dir_ != -1) { // window was resized
-			newWidth = max(25, min(700, newWidth));
-			newHeight = max(25, min(700, newHeight));
-			SetWindowPos(hwnd_, nullptr, newX, newY, newWidth, newHeight, 0);
-		}
-	}
-}
-
 D2D1_COLOR_F MainWindow::paletteToColorf(const int colorIndex) {
 	const COLORREF color = PALETTE[colorIndex];
 	return D2D1::ColorF(GetRValue(color) / 255.0f, GetGValue(color) / 255.0f, GetBValue(color) / 255.0f);
@@ -452,9 +254,6 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 {
 	try
 	{
-		RECT windowPos;
-		GetWindowRect(hwnd_, &windowPos);
-
 		switch (wMsg)
 		{
 		case WM_CREATE:
@@ -473,61 +272,18 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			exitApp();
 			return 0;
 		}
+		case WM_NCHITTEST:
+			return hitTest(lParam);
 		case WM_LBUTTONDOWN:
-		{
-			mouseDown_ = true;
-			clickMousePos_[0] = GET_X_LPARAM(lParam); clickMousePos_[1] = GET_Y_LPARAM(lParam);
-			isResizing_ = (GetCursor() != LoadCursor(NULL, IDC_ARROW));
-			MousePos mPos = getMouseDir(lParam, windowPos);
-
-			// set drag direction according to mouse position
-			if (mPos == MousePos::TopRight || mPos == MousePos::TopLeft ||
-				mPos == MousePos::BottomLeft || mPos == MousePos::BottomRight)
-			{
-				dir_ = 2;
-			}
-			else if (mPos == MousePos::Right || mPos == MousePos::Left)
-			{
-				dir_ = 1;
-			}
-			else if (mPos == MousePos::Top || mPos == MousePos::Bottom)
-			{
-				dir_ = 0;
-			}
-			else
-			{
-				dir_ = -1;
-			}
-
-			SetCapture(hwnd_);
+			// Start the native window move loop, as if the (nonexistent) caption was grabbed
+			SendMessage(hwnd_, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
 			return 0;
-		}
-		case WM_LBUTTONUP:
-		{
-			mouseDown_ = false;
-			isResizing_ = false;
-			dir_ = -1;
-			ReleaseCapture();
-
-			// update winSize_ var after isResizing_
-			if (windowPos.right - windowPos.left != winSize_[0]) {
-				winSize_[0] = windowPos.right - windowPos.left;
-				adjustRendertargetSize();
-				changeFontSize(getLargestFontsizeFit());
-			}
-			if (windowPos.bottom - windowPos.top != winSize_[1]) {
-				winSize_[1] = windowPos.bottom - windowPos.top;
-				adjustRendertargetSize();
-				changeFontSize(getLargestFontsizeFit());
-			}
-			requestRedraw();
+		case WM_SIZING:
+			constrainSizingRect(wParam, reinterpret_cast<RECT*>(lParam));
+			return TRUE;
+		case WM_SIZE:
+			handleResize(LOWORD(lParam), HIWORD(lParam));
 			return 0;
-		}
-		case WM_MOUSEMOVE:
-		{
-			handleMouseMovement(lParam);
-			return 0;
-		}
 		case WM_COMMAND:
 		{
 			switch (wParam)
@@ -587,9 +343,6 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			DestroyMenu(hMenu);
 			return 0;
 		}
-		case WM_SETCURSOR:
-			// disable default automatic cursor change (only manually set it)
-			return 0;
 		case WM_PAINT:
 		{
 			handlePainting();
