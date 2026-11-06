@@ -72,8 +72,8 @@ constexpr UINT16 SIZE_SETTINGS_WIDTH = 400;
 constexpr UINT16 SIZE_SETTINGS_HEIGHT = 660;
 constexpr UINT16 SIZE_COLORPICKER_WIDTH = 270;
 constexpr UINT16 SIZE_COLORPICKER_HEIGHT = 350;
-constexpr UINT16 SIZE_STATISTICS_WIDTH = 500;
-constexpr UINT16 SIZE_STATISTICS_HEIGHT = 500;
+constexpr UINT16 SIZE_STATISTICS_WIDTH = 600;
+constexpr UINT16 SIZE_STATISTICS_HEIGHT = 600;
 
 // Version
 #define APP_VERSION L"1.5.1"
@@ -93,9 +93,7 @@ constexpr byte IDB_CONTROLLER = 111;
 constexpr int REFRESH_BRUSHES(WM_APP + 1);
 constexpr int HOTKEY_HIT(WM_APP + 2);
 constexpr int CONTROLLER_INPUT(WM_APP + 3);
-// Timer API results. lParam is a heap-allocated DTO the receiving window must take ownership of.
-constexpr int TIMER_API_STATUS_RESPONSE(WM_APP + 4); // StatusDto*
-constexpr int TIMER_API_PLAYER_RESPONSE(WM_APP + 5); // PlayerDetailsDto*, or 0 if the player wasn't found
+// WM_APP + 4 to + 6 are the Timer API messages, in TimerApi/TimerApiMessages.h.
 
 // Configuration File Names
 #define SETTINGS_FILE_NAME "Settings.json"

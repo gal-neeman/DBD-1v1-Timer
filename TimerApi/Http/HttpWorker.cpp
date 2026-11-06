@@ -28,15 +28,16 @@ void HttpWorker::start()
 	thread_ = std::jthread([this](const std::stop_token stopToken) { run(stopToken); });
 }
 
-void HttpWorker::enqueue(Job job)
+bool HttpWorker::enqueue(Job job)
 {
-	if (!thread_.joinable()) return;
+	if (!thread_.joinable()) return false;
 
 	{
 		std::lock_guard lock(mutex_);
 		jobs_.push_back(std::move(job));
 	}
 	condition_.notify_one();
+	return true;
 }
 
 void HttpWorker::stop()

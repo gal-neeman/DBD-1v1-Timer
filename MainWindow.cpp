@@ -6,6 +6,7 @@
 #include "Program.h"
 #include "TimerApi/Dtos/StatusDto.h"
 #include "TimerApi/Dtos/PlayerDetailsDto.h"
+#include "TimerApi/TimerApiMessages.h"
 #include <memory>
 #include <algorithm>
 #include <cmath>
@@ -372,6 +373,8 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			const std::unique_ptr<PlayerDetailsDto> playerDetails(reinterpret_cast<PlayerDetailsDto*>(lParam));
 			break;
 		}
+		case TIMER_API_ERROR:
+			break;
 		case WM_TIMER:
 		{
 			if (timer1.isRunning() || timer2.isRunning()) {
