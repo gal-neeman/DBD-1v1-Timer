@@ -1,4 +1,5 @@
 #include <fstream>
+#include <algorithm>
 #include "SettingsUtils.h"
 
 #include "HotkeyManager.h"
@@ -30,6 +31,13 @@ Json::Value settingsToJson(const SettingsStruct& settings)
 	settingsJson["colors"]["selected timer"] = settings.colors.selectedTimerColor;
 	settingsJson["colors"]["last seconds"] = settings.colors.lastSecondsColor;
 	settingsJson["colors"]["background"] = settings.colors.backgroundColor;
+
+	// The ID is digits only, so narrowing it to a plain string is lossless
+	string discordId;
+	for (const wchar_t c : settings.league.discordId) discordId += static_cast<char>(c);
+	settingsJson["league"]["discordId"] = discordId;
+	settingsJson["league"]["statsOverlayEnabled"] = settings.league.statsOverlayEnabled;
+	settingsJson["league"]["showNamesAndScore"] = settings.league.showNamesAndScore;
 
 	return settingsJson;
 }
@@ -93,6 +101,27 @@ void settingsFromJson(const Json::Value& json, SettingsStruct& settings)
 			settings.colors.backgroundColor = 20;
 		}
 	}
+
+	// league: an empty ID is valid, a malformed one leaves the whole group at its defaults
+	const Json::Value& league = json["league"];
+	if (league.isObject() && league["discordId"].isString() &&
+		league["statsOverlayEnabled"].isBool() && league["showNamesAndScore"].isBool())
+	{
+		const string id = league["discordId"].asString();
+		const wstring wideId(id.begin(), id.end());
+		if (wideId.empty() || isValidDiscordId(wideId))
+		{
+			settings.league.discordId = wideId;
+			settings.league.statsOverlayEnabled = !wideId.empty() && league["statsOverlayEnabled"].asBool();
+			settings.league.showNamesAndScore = league["showNamesAndScore"].asBool();
+		}
+	}
+}
+
+bool isValidDiscordId(const wstring& id)
+{
+	return id.size() >= 17 && id.size() <= 20 &&
+		all_of(id.begin(), id.end(), [](const wchar_t c) { return c >= L'0' && c <= L'9'; });
 }
 
 void loadSettingsFromFile(SettingsStruct& settings)

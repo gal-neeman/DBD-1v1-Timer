@@ -107,6 +107,13 @@ struct ColorsStruct // With default values
 	int backgroundColor = 20;
 };
 
+struct LeagueSettingsStruct // With default values
+{
+	std::wstring discordId; // empty, or a valid ID (see isValidDiscordId)
+	bool statsOverlayEnabled = false; // always false while discordId is empty
+	bool showNamesAndScore = false;
+};
+
 struct SettingsStruct // With default values
 {
 	int startKey = 70;
@@ -122,6 +129,7 @@ struct SettingsStruct // With default values
 	bool optionClickThrough = false;
 	int optionLastSecondsTime = 20;
 	ColorsStruct colors;
+	LeagueSettingsStruct league;
 };
 
 // Variables

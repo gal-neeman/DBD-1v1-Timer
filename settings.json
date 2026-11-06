@@ -10,6 +10,12 @@
    "conStartNoReset" : 5011,
    "conTimer1" : 5003,
    "conTimer2" : 5002,
+   "league" : 
+   {
+      "discordId" : "",
+      "showNamesAndScore" : false,
+      "statsOverlayEnabled" : false
+   },
    "optionLastSecondsTime" : 20,
    "optionStartOnChange" : false,
    "optionTransparent" : false,

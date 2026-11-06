@@ -36,3 +36,12 @@ Json::Value settingsToJson(const SettingsStruct& settings);
 @param settings The settings struct to fill (its existing values act as fallback).
 */
 void settingsFromJson(const Json::Value& json, SettingsStruct& settings);
+
+/**
+@brief Checks whether a string is a Discord user ID: 17 to 20 digits.
+
+@param id The string to check.
+
+@return true if the ID is valid.
+*/
+bool isValidDiscordId(const std::wstring& id);
