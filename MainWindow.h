@@ -75,7 +75,7 @@ private:
 
 	// SetTimer IDs
 	static constexpr UINT_PTR TIMER_ID_FRAME = 0;		  // redraws the running timers every 16 ms
-	static constexpr UINT_PTR TIMER_ID_PLAYER_POLL = 1;  // fetches the active player every league_.slowPollSec
+	static constexpr UINT_PTR TIMER_ID_PLAYER_POLL = 1;  // fetches the active player every slowPollSec, or fastPollSec during a burst
 	static constexpr UINT_PTR TIMER_ID_STATUS_RETRY = 2; // re-checks the status while the API is off
 	static constexpr UINT STATUS_RETRY_MS = 3 * 60 * 1000;
 
@@ -282,6 +282,17 @@ private:
 	@brief Starts or stops polling: polls while the API is enabled, the overlay is enabled and a player is active.
 	*/
 	void updatePlayerPolling();
+
+	/**
+	@brief Starts or restarts a burst of fast polls, because a stopped timer2 means a set ended and the match
+	may have too. Polls every fastPollSec for fastPollCapSec. Does nothing unless polling is on and fastPollSec > 0.
+	*/
+	void startFastPolling();
+
+	/**
+	@brief Ends a fast poll burst: re-arms the poll timer at the slow interval.
+	*/
+	void endFastPolling();
 
 public:
 	// Public fields

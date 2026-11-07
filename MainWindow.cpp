@@ -623,6 +623,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 				break;
 			case TIMER_ID_PLAYER_POLL:
 				timerApi.getPlayerDetails(league_.activePlayerId, hwnd_);
+				if (league_.fastPollsLeft > 0 && --league_.fastPollsLeft == 0) endFastPolling();
 				break;
 			case TIMER_ID_STATUS_RETRY: // repeats until a status response enables the API
 				timerApi.getStatus(hwnd_);
@@ -687,7 +688,10 @@ void MainWindow::handleHotKey(const int code)
 		if (activeTimer_ == nullptr) return;
 
 		if (activeTimer_->getTimerState() == TimerState::Running)
+		{
 			activeTimer_->stopTimer();
+			if (activeTimer_ == &timer2) startFastPolling(); // the set ended, maybe the match too
+		}
 		else
 			activeTimer_->startTimer();
 
@@ -719,6 +723,7 @@ void MainWindow::handleHotKey(const int code)
 		}
 		else if (activeTimer_->getTimerState() == TimerState::Running) {
 			activeTimer_->stopTimer();
+			if (activeTimer_ == &timer2) startFastPolling(); // the set ended, maybe the match too
 		}
 		else {
 			activeTimer_->resetTimer();
@@ -761,6 +766,8 @@ void MainWindow::requestRedraw() const {
 void MainWindow::handleStatusResponse(const StatusDto& status)
 {
 	league_.slowPollSec = status.slowPollSec;
+	league_.fastPollSec = status.fastPollSec;
+	league_.fastPollCapSec = status.fastPollCapSec;
 
 	if (status.statusEnabled)
 	{
@@ -792,6 +799,8 @@ void MainWindow::handlePlayerResponse(const PlayerDetailsDto& details)
 	league_.overlayStats = std::move(stats);
 	statisticsWindow.setModel(toStatsWindowModel(details));
 	refreshOverlay();
+
+	if (league_.fastPollsLeft > 0 && !details.currentMatch.isInMatch) endFastPolling(); // the match is over
 }
 
 void MainWindow::handleApiError(const TimerApiRequest request, const DWORD code)
@@ -803,8 +812,7 @@ void MainWindow::handleApiError(const TimerApiRequest request, const DWORD code)
 	// and the overlay keeps its last stats either way.
 	if (request == TimerApiRequest::Player && isApiOutage(request, code))
 	{
-		KillTimer(hwnd_, TIMER_ID_PLAYER_POLL);
-		league_.playerPolling = false;
+		updatePlayerPolling(); // the service already set timerApiEnabled to false, so this stops polling
 		SetTimer(hwnd_, TIMER_ID_STATUS_RETRY, STATUS_RETRY_MS, nullptr);
 	}
 
@@ -866,5 +874,20 @@ void MainWindow::updatePlayerPolling()
 	else
 	{
 		KillTimer(hwnd_, TIMER_ID_PLAYER_POLL);
+		league_.fastPollsLeft = 0;
 	}
+}
+
+void MainWindow::startFastPolling()
+{
+	if (!league_.playerPolling || league_.fastPollSec <= 0) return;
+
+	league_.fastPollsLeft = (std::max)(1, league_.fastPollCapSec / league_.fastPollSec);
+	SetTimer(hwnd_, TIMER_ID_PLAYER_POLL, static_cast<UINT>(league_.fastPollSec) * 1000, nullptr); // replaces the slow timer
+}
+
+void MainWindow::endFastPolling()
+{
+	league_.fastPollsLeft = 0;
+	SetTimer(hwnd_, TIMER_ID_PLAYER_POLL, static_cast<UINT>(league_.slowPollSec) * 1000, nullptr);
 }

@@ -19,5 +19,8 @@ struct LeagueState
 	std::optional<OverlayStats> overlayStats;
 	OverlayLayout layout = OverlayLayout::TimerOnly;
 	int slowPollSec = 0;		  // from the last status response
-	bool playerPolling = false;	  // whether the poll timer is running
+	int fastPollSec = 0;		  // from the last status response: the interval of a fast poll burst
+	int fastPollCapSec = 0;		  // from the last status response: how long a fast poll burst lasts
+	int fastPollsLeft = 0;		  // fast polls left in the current burst; 0 when polling slowly
+	bool playerPolling = false;	  // whether the poll timer is running, at either rate
 };
