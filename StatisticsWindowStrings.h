@@ -35,6 +35,10 @@ namespace StatsText
 	inline constexpr wchar_t LOSSES_LABEL[] = L"Losses: ";
 	inline constexpr wchar_t WINRATE_LABEL[] = L"Winrate: ";
 	inline constexpr wchar_t STREAK_LABEL[] = L"Streak: ";
+	inline constexpr wchar_t STATUS_LABEL[] = L"Status: ";
+	inline constexpr wchar_t IN_MATCH_STATUS[] = L"In match";
+	inline constexpr wchar_t IDLE_STATUS[] = L"Idle";
+	inline constexpr wchar_t RECENT_LABEL[] = L"Last "; // then the match count and ": wins-losses"
 
 	// Last matches table
 	inline constexpr wchar_t MATCHES_TITLE[] = L"Last Matches";

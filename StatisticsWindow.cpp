@@ -347,22 +347,35 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 	y += LINE_HEIGHT + 6;
 
 	SelectObject(hdc, controlsFont_);
-	const std::wstring cells[3][2] = {
-		{ StatsText::RANK_LABEL + rankText(model.rank), StatsText::POINTS_LABEL + model.points },
-		{ StatsText::TOTAL_GAMES_LABEL + std::to_wstring(model.totalGames), StatsText::WINS_LABEL + std::to_wstring(model.wins) },
-		{ StatsText::WINRATE_LABEL + std::to_wstring(model.winrate) + L"%", StatsText::STREAK_LABEL + std::to_wstring(model.streak) },
+	// Empty when there are no matches; "No matches played yet" below says so
+	const std::wstring recent = model.matches.empty() ? L"" : StatsText::RECENT_LABEL + std::to_wstring(model.matches.size())
+		+ L": " + std::to_wstring(model.recentWins) + L"-" + std::to_wstring(model.recentLosses);
+	const std::wstring cells[3][3] = {
+		{
+			StatsText::RANK_LABEL + rankText(model.rank),
+			StatsText::POINTS_LABEL + model.points,
+			std::wstring(StatsText::STATUS_LABEL) + (model.inMatch ? StatsText::IN_MATCH_STATUS : StatsText::IDLE_STATUS),
+		},
+		{
+			StatsText::TOTAL_GAMES_LABEL + std::to_wstring(model.totalGames),
+			StatsText::WINS_LABEL + std::to_wstring(model.wins),
+			StatsText::LOSSES_LABEL + std::to_wstring(model.losses),
+		},
+		{
+			StatsText::WINRATE_LABEL + std::to_wstring(model.winrate) + L"%",
+			StatsText::STREAK_LABEL + std::to_wstring(model.streak),
+			recent,
+		},
 	};
 	const int columnWidth = (right - left) / 3;
 	for (int column = 0; column < 3; ++column)
 	{
 		const int x = left + column * columnWidth;
-		for (int row = 0; row < 2; ++row)
+		for (int row = 0; row < 3; ++row)
 		{
 			drawText(hdc, cells[column][row], { x, y + row * LINE_HEIGHT, x + columnWidth, y + (row + 1) * LINE_HEIGHT }, textColor());
 		}
 	}
-	const int lossesX = left + columnWidth;
-	drawText(hdc, StatsText::LOSSES_LABEL + std::to_wstring(model.losses), { lossesX, y + 2 * LINE_HEIGHT, lossesX + columnWidth, y + 3 * LINE_HEIGHT }, textColor());
 	y += 3 * LINE_HEIGHT + 6;
 
 	// Last matches

@@ -26,5 +26,8 @@ struct StatsWindowModel
 	int losses = 0;
 	int winrate = 0; // percent
 	int streak = 0;
+	bool inMatch = false;
 	std::vector<MatchRow> matches; // up to 10, newest first
+	int recentWins = 0;   // over matches
+	int recentLosses = 0; // over matches
 };

@@ -90,6 +90,7 @@ StatsWindowModel toStatsWindowModel(const PlayerDetailsDto& dto)
 	model.losses = dto.totalGamesLost;
 	model.winrate = dto.seasonWinrate;
 	model.streak = dto.currentStreak;
+	model.inMatch = dto.currentMatch.isInMatch;
 
 	const size_t count = (std::min)(dto.lastMatches.size(), WINDOW_MATCHES_COUNT);
 	for (size_t i = 0; i < count; ++i)
@@ -104,6 +105,7 @@ StatsWindowModel toStatsWindowModel(const PlayerDetailsDto& dto)
 		row.pointsGained = formatFixedWidth(match.pointsGained, POINTS_GAINED_WIDTH, true);
 		row.pointsPositive = match.pointsGained >= 0;
 		model.matches.push_back(std::move(row));
+		(match.isWin ? model.recentWins : model.recentLosses)++;
 	}
 	return model;
 }
