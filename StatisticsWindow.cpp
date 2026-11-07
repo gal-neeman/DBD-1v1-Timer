@@ -66,6 +66,14 @@ namespace
 		return name + opponentSuffix(rank);
 	}
 
+	// "Last 10: 6-4" over the shown matches; empty when there are none, since "No matches played yet" says so
+	std::wstring recentText(const StatsWindowModel& model)
+	{
+		if (model.matches.empty()) return L"";
+		return StatsText::RECENT_LABEL + std::to_wstring(model.matches.size()) + L": "
+			+ std::to_wstring(model.recentWins) + L"-" + std::to_wstring(model.recentLosses);
+	}
+
 	// Width in pixels of the text in the DC's current font
 	int textWidth(const HDC hdc, const std::wstring& text)
 	{
@@ -341,19 +349,25 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 	const StatsWindowModel& model = *model_;
 	const int left = MARGIN;
 	const int right = contentRect_.right - MARGIN;
-	int y = contentRect_.top;
 
-	// Player stats
+	int y = paintSectionTitle(hdc, model.playerName + StatsText::STATS_TITLE_SUFFIX, left, right, contentRect_.top);
+	y = paintStatsGrid(hdc, model, left, right, y);
+	y = paintSectionTitle(hdc, StatsText::MATCHES_TITLE, left, right, y);
+	paintMatches(hdc, model.matches, left, right, y);
+}
+
+int StatisticsWindow::paintSectionTitle(const HDC hdc, const std::wstring& title, const int left, const int right, int y) const
+{
 	drawSeparator(hdc, left, right, y);
 	y += SECTION_GAP;
 	SelectObject(hdc, titleFont_);
-	drawText(hdc, model.playerName + StatsText::STATS_TITLE_SUFFIX, { left, y, right, y + LINE_HEIGHT }, textColor(), DT_CENTER | DT_END_ELLIPSIS);
-	y += LINE_HEIGHT + 6;
-
+	drawText(hdc, title, { left, y, right, y + LINE_HEIGHT }, textColor(), DT_CENTER | DT_END_ELLIPSIS);
 	SelectObject(hdc, controlsFont_);
-	// Empty when there are no matches; "No matches played yet" below says so
-	const std::wstring recent = model.matches.empty() ? L"" : StatsText::RECENT_LABEL + std::to_wstring(model.matches.size())
-		+ L": " + std::to_wstring(model.recentWins) + L"-" + std::to_wstring(model.recentLosses);
+	return y + LINE_HEIGHT + 4;
+}
+
+int StatisticsWindow::paintStatsGrid(const HDC hdc, const StatsWindowModel& model, const int left, const int right, const int y) const
+{
 	const std::wstring cells[3][3] = {
 		{
 			StatsText::RANK_LABEL + rankText(model.rank),
@@ -368,7 +382,7 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 		{
 			StatsText::WINRATE_LABEL + std::to_wstring(model.winrate) + L"%",
 			StatsText::STREAK_LABEL + std::to_wstring(model.streak),
-			recent,
+			recentText(model),
 		},
 	};
 	// Column 1 starts at the left edge and column 3 ends at the right, like the table below
@@ -381,37 +395,28 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 			drawText(hdc, cells[column][row], { x, y + row * LINE_HEIGHT, x + STAT_COLUMN_WIDTH, y + (row + 1) * LINE_HEIGHT }, textColor());
 		}
 	}
-	y += 3 * LINE_HEIGHT + 6;
+	return y + 3 * LINE_HEIGHT + 6;
+}
 
-	// Last matches
-	drawSeparator(hdc, left, right, y);
-	y += SECTION_GAP;
-	SelectObject(hdc, titleFont_);
-	drawText(hdc, StatsText::MATCHES_TITLE, { left, y, right, y + LINE_HEIGHT }, textColor(), DT_CENTER);
-	y += LINE_HEIGHT + 4;
-	SelectObject(hdc, controlsFont_);
+RECT StatisticsWindow::MatchColumns::cell(const MatchColumn column, const int y) const
+{
+	return { x[column], y, x[column] + width[column], y + MATCH_ROW_HEIGHT };
+}
 
-	const auto rowRect = [&](const int x1, const int x2) { return RECT{ x1, y, x2, y + MATCH_ROW_HEIGHT }; };
-
-	if (model.matches.empty())
-	{
-		drawText(hdc, StatsText::NO_MATCHES_MESSAGE, rowRect(left, right), textColor());
-		return;
-	}
-
+StatisticsWindow::MatchColumns StatisticsWindow::layoutMatchColumns(const HDC hdc, const std::vector<MatchRow>& matches, const int left, const int right) const
+{
 	// Each column is as wide as its widest header or cell, each measured in the font it's drawn in
-	enum Column { Date, Result, Score, Opponent, Points, ColumnCount };
+	MatchColumns columns;
+	auto& widths = columns.width;
 	SelectObject(hdc, headerFont_);
-	int widths[ColumnCount] = {
-		textWidth(hdc, StatsText::DATE_HEADER),
-		textWidth(hdc, StatsText::RESULT_HEADER),
-		textWidth(hdc, StatsText::SCORE_HEADER),
-		textWidth(hdc, StatsText::OPPONENT_HEADER),
-		textWidth(hdc, StatsText::POINTS_GAINED_HEADER),
-	};
+	widths[Date] = textWidth(hdc, StatsText::DATE_HEADER);
+	widths[Result] = textWidth(hdc, StatsText::RESULT_HEADER);
+	widths[Score] = textWidth(hdc, StatsText::SCORE_HEADER);
+	widths[Opponent] = textWidth(hdc, StatsText::OPPONENT_HEADER);
+	widths[Points] = textWidth(hdc, StatsText::POINTS_GAINED_HEADER);
 	SelectObject(hdc, controlsFont_);
 	widths[Result] = (std::max)({ widths[Result], textWidth(hdc, StatsText::WIN_RESULT), textWidth(hdc, StatsText::LOSS_RESULT) });
-	for (const MatchRow& match : model.matches)
+	for (const MatchRow& match : matches)
 	{
 		widths[Date] = (std::max)(widths[Date], textWidth(hdc, match.date));
 		widths[Score] = (std::max)(widths[Score], textWidth(hdc, match.score));
@@ -420,7 +425,7 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 	}
 
 	// The spare width becomes equal gaps. If there's too little, only the opponent column shrinks
-	constexpr int gapCount = ColumnCount - 1;
+	constexpr int gapCount = COLUMN_COUNT - 1;
 	const int available = right - left;
 	int content = 0;
 	for (const int width : widths) content += width;
@@ -432,31 +437,40 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 	}
 
 	// Left edges; the last column ends at the right edge, which absorbs the rounding
-	int xs[ColumnCount] = {};
-	xs[Date] = left;
-	for (int column = 1; column < Points; ++column) xs[column] = xs[column - 1] + widths[column - 1] + gap;
-	xs[Points] = right - widths[Points];
-	const auto cell = [&](const Column column) { return rowRect(xs[column], xs[column] + widths[column]); };
+	columns.x[Date] = left;
+	for (int column = 1; column < Points; ++column) columns.x[column] = columns.x[column - 1] + widths[column - 1] + gap;
+	columns.x[Points] = right - widths[Points];
+	return columns;
+}
+
+void StatisticsWindow::paintMatches(const HDC hdc, const std::vector<MatchRow>& matches, const int left, const int right, int y) const
+{
+	if (matches.empty())
+	{
+		drawText(hdc, StatsText::NO_MATCHES_MESSAGE, { left, y, right, y + MATCH_ROW_HEIGHT }, textColor());
+		return;
+	}
+
+	const MatchColumns columns = layoutMatchColumns(hdc, matches, left, right);
 
 	// Everything is left-aligned except the score, which is centered
 	SelectObject(hdc, headerFont_);
-	drawText(hdc, StatsText::DATE_HEADER, cell(Date), textColor());
-	drawText(hdc, StatsText::RESULT_HEADER, cell(Result), textColor());
-	drawText(hdc, StatsText::SCORE_HEADER, cell(Score), textColor(), DT_CENTER);
-	drawText(hdc, StatsText::OPPONENT_HEADER, cell(Opponent), textColor());
-	drawText(hdc, StatsText::POINTS_GAINED_HEADER, cell(Points), textColor());
+	drawText(hdc, StatsText::DATE_HEADER, columns.cell(Date, y), textColor());
+	drawText(hdc, StatsText::RESULT_HEADER, columns.cell(Result, y), textColor());
+	drawText(hdc, StatsText::SCORE_HEADER, columns.cell(Score, y), textColor(), DT_CENTER);
+	drawText(hdc, StatsText::OPPONENT_HEADER, columns.cell(Opponent, y), textColor());
+	drawText(hdc, StatsText::POINTS_GAINED_HEADER, columns.cell(Points, y), textColor());
 	SelectObject(hdc, controlsFont_);
-	y += MATCH_ROW_HEIGHT;
 
-	for (const MatchRow& match : model.matches)
+	for (const MatchRow& match : matches)
 	{
-		drawText(hdc, match.date, cell(Date), textColor());
-		drawText(hdc, match.isWin ? StatsText::WIN_RESULT : StatsText::LOSS_RESULT, cell(Result), match.isWin ? COLOR_GAIN : COLOR_LOSS);
-		drawText(hdc, match.score, cell(Score), textColor(), DT_CENTER);
-		SetTextColor(hdc, textColor());
-		drawOpponent(hdc, cell(Opponent), match.opponentName, match.opponentRank);
-		drawText(hdc, match.pointsGained, cell(Points), match.pointsPositive ? COLOR_GAIN : COLOR_LOSS);
 		y += MATCH_ROW_HEIGHT;
+		drawText(hdc, match.date, columns.cell(Date, y), textColor());
+		drawText(hdc, match.isWin ? StatsText::WIN_RESULT : StatsText::LOSS_RESULT, columns.cell(Result, y), match.isWin ? COLOR_GAIN : COLOR_LOSS);
+		drawText(hdc, match.score, columns.cell(Score, y), textColor(), DT_CENTER);
+		SetTextColor(hdc, textColor());
+		drawOpponent(hdc, columns.cell(Opponent, y), match.opponentName, match.opponentRank);
+		drawText(hdc, match.pointsGained, columns.cell(Points, y), match.pointsPositive ? COLOR_GAIN : COLOR_LOSS);
 	}
 }
 

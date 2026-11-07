@@ -5,6 +5,7 @@
 #include "globals.h"
 #include <optional>
 #include <string>
+#include <vector>
 
 // What the statistics window shows below its settings.
 enum class StatsState
@@ -24,6 +25,19 @@ enum class StatsState
 class StatisticsWindow : public BaseWindow<StatisticsWindow>
 {
 private:
+	// The "Last Matches" table's columns, left to right
+	enum MatchColumn { Date, Result, Score, Opponent, Points, COLUMN_COUNT };
+
+	// Where each "Last Matches" column sits, from layoutMatchColumns
+	struct MatchColumns
+	{
+		int x[COLUMN_COUNT] = {};
+		int width[COLUMN_COUNT] = {};
+
+		// The column's cell in the row starting at y
+		RECT cell(MatchColumn column, int y) const;
+	};
+
 	// Survive the HWND
 	StatsState state_ = StatsState::Disabled;
 	std::optional<StatsWindowModel> model_;
@@ -98,6 +112,71 @@ private:
 	@param hdc The device context to draw on.
 	*/
 	void paintStats(HDC hdc) const;
+
+	/**
+	@brief Draws a separator and a centered section title under it.
+
+	@param hdc The device context to draw on.
+
+	@param title The title.
+
+	@param left The left edge of the section.
+
+	@param right The right edge of the section.
+
+	@param y The top of the section.
+
+	@return The y below the title.
+	*/
+	int paintSectionTitle(HDC hdc, const std::wstring& title, int left, int right, int y) const;
+
+	/**
+	@brief Draws the 3x3 grid of the player's stats.
+
+	@param hdc The device context to draw on.
+
+	@param model The player's stats.
+
+	@param left The left edge of the grid.
+
+	@param right The right edge of the grid.
+
+	@param y The top of the grid.
+
+	@return The y below the grid.
+	*/
+	int paintStatsGrid(HDC hdc, const StatsWindowModel& model, int left, int right, int y) const;
+
+	/**
+	@brief Sizes each "Last Matches" column to its widest header or cell and splits the spare width
+	into equal gaps. If there's too little, only the opponent column shrinks.
+
+	@param hdc The device context to measure with.
+
+	@param matches The rows to fit.
+
+	@param left The left edge of the table.
+
+	@param right The right edge of the table.
+
+	@return The columns' positions and widths.
+	*/
+	MatchColumns layoutMatchColumns(HDC hdc, const std::vector<MatchRow>& matches, int left, int right) const;
+
+	/**
+	@brief Draws the "Last Matches" table, or a message when there are no matches.
+
+	@param hdc The device context to draw on.
+
+	@param matches The rows to draw.
+
+	@param left The left edge of the table.
+
+	@param right The right edge of the table.
+
+	@param y The top of the table.
+	*/
+	void paintMatches(HDC hdc, const std::vector<MatchRow>& matches, int left, int right, int y) const;
 
 	/**
 	@brief Draws "name (#rank)" in the rect, cutting the name with an ellipsis so the rank always fits.
