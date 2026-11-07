@@ -36,6 +36,7 @@ private:
 	bool applied_ = false; // whether Apply ran since the window opened
 	HFONT controlsFont_ = nullptr;
 	HFONT titleFont_ = nullptr;
+	HFONT headerFont_ = nullptr; // the Last Matches column headers
 	HBITMAP logo_ = nullptr;
 	RECT contentRect_ = {}; // the painted area below the settings, redrawn on every state change
 	RECT noticeRect_ = {};  // where notice_ is drawn, between the checkboxes and contentRect_

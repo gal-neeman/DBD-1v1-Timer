@@ -137,6 +137,7 @@ void StatisticsWindow::initializeWindow()
 	applied_ = false;
 	controlsFont_ = createControlsFont();
 	titleFont_ = createTitleFont();
+	headerFont_ = createSubtitleFont();
 	logo_ = loadBitmapResource(IDB_LEAGUE_LOGO);
 
 	RECT client;
@@ -380,15 +381,18 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 		return;
 	}
 
-	// Each column is as wide as its widest header or cell
+	// Each column is as wide as its widest header or cell, each measured in the font it's drawn in
 	enum Column { Date, Result, Score, Opponent, Points, ColumnCount };
+	SelectObject(hdc, headerFont_);
 	int widths[ColumnCount] = {
 		textWidth(hdc, StatsText::DATE_HEADER),
-		(std::max)({ textWidth(hdc, StatsText::RESULT_HEADER), textWidth(hdc, StatsText::WIN_RESULT), textWidth(hdc, StatsText::LOSS_RESULT) }),
+		textWidth(hdc, StatsText::RESULT_HEADER),
 		textWidth(hdc, StatsText::SCORE_HEADER),
 		textWidth(hdc, StatsText::OPPONENT_HEADER),
 		textWidth(hdc, StatsText::POINTS_GAINED_HEADER),
 	};
+	SelectObject(hdc, controlsFont_);
+	widths[Result] = (std::max)({ widths[Result], textWidth(hdc, StatsText::WIN_RESULT), textWidth(hdc, StatsText::LOSS_RESULT) });
 	for (const MatchRow& match : model.matches)
 	{
 		widths[Date] = (std::max)(widths[Date], textWidth(hdc, match.date));
@@ -417,11 +421,13 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 	const auto cell = [&](const Column column) { return rowRect(xs[column], xs[column] + widths[column]); };
 
 	// Everything is left-aligned except the score, which is centered
+	SelectObject(hdc, headerFont_);
 	drawText(hdc, StatsText::DATE_HEADER, cell(Date), textColor());
 	drawText(hdc, StatsText::RESULT_HEADER, cell(Result), textColor());
 	drawText(hdc, StatsText::SCORE_HEADER, cell(Score), textColor(), DT_CENTER);
 	drawText(hdc, StatsText::OPPONENT_HEADER, cell(Opponent), textColor());
 	drawText(hdc, StatsText::POINTS_GAINED_HEADER, cell(Points), textColor());
+	SelectObject(hdc, controlsFont_);
 	y += MATCH_ROW_HEIGHT;
 
 	for (const MatchRow& match : model.matches)
@@ -495,8 +501,10 @@ LRESULT StatisticsWindow::handleMessage(const UINT wMsg, const WPARAM wParam, co
 		case WM_NCDESTROY: // sent after the child controls are destroyed
 			DeleteObject(controlsFont_);
 			DeleteObject(titleFont_);
+			DeleteObject(headerFont_);
 			controlsFont_ = nullptr;
 			titleFont_ = nullptr;
+			headerFont_ = nullptr;
 			return 0;
 		default:
 			break;
