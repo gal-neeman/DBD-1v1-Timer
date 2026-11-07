@@ -23,6 +23,13 @@ Json::Value settingsToJson(const SettingsStruct& settings)
 	settingsJson["conTimer2"] = settings.conTimer2Key;
 	settingsJson["conStartNoReset"] = settings.conStartNoResetKey;
 
+	settingsJson["scoreLeft"] = settings.scoreLeftKey;
+	settingsJson["scoreRight"] = settings.scoreRightKey;
+	settingsJson["scoreReset"] = settings.scoreResetKey;
+	settingsJson["conScoreLeft"] = settings.conScoreLeftKey;
+	settingsJson["conScoreRight"] = settings.conScoreRightKey;
+	settingsJson["conScoreReset"] = settings.conScoreResetKey;
+
 	settingsJson["optionTransparent"] = settings.optionTransparent;
 	settingsJson["optionStartOnChange"] = settings.optionStartOnChange;
 	settingsJson["optionLastSecondsTime"] = settings.optionLastSecondsTime;
@@ -58,6 +65,18 @@ void settingsFromJson(const Json::Value& json, SettingsStruct& settings)
 		settings.conTimer1Key = json["conTimer1"].asInt();
 		settings.conTimer2Key = json["conTimer2"].asInt();
 		settings.conStartNoResetKey = json["conStartNoReset"].asInt();
+	}
+
+	// score hotkeys: their own group, so a file saved before they existed keeps its other hotkeys
+	if (json["scoreLeft"].isInt() && json["scoreRight"].isInt() && json["scoreReset"].isInt() &&
+		json["conScoreLeft"].isInt() && json["conScoreRight"].isInt() && json["conScoreReset"].isInt())
+	{
+		settings.scoreLeftKey = json["scoreLeft"].asInt();
+		settings.scoreRightKey = json["scoreRight"].asInt();
+		settings.scoreResetKey = json["scoreReset"].asInt();
+		settings.conScoreLeftKey = json["conScoreLeft"].asInt();
+		settings.conScoreRightKey = json["conScoreRight"].asInt();
+		settings.conScoreResetKey = json["conScoreReset"].asInt();
 	}
 
 	// options

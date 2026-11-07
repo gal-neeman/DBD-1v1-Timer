@@ -45,7 +45,7 @@ private:
 	static constexpr float STATS_BAR_HEIGHT = 24.0f;
 	static constexpr float NAMES_ROW_HEIGHT = 36.0f;
 	static constexpr float BADGE_WIDTH = OVERLAY_WIDTH - SIZE_MAIN_WIDTH; // the timers keep their size next to it
-	static constexpr float SCORE_WIDTH = 70.0f;
+	static constexpr float SCORE_WIDTH = 80.0f;
 	static constexpr float CELL_PADDING = 6.0f;
 	static constexpr float NAMES_FONT_SIZE = 19.0f;
 	static constexpr float BAR_FONT_SIZE = 17.0f;

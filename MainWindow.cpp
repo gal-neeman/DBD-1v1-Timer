@@ -693,6 +693,21 @@ void MainWindow::handleHotKey(const int code)
 
 		return; // Skip the start / stop / reset below, which would act on the timer a second time
 	}
+	case KEY_SCORE_LEFT:
+	case KEY_SCORE_RIGHT:
+	case KEY_SCORE_RESET:
+	{
+		if (!league_.overlayStats) return;
+
+		constexpr int maxScore = 99; // keeps the names row from overflowing
+		OverlayStats& stats = *league_.overlayStats;
+		if (code == KEY_SCORE_LEFT) stats.scorePlayer = (std::min)(stats.scorePlayer + 1, maxScore);
+		else if (code == KEY_SCORE_RIGHT) stats.scoreOpponent = (std::min)(stats.scoreOpponent + 1, maxScore);
+		else stats.scorePlayer = stats.scoreOpponent = 0;
+
+		requestRedraw();
+		return; // Score keys never touch the timers
+	}
 	default:
 		break;
 	}

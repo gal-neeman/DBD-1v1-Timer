@@ -115,30 +115,33 @@ void SettingsWindow::initializeTextControls() const
 
 	// Headers
 	const HWND hwndTitleHotkeys = createControl(WC_STATIC, L"Hotkeys", headerX, 5, headerWidth, headerHeight, NULL, SS_CENTER | SS_CENTERIMAGE);
-	const HWND hwndTitleOptions = createControl(WC_STATIC, L"Options", headerX, tileHeight_ * 6, headerWidth, headerHeight, NULL, SS_CENTER);
-	const HWND hwndTitleColors = createControl(WC_STATIC, L"Colors", headerX, tileHeight_ * 11, headerWidth, headerHeight, NULL, SS_CENTER);
+	const HWND hwndTitleOptions = createControl(WC_STATIC, L"Options", headerX, tileHeight_ * 9, headerWidth, headerHeight, NULL, SS_CENTER);
+	const HWND hwndTitleColors = createControl(WC_STATIC, L"Colors", headerX, tileHeight_ * 14, headerWidth, headerHeight, NULL, SS_CENTER);
 
 	// Hotkey titles
 	const HWND hwndTextStart = createControl(WC_STATIC, L"Start / Stop / Reset", titleX, tileHeight_ * 2, titleWidth, tileHeight_);
 	const HWND hwndTextStartNoReset = createControl(WC_STATIC, L"Start / Stop", titleX, tileHeight_ * 3, titleWidth, tileHeight_);
 	const HWND hwndTextTimer1 = createControl(WC_STATIC, L"Timer 1", titleX, tileHeight_ * 4, titleWidth, tileHeight_);
 	const HWND hwndTextTimer2 = createControl(WC_STATIC, L"Timer 2", titleX, tileHeight_ * 5, titleWidth, tileHeight_);
+	const HWND hwndTextScoreLeft = createControl(WC_STATIC, L"Score Left +1", titleX, tileHeight_ * 6, titleWidth, tileHeight_);
+	const HWND hwndTextScoreRight = createControl(WC_STATIC, L"Score Right +1", titleX, tileHeight_ * 7, titleWidth, tileHeight_);
+	const HWND hwndTextScoreReset = createControl(WC_STATIC, L"Reset Score", titleX, tileHeight_ * 8, titleWidth, tileHeight_);
 
 	// Checkbox titles
-	const HWND hwndTextStartOnChange = createControl(WC_STATIC, L"Start Timer On Change", titleX, tileHeight_ * 7, titleWidth, tileHeight_);
-	const HWND hwndTextTransparentBackground = createControl(WC_STATIC, L"Transparent Background", titleX, tileHeight_ * 8, titleWidth, tileHeight_);
-	const HWND hwndTextCheckboxClickthrough = createControl(WC_STATIC, L"Clickthrough (until restart)", titleX, tileHeight_ * 9, titleWidth, tileHeight_);
-	const HWND hwndTextLastSecondsTime = createControl(WC_STATIC, L"Last seconds time", titleX, tileHeight_ * 10, titleWidth, tileHeight_);
+	const HWND hwndTextStartOnChange = createControl(WC_STATIC, L"Start Timer On Change", titleX, tileHeight_ * 10, titleWidth, tileHeight_);
+	const HWND hwndTextTransparentBackground = createControl(WC_STATIC, L"Transparent Background", titleX, tileHeight_ * 11, titleWidth, tileHeight_);
+	const HWND hwndTextCheckboxClickthrough = createControl(WC_STATIC, L"Clickthrough (until restart)", titleX, tileHeight_ * 12, titleWidth, tileHeight_);
+	const HWND hwndTextLastSecondsTime = createControl(WC_STATIC, L"Last seconds time", titleX, tileHeight_ * 13, titleWidth, tileHeight_);
 
 	// Break lines
-	const HWND hwndBreakLine1 = createControl(WC_STATIC, nullptr, 15, tileHeight_ * 6 + breaklineOffsetY, SIZE_SETTINGS_WIDTH - 40, 5, NULL, SS_ETCHEDHORZ);
-	const HWND hwndBreakLine2 = createControl(WC_STATIC, nullptr, 15, tileHeight_ * 11 + breaklineOffsetY, SIZE_SETTINGS_WIDTH - 40, 5, NULL, SS_ETCHEDHORZ);
+	const HWND hwndBreakLine1 = createControl(WC_STATIC, nullptr, 15, tileHeight_ * 9 + breaklineOffsetY, SIZE_SETTINGS_WIDTH - 40, 5, NULL, SS_ETCHEDHORZ);
+	const HWND hwndBreakLine2 = createControl(WC_STATIC, nullptr, 15, tileHeight_ * 14 + breaklineOffsetY, SIZE_SETTINGS_WIDTH - 40, 5, NULL, SS_ETCHEDHORZ);
 
 	// Color options names
-	const HWND hwndTextColorTimer = createControl(WC_STATIC, L"Timer", titleX, tileHeight_ * 12, titleWidth, tileHeight_);
-	const HWND hwndTextColorSelectedTimer = createControl(WC_STATIC, L"Selected Timer", titleX, tileHeight_ * 13, titleWidth, tileHeight_);
-	const HWND hwndTextColorWinCon = createControl(WC_STATIC, L"Last Seconds Color", titleX, tileHeight_ * 14, titleWidth, tileHeight_);
-	const HWND hwndTextColorBackground = createControl(WC_STATIC, L"Background", titleX, tileHeight_ * 15, titleWidth, tileHeight_);
+	const HWND hwndTextColorTimer = createControl(WC_STATIC, L"Timer", titleX, tileHeight_ * 15, titleWidth, tileHeight_);
+	const HWND hwndTextColorSelectedTimer = createControl(WC_STATIC, L"Selected Timer", titleX, tileHeight_ * 16, titleWidth, tileHeight_);
+	const HWND hwndTextColorWinCon = createControl(WC_STATIC, L"Last Seconds Color", titleX, tileHeight_ * 17, titleWidth, tileHeight_);
+	const HWND hwndTextColorBackground = createControl(WC_STATIC, L"Background", titleX, tileHeight_ * 18, titleWidth, tileHeight_);
 
 	// Copyright text
 	const HWND hwndCopyright = createControl(WC_STATIC, L"\u00A9 Truueh 2026", 10, SIZE_SETTINGS_HEIGHT - 71, 100, 17);
@@ -169,7 +172,7 @@ void SettingsWindow::initializeButtonControls()
 	constexpr int widthLastSecondsInput = 30;
 	const int xLastSecondsInput = xNumeric + widthNumeric - widthLastSecondsInput;
 
-	HWND hotkeys[8];
+	HWND hotkeys[14];
 	HWND colorButtons[4];
 
 	// Hotkeys
@@ -178,24 +181,30 @@ void SettingsWindow::initializeButtonControls()
 	hotkeys[3] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 3 - offsetY, widthHotkey, heightHotkey, CID_START_NO_RESET, BS_FLAT); // Start no reset key
 	hotkeys[1] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 4 - offsetY, widthHotkey, heightHotkey, CID_TIMER1, BS_FLAT); // Timer 1 key
 	hotkeys[2] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 5 - offsetY, widthHotkey, heightHotkey, CID_TIMER2, BS_FLAT); // Timer 2 key
+	hotkeys[8] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 6 - offsetY, widthHotkey, heightHotkey, CID_SCORE_LEFT, BS_FLAT); // Score left key
+	hotkeys[9] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 7 - offsetY, widthHotkey, heightHotkey, CID_SCORE_RIGHT, BS_FLAT); // Score right key
+	hotkeys[10] = createControl(WC_BUTTON, L"", xHotkey, tileHeight_ * 8 - offsetY, widthHotkey, heightHotkey, CID_SCORE_RESET, BS_FLAT); // Score reset key
 
 		// Controller
 	hotkeys[4] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 2 - offsetY, widthHotkey, heightHotkey, CID_CON_START, BS_FLAT); // Start key
 	hotkeys[7] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 3 - offsetY, widthHotkey, heightHotkey, CID_CON_START_NO_RESET, BS_FLAT); // Start no reset key
 	hotkeys[5] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 4 - offsetY, widthHotkey, heightHotkey, CID_CON_TIMER1, BS_FLAT); // Timer 1 key
 	hotkeys[6] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 5 - offsetY, widthHotkey, heightHotkey, CID_CON_TIMER2, BS_FLAT); // Timer 2 key
+	hotkeys[11] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 6 - offsetY, widthHotkey, heightHotkey, CID_CON_SCORE_LEFT, BS_FLAT); // Score left key
+	hotkeys[12] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 7 - offsetY, widthHotkey, heightHotkey, CID_CON_SCORE_RIGHT, BS_FLAT); // Score right key
+	hotkeys[13] = createControl(WC_BUTTON, L"", xHotkeyCon, tileHeight_ * 8 - offsetY, widthHotkey, heightHotkey, CID_CON_SCORE_RESET, BS_FLAT); // Score reset key
 
 	// Checkbox buttons
-	const HWND hCbStartOnChange = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 7, widthCheckbox, heightCheckbox, CID_STARTONCHANGE_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
-	const HWND hCbTransparentBg = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 8, widthCheckbox, heightCheckbox, CID_TRANSPARENT_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
-	const HWND hCbClickthrough = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 9, widthCheckbox, heightCheckbox, CID_CLICKTHROUGH_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
-	const HWND hOptLastSecondsTime = createControl(WC_EDIT, L"", xLastSecondsInput, tileHeight_ * 10 - offsetY, widthLastSecondsInput, heightNumeric, CID_LAST_SECONDS_TIME, ES_NUMBER | ES_CENTER | WS_BORDER);
+	const HWND hCbStartOnChange = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 10, widthCheckbox, heightCheckbox, CID_STARTONCHANGE_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
+	const HWND hCbTransparentBg = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 11, widthCheckbox, heightCheckbox, CID_TRANSPARENT_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
+	const HWND hCbClickthrough = createControl(WC_BUTTON, L"", xCheckbox, tileHeight_ * 12, widthCheckbox, heightCheckbox, CID_CLICKTHROUGH_CB, BS_CHECKBOX | BS_AUTOCHECKBOX);
+	const HWND hOptLastSecondsTime = createControl(WC_EDIT, L"", xLastSecondsInput, tileHeight_ * 13 - offsetY, widthLastSecondsInput, heightNumeric, CID_LAST_SECONDS_TIME, ES_NUMBER | ES_CENTER | WS_BORDER);
 
 	// Color buttons
-	colorButtons[0] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 12, widthColorButton, heightColorButton, CID_TIMER_COLOR, BS_OWNERDRAW);
-	colorButtons[1] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 13, widthColorButton, heightColorButton, CID_SELECTED_TIMER_COLOR, BS_OWNERDRAW);
-	colorButtons[2] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 14, widthColorButton, heightColorButton, CID_LAST_SECONDS_COLOR, BS_OWNERDRAW);
-	colorButtons[3] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 15, widthColorButton, heightColorButton, CID_BACKGROUND_COLOR, BS_OWNERDRAW);
+	colorButtons[0] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 15, widthColorButton, heightColorButton, CID_TIMER_COLOR, BS_OWNERDRAW);
+	colorButtons[1] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 16, widthColorButton, heightColorButton, CID_SELECTED_TIMER_COLOR, BS_OWNERDRAW);
+	colorButtons[2] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 17, widthColorButton, heightColorButton, CID_LAST_SECONDS_COLOR, BS_OWNERDRAW);
+	colorButtons[3] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 18, widthColorButton, heightColorButton, CID_BACKGROUND_COLOR, BS_OWNERDRAW);
 
 	// Initialize exit controls
 	HWND hwndOkButton = createControl(WC_BUTTON, L"Save", SIZE_SETTINGS_WIDTH - 184, SIZE_SETTINGS_HEIGHT - 78, 75, 28, CID_OK);
@@ -276,6 +285,12 @@ void SettingsWindow::handleControlCommand(const LPARAM lParam)
 	case CID_CON_TIMER1:
 	case CID_CON_TIMER2:
 	case CID_CON_START_NO_RESET:
+	case CID_SCORE_LEFT:
+	case CID_SCORE_RIGHT:
+	case CID_SCORE_RESET:
+	case CID_CON_SCORE_LEFT:
+	case CID_CON_SCORE_RIGHT:
+	case CID_CON_SCORE_RESET:
 	{
 		SetFocus(hwnd_);
 		hActiveControl_ = hwndCtrl;
@@ -355,11 +370,28 @@ void SettingsWindow::colorHandles(const LPARAM lParam) const
 	}
 }
 
+static bool isControllerHotkeyControl(const int controlId)
+{
+	switch (controlId)
+	{
+	case CID_CON_START:
+	case CID_CON_START_NO_RESET:
+	case CID_CON_TIMER1:
+	case CID_CON_TIMER2:
+	case CID_CON_SCORE_LEFT:
+	case CID_CON_SCORE_RIGHT:
+	case CID_CON_SCORE_RESET:
+		return true;
+	default:
+		return false;
+	}
+}
+
 void SettingsWindow::applyTempConHotkey(const UINT key)
 {
 	const int controlId = GetDlgCtrlID(hActiveControl_);
 
-	if (controlId == CID_START || controlId == CID_TIMER1 || controlId == CID_TIMER2)
+	if (!isControllerHotkeyControl(controlId))
 		return;
 
 	switch (controlId)
@@ -376,7 +408,16 @@ void SettingsWindow::applyTempConHotkey(const UINT key)
 	case CID_CON_START_NO_RESET:
 		tempSettings_.conStartNoResetKey = key;
 		break;
-	default: 
+	case CID_CON_SCORE_LEFT:
+		tempSettings_.conScoreLeftKey = key;
+		break;
+	case CID_CON_SCORE_RIGHT:
+		tempSettings_.conScoreRightKey = key;
+		break;
+	case CID_CON_SCORE_RESET:
+		tempSettings_.conScoreResetKey = key;
+		break;
+	default:
 		break;
 	}
 	
@@ -387,7 +428,7 @@ void SettingsWindow::applyTempConHotkey(const UINT key)
 void SettingsWindow::applyTempHotkey(const UINT key) {
 	const int controlId = GetDlgCtrlID(hActiveControl_); // retrieve control ID
 
-	if (controlId == CID_CON_START || controlId == CID_CON_TIMER1 || controlId == CID_CON_TIMER2 || controlId == CID_CON_START_NO_RESET) 
+	if (isControllerHotkeyControl(controlId))
 	{
 		if (key == VK_ESCAPE)
 		{
@@ -414,6 +455,15 @@ void SettingsWindow::applyTempHotkey(const UINT key) {
 		break;
 	case CID_START_NO_RESET:
 		tempSettings_.startNoResetKey = key;
+		break;
+	case CID_SCORE_LEFT:
+		tempSettings_.scoreLeftKey = key;
+		break;
+	case CID_SCORE_RIGHT:
+		tempSettings_.scoreRightKey = key;
+		break;
+	case CID_SCORE_RESET:
+		tempSettings_.scoreResetKey = key;
 		break;
 	default:
 		break;
@@ -481,6 +531,36 @@ void SettingsWindow::applyHotkeySavedKey(const HWND hCtrl) {
 	case CID_CON_START_NO_RESET:
 		if (controllerMap_.count(tempSettings_.conStartNoResetKey)) {
 			SetWindowText(hCtrl, controllerMap_[tempSettings_.conStartNoResetKey]);
+		}
+		break;
+	case CID_SCORE_LEFT:
+		if (keyboardMap_.count(tempSettings_.scoreLeftKey)) {
+			SetWindowText(hCtrl, keyboardMap_[tempSettings_.scoreLeftKey]);
+		}
+		break;
+	case CID_SCORE_RIGHT:
+		if (keyboardMap_.count(tempSettings_.scoreRightKey)) {
+			SetWindowText(hCtrl, keyboardMap_[tempSettings_.scoreRightKey]);
+		}
+		break;
+	case CID_SCORE_RESET:
+		if (keyboardMap_.count(tempSettings_.scoreResetKey)) {
+			SetWindowText(hCtrl, keyboardMap_[tempSettings_.scoreResetKey]);
+		}
+		break;
+	case CID_CON_SCORE_LEFT:
+		if (controllerMap_.count(tempSettings_.conScoreLeftKey)) {
+			SetWindowText(hCtrl, controllerMap_[tempSettings_.conScoreLeftKey]);
+		}
+		break;
+	case CID_CON_SCORE_RIGHT:
+		if (controllerMap_.count(tempSettings_.conScoreRightKey)) {
+			SetWindowText(hCtrl, controllerMap_[tempSettings_.conScoreRightKey]);
+		}
+		break;
+	case CID_CON_SCORE_RESET:
+		if (controllerMap_.count(tempSettings_.conScoreResetKey)) {
+			SetWindowText(hCtrl, controllerMap_[tempSettings_.conScoreResetKey]);
 		}
 		break;
 	default:

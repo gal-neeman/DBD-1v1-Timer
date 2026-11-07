@@ -16,7 +16,7 @@ private:
 	HFONT copyrightFont_ = nullptr;
 	HWND hActiveControl_ = nullptr;
 
-	byte rows_ = 18;
+	byte rows_ = 21;
 	byte cols_ = 11;
 
 	int tileHeight_ = SIZE_SETTINGS_HEIGHT / rows_;
