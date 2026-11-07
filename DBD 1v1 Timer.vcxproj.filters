@@ -182,6 +182,9 @@
     <ClInclude Include="League\LeagueMappers.h">
       <Filter>League</Filter>
     </ClInclude>
+    <ClInclude Include="League\LeagueState.h">
+      <Filter>League</Filter>
+    </ClInclude>
     <ClInclude Include="League\Models\OverlayStats.h">
       <Filter>League\Models</Filter>
     </ClInclude>

@@ -7,6 +7,8 @@
 #include "TimerApi/Dtos/StatusDto.h"
 #include "TimerApi/Dtos/PlayerDetailsDto.h"
 #include "TimerApi/TimerApiMessages.h"
+#include "TimerApi/TimerApiService.h"
+#include "League/LeagueMappers.h"
 #include <memory>
 #include <algorithm>
 #include <cmath>
@@ -265,7 +267,12 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			createGraphicsResources();
 			createDeviceIndependentResources();
 
-			SetTimer(hwnd_, 0, 16, nullptr);
+			SetTimer(hwnd_, TIMER_ID_FRAME, 16, nullptr);
+			// wWinMain sends the first status request; this retries it until a response enables the API
+			SetTimer(hwnd_, TIMER_ID_STATUS_RETRY, STATUS_RETRY_MS, nullptr);
+
+			// Settings are loaded before the window is created; the player is fetched once the status is OK
+			league_.activePlayerId = appSettings.league.discordId;
 			return 0;
 		}
 		case WM_CLOSE:
@@ -313,6 +320,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 					}
 
 					ShowWindow(statisticsWindow.window(), SW_SHOW);
+					refreshPlayerIfNotPolling(); // polling keeps the stats fresh only while the overlay is on
 				}
 				else
 				{
@@ -366,21 +374,37 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 		case TIMER_API_STATUS_RESPONSE:
 		{
 			const std::unique_ptr<StatusDto> status(reinterpret_cast<StatusDto*>(lParam));
+			handleStatusResponse(*status);
 			break;
 		}
 		case TIMER_API_PLAYER_RESPONSE:
 		{
 			const std::unique_ptr<PlayerDetailsDto> playerDetails(reinterpret_cast<PlayerDetailsDto*>(lParam));
+			handlePlayerResponse(*playerDetails);
 			break;
 		}
 		case TIMER_API_ERROR:
+			handleApiError(static_cast<TimerApiRequest>(lParam), static_cast<DWORD>(wParam));
 			break;
 		case WM_TIMER:
 		{
-			if (timer1.isRunning() || timer2.isRunning()) {
-				timer1.updateTime();
-				timer2.updateTime();
-				requestRedraw();
+			switch (wParam)
+			{
+			case TIMER_ID_FRAME:
+				if (timer1.isRunning() || timer2.isRunning()) {
+					timer1.updateTime();
+					timer2.updateTime();
+					requestRedraw();
+				}
+				break;
+			case TIMER_ID_PLAYER_POLL:
+				timerApi.getPlayerDetails(league_.activePlayerId, hwnd_);
+				break;
+			case TIMER_ID_STATUS_RETRY: // repeats until a status response enables the API
+				timerApi.getStatus(hwnd_);
+				break;
+			default:
+				break;
 			}
 			break;
 		}
@@ -493,4 +517,99 @@ ID2D1SolidColorBrush* MainWindow::getTimer2Brush() const {
 
 void MainWindow::requestRedraw() const {
 	InvalidateRect(hwnd_, nullptr, FALSE);
+}
+
+void MainWindow::handleStatusResponse(const StatusDto& status)
+{
+	league_.slowPollSec = status.slowPollSec;
+
+	if (status.statusEnabled)
+	{
+		KillTimer(hwnd_, TIMER_ID_STATUS_RETRY);
+		if (!league_.activePlayerId.empty()) timerApi.getPlayerDetails(league_.activePlayerId, hwnd_);
+		updatePlayerPolling();
+	}
+	// Otherwise the retry timer is still running and checks again
+
+	statisticsWindow.setStatus(status.statusMessage);
+}
+
+void MainWindow::handlePlayerResponse(const PlayerDetailsDto& details)
+{
+	if (!league_.pendingPlayerId.empty())
+	{
+		league_.activePlayerId = league_.pendingPlayerId;
+		league_.pendingPlayerId.clear();
+		updatePlayerPolling();
+	}
+
+	league_.overlayStats = toOverlayStats(details);
+	statisticsWindow.setModel(toStatsWindowModel(details));
+}
+
+void MainWindow::handleApiError(const TimerApiRequest request, const DWORD code)
+{
+	league_.pendingPlayerId.clear();
+
+	// The API went down mid-session (a missing player is an answer, so it stays up):
+	// stop polling and go back to retrying the status. A failed status needs nothing, its retry is running.
+	if (request == TimerApiRequest::Player && code != HTTP_STATUS_NOT_FOUND)
+	{
+		KillTimer(hwnd_, TIMER_ID_PLAYER_POLL);
+		league_.playerPolling = false;
+		SetTimer(hwnd_, TIMER_ID_STATUS_RETRY, STATUS_RETRY_MS, nullptr);
+	}
+
+	statisticsWindow.setError(request, code);
+}
+
+void MainWindow::loadPlayer(const std::wstring& id)
+{
+	league_.pendingPlayerId = id;
+	timerApi.getPlayerDetails(id, hwnd_);
+}
+
+void MainWindow::revertPlayer()
+{
+	league_.pendingPlayerId.clear();
+
+	const std::wstring& savedId = appSettings.league.discordId;
+	if (league_.activePlayerId == savedId) return;
+
+	league_.activePlayerId = savedId;
+	if (savedId.empty())
+	{
+		league_.overlayStats.reset();
+		statisticsWindow.setModel(std::nullopt);
+	}
+	else if (timerApiEnabled)
+	{
+		timerApi.getPlayerDetails(savedId, hwnd_);
+	}
+	updatePlayerPolling();
+}
+
+void MainWindow::refreshPlayerIfNotPolling()
+{
+	if (!league_.playerPolling && !league_.activePlayerId.empty() && timerApiEnabled)
+	{
+		timerApi.getPlayerDetails(league_.activePlayerId, hwnd_);
+	}
+}
+
+void MainWindow::updatePlayerPolling()
+{
+	const bool shouldPoll = timerApiEnabled && appSettings.league.statsOverlayEnabled
+		&& !league_.activePlayerId.empty() && league_.slowPollSec > 0;
+	if (shouldPoll == league_.playerPolling) return;
+
+	league_.playerPolling = shouldPoll;
+	if (shouldPoll)
+	{
+		SetTimer(hwnd_, TIMER_ID_PLAYER_POLL, static_cast<UINT>(league_.slowPollSec) * 1000, nullptr);
+	}
+	else
+	{
+		KillTimer(hwnd_, TIMER_ID_PLAYER_POLL);
+	}
 }
