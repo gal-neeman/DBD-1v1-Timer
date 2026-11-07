@@ -263,20 +263,22 @@ private:
 
 	/**
 	@brief Handles a player result: makes a pending Load Stats ID active and updates both views' models.
+	A result for a player that is neither pending nor active is stale and ignored.
 
-	@param details The player's details.
+	@param response The requested player ID and its details.
 	*/
-	void handlePlayerResponse(const PlayerDetailsDto& details);
+	void handlePlayerResponse(const PlayerResponse& response);
 
 	/**
 	@brief Handles a failed request. A player failure that isApiOutage means the API went down:
 	stops polling and restarts the status retry. A failed status needs nothing, its retry is running.
 
-	@param request The request that failed.
-
-	@param code The HTTP status, or 0.
+	@param failure The request that failed, its HTTP status (or 0), and the player ID it was for.
 	*/
-	void handleApiError(TimerApiRequest request, DWORD code);
+	void handleApiError(const TimerApiFailure& failure);
+
+	// Whether a result is for the Load Stats ID still in flight.
+	bool isPendingPlayer(const std::wstring& playerId) const;
 
 	/**
 	@brief Starts or stops polling: polls while the API is enabled, the overlay is enabled and a player is active.

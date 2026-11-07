@@ -612,13 +612,16 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 		}
 		case TIMER_API_PLAYER_RESPONSE:
 		{
-			const std::unique_ptr<PlayerDetailsDto> playerDetails(reinterpret_cast<PlayerDetailsDto*>(lParam));
-			handlePlayerResponse(*playerDetails);
+			const std::unique_ptr<PlayerResponse> response(reinterpret_cast<PlayerResponse*>(lParam));
+			handlePlayerResponse(*response);
 			break;
 		}
 		case TIMER_API_ERROR:
-			handleApiError(static_cast<TimerApiRequest>(lParam), static_cast<DWORD>(wParam));
+		{
+			const std::unique_ptr<TimerApiFailure> failure(reinterpret_cast<TimerApiFailure*>(lParam));
+			handleApiError(*failure);
 			break;
+		}
 		case WM_TIMER:
 		{
 			switch (wParam)
@@ -792,13 +795,19 @@ void MainWindow::handleStatusResponse(const StatusDto& status)
 	statisticsWindow.setStatus(status.statusMessage);
 }
 
-void MainWindow::handlePlayerResponse(const PlayerDetailsDto& details)
+void MainWindow::handlePlayerResponse(const PlayerResponse& response)
 {
-	const bool playerChanged = !league_.pendingPlayerId.empty() && league_.pendingPlayerId != league_.activePlayerId;
-	if (!league_.pendingPlayerId.empty())
+	const PlayerDetailsDto& details = response.details;
+	bool playerChanged = false;
+	if (isPendingPlayer(response.playerId))
 	{
-		league_.activePlayerId = league_.pendingPlayerId;
+		playerChanged = response.playerId != league_.activePlayerId;
+		league_.activePlayerId = response.playerId;
 		league_.pendingPlayerId.clear();
+	}
+	else if (response.playerId != league_.activePlayerId)
+	{
+		return; // a request for a player we switched away from
 	}
 
 	// The score is the user's, so a poll of the same player keeps it
@@ -815,20 +824,33 @@ void MainWindow::handlePlayerResponse(const PlayerDetailsDto& details)
 	if (league_.fastPollsLeft > 0 && !details.currentMatch.isInMatch) endFastPolling(); // the match is over
 }
 
-void MainWindow::handleApiError(const TimerApiRequest request, const DWORD code)
+void MainWindow::handleApiError(const TimerApiFailure& failure)
 {
-	league_.pendingPlayerId.clear();
-
-	// The API went down mid-session: stop polling and go back to retrying the status.
-	// A failed status needs nothing, its retry is running. Polling survives a 404 or 429 (see isApiOutage),
-	// and the overlay keeps its last stats either way.
-	if (request == TimerApiRequest::Player && isApiOutage(request, code))
+	if (failure.request == TimerApiRequest::Player)
 	{
-		updatePlayerPolling(); // the service already set timerApiEnabled to false, so this stops polling
-		SetTimer(hwnd_, TIMER_ID_STATUS_RETRY, STATUS_RETRY_MS, nullptr);
+		const bool wasPending = isPendingPlayer(failure.playerId);
+		if (wasPending) league_.pendingPlayerId.clear();
+
+		// The API went down mid-session: stop polling and go back to retrying the status.
+		// A failed status needs nothing, its retry is running. Polling survives a 404 or 429 (see isApiOutage),
+		// and the overlay keeps its last stats either way.
+		if (isApiOutage(failure.request, failure.code))
+		{
+			updatePlayerPolling(); // the service already set timerApiEnabled to false, so this stops polling
+			SetTimer(hwnd_, TIMER_ID_STATUS_RETRY, STATUS_RETRY_MS, nullptr);
+		}
+		else if (!wasPending && failure.playerId != league_.activePlayerId)
+		{
+			return; // a 404 or 429 for a player we switched away from says nothing about the current one
+		}
 	}
 
-	statisticsWindow.setError(request, code);
+	statisticsWindow.setError(failure.request, failure.code);
+}
+
+bool MainWindow::isPendingPlayer(const std::wstring& playerId) const
+{
+	return !league_.pendingPlayerId.empty() && playerId == league_.pendingPlayerId;
 }
 
 void MainWindow::loadPlayer(const std::wstring& id)
