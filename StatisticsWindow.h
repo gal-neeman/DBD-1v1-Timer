@@ -30,7 +30,9 @@ private:
 	std::wstring statusMessage_; // from the status response; shown while Disabled
 
 	// Live only while the window is open
-	LeagueSettingsStruct tempLeague_; // the checkboxes, applied on Ok
+	LeagueSettingsStruct tempLeague_; // the checkboxes, applied on Apply or Ok
+	LeagueSettingsStruct savedLeague_; // appSettings.league when the window opened; Cancel restores it
+	bool applied_ = false; // whether Apply ran since the window opened
 	HFONT controlsFont_ = nullptr;
 	HFONT titleFont_ = nullptr;
 	HBITMAP logo_ = nullptr;
@@ -66,6 +68,14 @@ private:
 	@brief Enables or disables the controls to match the state and the overlay checkbox.
 	*/
 	void updateControls() const;
+
+	/**
+	@brief Builds the league settings from the checkboxes and the active player ID.
+	The overlay is off when there's no ID.
+
+	@return The league settings to apply.
+	*/
+	LeagueSettingsStruct leagueFromControls() const;
 
 	/**
 	@brief Draws the logo and the content area for the current state.

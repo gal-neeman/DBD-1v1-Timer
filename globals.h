@@ -22,6 +22,7 @@ constexpr byte CID_DISCORD_ID = 119;
 constexpr byte CID_LOAD_STATS = 120;
 constexpr byte CID_STATS_OVERLAY_CB = 121;
 constexpr byte CID_SHOW_NAMES_CB = 122;
+constexpr byte CID_APPLY = 123;
 constexpr byte MENU_QUIT = 1;
 constexpr byte MENU_SETTINGS = 0;
 constexpr byte MENU_STATISTICS = 2;

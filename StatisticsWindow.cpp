@@ -98,6 +98,8 @@ void StatisticsWindow::setState(const StatsState state)
 void StatisticsWindow::initializeWindow()
 {
 	tempLeague_ = appSettings.league;
+	savedLeague_ = appSettings.league;
+	applied_ = false;
 	controlsFont_ = createControlsFont();
 	titleFont_ = createTitleFont();
 	logo_ = loadBitmapResource(IDB_LEAGUE_LOGO);
@@ -126,10 +128,13 @@ void StatisticsWindow::initializeWindow()
 	Button_SetCheck(overlayCheckbox, tempLeague_.statsOverlayEnabled ? BST_CHECKED : BST_UNCHECKED);
 	Button_SetCheck(namesCheckbox, tempLeague_.showNamesAndScore ? BST_CHECKED : BST_UNCHECKED);
 
-	// Exit buttons
+	// Exit buttons: Ok, Cancel, Apply from left to right, the standard Windows order
 	const int buttonY = client.bottom - MARGIN - BUTTON_HEIGHT;
-	createControl(WC_BUTTON, L"Ok", client.right - MARGIN - BUTTON_WIDTH, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, CID_OK);
-	createControl(WC_BUTTON, L"Cancel", client.right - MARGIN - 2 * BUTTON_WIDTH - 8, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, CID_CANCEL);
+	constexpr int buttonStep = BUTTON_WIDTH + 8;
+	const int applyX = client.right - MARGIN - BUTTON_WIDTH;
+	createControl(WC_BUTTON, L"Ok", applyX - 2 * buttonStep, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, CID_OK);
+	createControl(WC_BUTTON, L"Cancel", applyX - buttonStep, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, CID_CANCEL);
+	createControl(WC_BUTTON, L"Apply", applyX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, CID_APPLY);
 
 	contentRect_ = { 0, MARGIN + LOGO_SIZE + SECTION_GAP, client.right, buttonY - 4 };
 	setState(derivedState());
@@ -172,20 +177,31 @@ void StatisticsWindow::handleControlCommand(const int controlId)
 	case CID_SHOW_NAMES_CB:
 		tempLeague_.showNamesAndScore = IsDlgButtonChecked(hwnd_, CID_SHOW_NAMES_CB) == BST_CHECKED;
 		break;
+	case CID_APPLY: // in memory only; Ok saves it, Cancel undoes it
+		appSettings.league = leagueFromControls();
+		applied_ = true;
+		pGlobalTimerWindow->updatePlayerPolling();
+		break;
 	case CID_OK:
 	{
 		// Apply only the league group onto the current settings, so the settings window's changes stay
 		SettingsStruct settings = appSettings;
-		settings.league = tempLeague_;
-		settings.league.discordId = pGlobalTimerWindow->activePlayerId(); // the last ID that loaded, not what's typed
-		if (settings.league.discordId.empty()) settings.league.statsOverlayEnabled = false;
+		settings.league = leagueFromControls();
 		applySettings(settings);
 		pGlobalTimerWindow->updatePlayerPolling();
 		DestroyWindow(hwnd_);
 		break;
 	}
 	case CID_CANCEL:
-		pGlobalTimerWindow->revertPlayer();
+		if (applied_)
+		{
+			// Also rewrites the file, in case the settings window saved the applied league meanwhile
+			SettingsStruct settings = appSettings;
+			settings.league = savedLeague_;
+			applySettings(settings);
+		}
+		pGlobalTimerWindow->revertPlayer(); // back to the saved ID's player
+		pGlobalTimerWindow->updatePlayerPolling(); // the overlay flag may have reverted even if the ID didn't
 		DestroyWindow(hwnd_);
 		break;
 	default:
@@ -203,7 +219,17 @@ void StatisticsWindow::updateControls() const
 	EnableWindow(GetDlgItem(hwnd_, CID_LOAD_STATS), apiUp && !loading);
 	EnableWindow(GetDlgItem(hwnd_, CID_STATS_OVERLAY_CB), loaded);
 	EnableWindow(GetDlgItem(hwnd_, CID_SHOW_NAMES_CB), loaded && tempLeague_.statsOverlayEnabled);
-	EnableWindow(GetDlgItem(hwnd_, CID_OK), !loading); // Ok saves the active ID, which a load in flight may still change
+	// Ok and Apply take the active ID, which a load in flight may still change
+	EnableWindow(GetDlgItem(hwnd_, CID_OK), !loading);
+	EnableWindow(GetDlgItem(hwnd_, CID_APPLY), !loading);
+}
+
+LeagueSettingsStruct StatisticsWindow::leagueFromControls() const
+{
+	LeagueSettingsStruct league = tempLeague_;
+	league.discordId = pGlobalTimerWindow->activePlayerId(); // the last ID that loaded, not what's typed
+	if (league.discordId.empty()) league.statsOverlayEnabled = false;
+	return league;
 }
 
 void StatisticsWindow::paint() const
