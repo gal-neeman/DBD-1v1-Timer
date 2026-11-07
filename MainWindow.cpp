@@ -23,6 +23,12 @@ namespace
 	{
 		return rank ? L"#" + std::to_wstring(*rank) : L"#?";
 	}
+
+	// TEMP debug logging for poll rate changes; view with DebugView, filter on "[poll]"
+	void logPoll(const std::wstring& message)
+	{
+		OutputDebugStringW((L"[poll] " + message + L"\n").c_str());
+	}
 }
 
 MainWindow::MainWindow() = default;
@@ -623,6 +629,9 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 				break;
 			case TIMER_ID_PLAYER_POLL:
 				timerApi.getPlayerDetails(league_.activePlayerId, hwnd_);
+				logPoll(league_.fastPollsLeft > 0
+					? L"fast poll request sent, " + std::to_wstring(league_.fastPollsLeft - 1) + L" left"
+					: L"slow poll request sent");
 				if (league_.fastPollsLeft > 0 && --league_.fastPollsLeft == 0) endFastPolling();
 				break;
 			case TIMER_ID_STATUS_RETRY: // repeats until a status response enables the API
@@ -870,10 +879,12 @@ void MainWindow::updatePlayerPolling()
 	if (shouldPoll)
 	{
 		SetTimer(hwnd_, TIMER_ID_PLAYER_POLL, static_cast<UINT>(league_.slowPollSec) * 1000, nullptr);
+		logPoll(L"slow poll started, every " + std::to_wstring(league_.slowPollSec) + L"s");
 	}
 	else
 	{
 		KillTimer(hwnd_, TIMER_ID_PLAYER_POLL);
+		logPoll(league_.fastPollsLeft > 0 ? L"fast poll stopped (polling off)" : L"slow poll stopped (polling off)");
 		league_.fastPollsLeft = 0;
 	}
 }
@@ -882,12 +893,16 @@ void MainWindow::startFastPolling()
 {
 	if (!league_.playerPolling || league_.fastPollSec <= 0) return;
 
+	logPoll(league_.fastPollsLeft > 0 ? L"fast poll restarted" : L"slow poll stopped (fast burst)");
 	league_.fastPollsLeft = (std::max)(1, league_.fastPollCapSec / league_.fastPollSec);
 	SetTimer(hwnd_, TIMER_ID_PLAYER_POLL, static_cast<UINT>(league_.fastPollSec) * 1000, nullptr); // replaces the slow timer
+	logPoll(L"fast poll started, " + std::to_wstring(league_.fastPollsLeft) + L" polls every " + std::to_wstring(league_.fastPollSec) + L"s");
 }
 
 void MainWindow::endFastPolling()
 {
+	logPoll(L"fast poll stopped, " + std::to_wstring(league_.fastPollsLeft) + L" polls left");
 	league_.fastPollsLeft = 0;
 	SetTimer(hwnd_, TIMER_ID_PLAYER_POLL, static_cast<UINT>(league_.slowPollSec) * 1000, nullptr);
+	logPoll(L"slow poll started, every " + std::to_wstring(league_.slowPollSec) + L"s");
 }

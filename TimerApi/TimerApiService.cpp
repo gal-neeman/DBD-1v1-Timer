@@ -8,7 +8,7 @@ namespace
 	// Host name only, no scheme: HTTPS is the HttpClient default.
 	// Release builds (NDEBUG) use production; Debug builds use staging.
 #ifdef NDEBUG
-	constexpr WCHAR TIMER_API_HOST[] = L"api.example.com"; // TODO: set the production API host
+	constexpr WCHAR TIMER_API_HOST[] = L"dbd1v1-api.truuehsoft.com"; // TODO: set the production API host
 #else
 	constexpr WCHAR TIMER_API_HOST[] = L"dbd1v1-api-staging.truuehsoft.com";
 #endif
@@ -95,8 +95,10 @@ void TimerApiService::enqueueRequest(HWND replyTo, const TimerApiRequest request
 		{
 			job(client);
 		}
-		catch (const std::exception&)
+		catch (const std::exception& e)
 		{
+			// TEMP debug logging: the WinHTTP operation and error code; view with DebugView, filter on "[poll]"
+			OutputDebugStringA((std::string("[poll] request failed: ") + e.what() + "\n").c_str());
 			fail(replyTo, request, 0);
 		}
 	});
