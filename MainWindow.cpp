@@ -25,10 +25,12 @@ namespace
 		return rank ? L"#" + std::to_wstring(*rank) : L"#?";
 	}
 
-	// TEMP debug logging for poll rate changes; view with DebugView, filter on "[poll]"
-	void logPoll(const std::wstring& message)
+	// Debug builds only: logs poll rate changes and poll requests; view with DebugView, filter on "[poll]"
+	void logPoll([[maybe_unused]] const std::wstring& message)
 	{
+#ifdef _DEBUG
 		OutputDebugStringW((L"[poll] " + message + L"\n").c_str());
+#endif
 	}
 }
 
