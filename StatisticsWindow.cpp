@@ -237,7 +237,7 @@ void StatisticsWindow::handleControlCommand(const int controlId)
 	case CID_APPLY: // in memory only; Ok saves it, Cancel undoes it
 		appSettings.league = leagueFromControls();
 		applied_ = true;
-		pGlobalTimerWindow->updatePlayerPolling();
+		pGlobalTimerWindow->refreshOverlay();
 		break;
 	case CID_OK:
 	{
@@ -245,7 +245,7 @@ void StatisticsWindow::handleControlCommand(const int controlId)
 		SettingsStruct settings = appSettings;
 		settings.league = leagueFromControls();
 		applySettings(settings);
-		pGlobalTimerWindow->updatePlayerPolling();
+		pGlobalTimerWindow->refreshOverlay();
 		DestroyWindow(hwnd_);
 		break;
 	}
@@ -258,7 +258,7 @@ void StatisticsWindow::handleControlCommand(const int controlId)
 			applySettings(settings);
 		}
 		pGlobalTimerWindow->revertPlayer(); // back to the saved ID's player
-		pGlobalTimerWindow->updatePlayerPolling(); // the overlay flag may have reverted even if the ID didn't
+		pGlobalTimerWindow->refreshOverlay(); // the overlay flags may have reverted even if the ID didn't
 		DestroyWindow(hwnd_);
 		break;
 	default:

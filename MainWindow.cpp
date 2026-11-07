@@ -16,6 +16,15 @@
 
 using Microsoft::WRL::ComPtr;
 
+namespace
+{
+	// L"#512", or L"#?" when unranked
+	std::wstring formatRank(const std::optional<int> rank)
+	{
+		return rank ? L"#" + std::to_wstring(*rank) : L"#?";
+	}
+}
+
 MainWindow::MainWindow() = default;
 
 MainWindow::~MainWindow() = default;
@@ -61,6 +70,9 @@ HRESULT MainWindow::createGraphicsResources()
 
 			// last seconds color brush
 			hr = pRenderTarget_->CreateSolidColorBrush(lastSecondsColor, &pBrushLastSeconds_);
+
+			// overlay brush, recolored before each use
+			hr = pRenderTarget_->CreateSolidColorBrush(colorRefToColorf(OVERLAY_PALETTE[OVERLAY_TEXT]), &pBrushOverlay_);
 		}
 	}
 
@@ -73,38 +85,56 @@ HRESULT MainWindow::createDeviceIndependentResources()
 	// Set up write factory
 	if (pWriteFactory_ == nullptr)
 	{
-		if (pWriteFactory_ == nullptr) {
-			hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory)
-				, reinterpret_cast<IUnknown**>(pWriteFactory_.GetAddressOf()));
-		}
+		hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory)
+			, reinterpret_cast<IUnknown**>(pWriteFactory_.GetAddressOf()));
+	}
 
-		if (SUCCEEDED(hr) && pTextFormat_ == nullptr)
+	if (SUCCEEDED(hr) && pTextFormat_ == nullptr)
+	{
+		// Set up text format
+		static constexpr int fontSize = 34;
+
+		hr = pWriteFactory_->CreateTextFormat(
+			FONT_NAME_TIMER,
+			nullptr,
+			DWRITE_FONT_WEIGHT_BOLD,
+			DWRITE_FONT_STYLE_NORMAL,
+			DWRITE_FONT_STRETCH_EXTRA_EXPANDED,
+			fontSize,
+			L"",
+			&pTextFormat_
+		);
+
+		if (SUCCEEDED(hr))
 		{
-			// Set up text format
-			static constexpr int fontSize = 34;
-
-			hr = pWriteFactory_->CreateTextFormat(
-				FONT_NAME_TIMER,
-				nullptr,
-				DWRITE_FONT_WEIGHT_BOLD,
-				DWRITE_FONT_STYLE_NORMAL,
-				DWRITE_FONT_STRETCH_EXTRA_EXPANDED,
-				fontSize,
-				L"",
-				&pTextFormat_
-			);
+			// Center the text horizontally and vertically.
+			hr = pTextFormat_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
 
 			if (SUCCEEDED(hr))
 			{
-				// Center the text horizontally and vertically.
-				hr = pTextFormat_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
-
-				if (SUCCEEDED(hr))
-				{
-					hr = pTextFormat_->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_FAR);
-				}
+				hr = pTextFormat_->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_FAR);
 			}
 		}
+	}
+
+	// Overlay text: centered on one line in its rect
+	const auto createOverlayFormat = [this](const float size, Microsoft::WRL::ComPtr<IDWriteTextFormat>& format)
+	{
+		if (format != nullptr) return S_OK;
+		HRESULT formatHr = pWriteFactory_->CreateTextFormat(FONT_NAME_OVERLAY, nullptr, DWRITE_FONT_WEIGHT_BOLD,
+			DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, size, L"", &format);
+		if (SUCCEEDED(formatHr)) formatHr = format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+		if (SUCCEEDED(formatHr)) formatHr = format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+		if (SUCCEEDED(formatHr)) formatHr = format->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
+		return formatHr;
+	};
+
+	if (SUCCEEDED(hr)) hr = createOverlayFormat(NAMES_FONT_SIZE, pNamesFormat_);
+	if (SUCCEEDED(hr)) hr = createOverlayFormat(BAR_FONT_SIZE, pBarFormat_);
+	if (SUCCEEDED(hr)) hr = createOverlayFormat(BADGE_FONT_SIZE, pBadgeFormat_);
+	if (SUCCEEDED(hr) && pEllipsis_ == nullptr)
+	{
+		hr = pWriteFactory_->CreateEllipsisTrimmingSign(pNamesFormat_.Get(), &pEllipsis_);
 	}
 
 	return hr;
@@ -112,13 +142,12 @@ HRESULT MainWindow::createDeviceIndependentResources()
 
 void MainWindow::discardGraphicsResources()
 {
-	pFactory_.Reset();
+	// Only what depends on the render target; handlePainting recreates it on the next paint
 	pRenderTarget_.Reset();
 	pBrushTimer_.Reset();
 	pBrushSelectedTimer_.Reset();
 	pBrushLastSeconds_.Reset();
-	pWriteFactory_.Reset();
-	pTextFormat_.Reset();
+	pBrushOverlay_.Reset();
 }
 
 LRESULT MainWindow::hitTest(const LPARAM lParam) const
@@ -145,12 +174,13 @@ LRESULT MainWindow::hitTest(const LPARAM lParam) const
 
 void MainWindow::constrainSizingRect(const WPARAM edge, RECT* rect) const
 {
-	const float scaleX = static_cast<float>(rect->right - rect->left) / SIZE_MAIN_WIDTH;
-	const float scaleY = static_cast<float>(rect->bottom - rect->top) / SIZE_MAIN_HEIGHT;
+	const D2D1_SIZE_F base = baseSize(league_.layout);
+	const float scaleX = static_cast<float>(rect->right - rect->left) / base.width;
+	const float scaleY = static_cast<float>(rect->bottom - rect->top) / base.height;
 	const float scale = std::clamp((std::max)(scaleX, scaleY), MIN_SCALE, MAX_SCALE);
 
-	const LONG width = std::lround(SIZE_MAIN_WIDTH * scale);
-	const LONG height = std::lround(SIZE_MAIN_HEIGHT * scale);
+	const LONG width = std::lround(base.width * scale);
+	const LONG height = std::lround(base.height * scale);
 
 	// Keep the corner opposite to the dragged one in place
 	if (edge == WMSZ_LEFT || edge == WMSZ_TOPLEFT || edge == WMSZ_BOTTOMLEFT)
@@ -171,7 +201,8 @@ void MainWindow::handleResize(const UINT width, const UINT height)
 
 	const float fWidth = static_cast<float>(width);
 	const float fHeight = static_cast<float>(height);
-	scale_ = (std::min)(fWidth / SIZE_MAIN_WIDTH, fHeight / SIZE_MAIN_HEIGHT);
+	const D2D1_SIZE_F base = baseSize(league_.layout);
+	scale_ = (std::min)(fWidth / base.width, fHeight / base.height);
 
 	// WM_SIZE can arrive before the render target exists
 	if (pRenderTarget_ != nullptr) {
@@ -185,6 +216,14 @@ void MainWindow::handlePainting()
 {
 	PAINTSTRUCT ps;
 	BeginPaint(hwnd_, &ps);
+
+	// Recreates the render target after a D2DERR_RECREATE_TARGET discarded it
+	if (FAILED(createGraphicsResources()))
+	{
+		EndPaint(hwnd_, &ps);
+		return;
+	}
+
 	pRenderTarget_->BeginDraw();
 
 	// workaround to visible edges issue while transparent
@@ -198,30 +237,32 @@ void MainWindow::handlePainting()
 	// Lay out in base units and scale everything to the window size
 	pRenderTarget_->SetTransform(D2D1::Matrix3x2F::Scale(scale_, scale_));
 
-	constexpr float halfWidth = SIZE_MAIN_WIDTH / 2.0f;
-	const D2D1_RECT_F rect1 = D2D1::RectF(0, 0, halfWidth, SIZE_MAIN_HEIGHT);
-	const D2D1_RECT_F rect2 = D2D1::RectF(halfWidth, 0, SIZE_MAIN_WIDTH, SIZE_MAIN_HEIGHT);
-
 	if (pWriteFactory_ != nullptr)
 	{
-		if (activeTimer_ != nullptr)
-		{
-			// Select color for timer 2
-			ID2D1SolidColorBrush* pBrushTimer_2 = getTimer2Brush();
+		const OverlayStats* stats = league_.overlayStats ? &*league_.overlayStats : nullptr;
+		const OverlayLayout layout = stats != nullptr ? league_.layout : OverlayLayout::TimerOnly;
 
-			// draw timers
-			if (activeTimer_ == &timer1) {
-				timer1.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect1, pBrushSelectedTimer_.Get());
-			}
-			else {
-				timer1.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect1, pBrushTimer_.Get());
-			}
-			timer2.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect2, pBrushTimer_2);
-		}
-		else
+		switch (layout)
 		{
-			timer1.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect1, pBrushTimer_.Get());
-			timer2.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect2, pBrushTimer_.Get());
+		case OverlayLayout::Stats:
+		{
+			constexpr float timersWidth = OVERLAY_WIDTH - BADGE_WIDTH;
+			paintTimers(D2D1::RectF(0, 0, timersWidth, TIMER_ROW_HEIGHT));
+			paintRankBadge(D2D1::RectF(timersWidth, 0, OVERLAY_WIDTH, TIMER_ROW_HEIGHT), *stats);
+			paintStatsBar(D2D1::RectF(0, TIMER_ROW_HEIGHT, OVERLAY_WIDTH, TIMER_ROW_HEIGHT + STATS_BAR_HEIGHT), *stats);
+			break;
+		}
+		case OverlayLayout::StatsWithNames:
+		{
+			constexpr float timersBottom = NAMES_ROW_HEIGHT + TIMER_ROW_HEIGHT;
+			paintNamesRow(D2D1::RectF(0, 0, OVERLAY_WIDTH, NAMES_ROW_HEIGHT), *stats);
+			paintTimers(D2D1::RectF(0, NAMES_ROW_HEIGHT, OVERLAY_WIDTH, timersBottom));
+			paintStatsBar(D2D1::RectF(0, timersBottom, OVERLAY_WIDTH, timersBottom + STATS_BAR_HEIGHT), *stats);
+			break;
+		}
+		default:
+			paintTimers(D2D1::RectF(0, 0, SIZE_MAIN_WIDTH, SIZE_MAIN_HEIGHT));
+			break;
 		}
 	}
 
@@ -234,8 +275,178 @@ void MainWindow::handlePainting()
 	EndPaint(hwnd_, &ps);
 }
 
+D2D1_SIZE_F MainWindow::baseSize(const OverlayLayout layout)
+{
+	switch (layout)
+	{
+	case OverlayLayout::Stats:
+		return D2D1::SizeF(OVERLAY_WIDTH, TIMER_ROW_HEIGHT + STATS_BAR_HEIGHT);
+	case OverlayLayout::StatsWithNames:
+		return D2D1::SizeF(OVERLAY_WIDTH, NAMES_ROW_HEIGHT + TIMER_ROW_HEIGHT + STATS_BAR_HEIGHT);
+	default:
+		return D2D1::SizeF(SIZE_MAIN_WIDTH, SIZE_MAIN_HEIGHT);
+	}
+}
+
+OverlayLayout MainWindow::derivedLayout() const
+{
+	if (!league_.overlayStats || !appSettings.league.statsOverlayEnabled) return OverlayLayout::TimerOnly;
+	return appSettings.league.showNamesAndScore ? OverlayLayout::StatsWithNames : OverlayLayout::Stats;
+}
+
+void MainWindow::setLayout(const OverlayLayout layout)
+{
+	if (layout == league_.layout) return;
+	league_.layout = layout;
+
+	// WM_SIZE follows synchronously and recomputes scale_ against the new base size
+	const D2D1_SIZE_F base = baseSize(layout);
+	SetWindowPos(hwnd_, nullptr, 0, 0, std::lround(base.width * scale_), std::lround(base.height * scale_),
+		SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void MainWindow::paintTimers(const D2D1_RECT_F& row)
+{
+	const float middle = (row.left + row.right) / 2.0f;
+	const D2D1_RECT_F rect1 = D2D1::RectF(row.left, row.top, middle, row.bottom);
+	const D2D1_RECT_F rect2 = D2D1::RectF(middle, row.top, row.right, row.bottom);
+
+	if (activeTimer_ != nullptr)
+	{
+		// Select color for timer 2
+		ID2D1SolidColorBrush* pBrushTimer_2 = getTimer2Brush();
+
+		// draw timers
+		if (activeTimer_ == &timer1) {
+			timer1.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect1, pBrushSelectedTimer_.Get());
+		}
+		else {
+			timer1.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect1, pBrushTimer_.Get());
+		}
+		timer2.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect2, pBrushTimer_2);
+	}
+	else
+	{
+		timer1.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect1, pBrushTimer_.Get());
+		timer2.draw(pRenderTarget_.Get(), pTextFormat_.Get(), rect2, pBrushTimer_.Get());
+	}
+}
+
+void MainWindow::paintRankBadge(const D2D1_RECT_F& rect, const OverlayStats& stats)
+{
+	fillRect(rect, OVERLAY_BADGE_BACKGROUND);
+	drawText(formatRank(stats.playerRank), pBadgeFormat_.Get(), rect, OVERLAY_TEXT);
+}
+
+void MainWindow::paintNamesRow(const D2D1_RECT_F& rect, const OverlayStats& stats)
+{
+	// Equal name cells on both sides keep the score centered over the gap between the timers
+	const float nameWidth = (rect.right - rect.left - SCORE_WIDTH) / 2.0f;
+	const D2D1_RECT_F playerCell = D2D1::RectF(rect.left, rect.top, rect.left + nameWidth, rect.bottom);
+	const D2D1_RECT_F scoreCell = D2D1::RectF(playerCell.right, rect.top, playerCell.right + SCORE_WIDTH, rect.bottom);
+	const D2D1_RECT_F opponentCell = D2D1::RectF(scoreCell.right, rect.top, rect.right, rect.bottom);
+
+	fillRect(playerCell, OVERLAY_NAME_BACKGROUND);
+	fillRect(scoreCell, OVERLAY_SCORE_BACKGROUND);
+	fillRect(opponentCell, OVERLAY_NAME_BACKGROUND);
+
+	drawNameWithRank(playerCell, stats.playerName, stats.playerRank);
+	if (stats.opponentName) drawNameWithRank(opponentCell, *stats.opponentName, stats.opponentRank); // empty outside a match
+
+	const std::wstring score = std::to_wstring(stats.scorePlayer) + L" - " + std::to_wstring(stats.scoreOpponent);
+	drawText(score, pNamesFormat_.Get(), scoreCell, OVERLAY_TEXT);
+}
+
+void MainWindow::paintStatsBar(const D2D1_RECT_F& rect, const OverlayStats& stats)
+{
+	fillRect(rect, OVERLAY_BAR_BACKGROUND);
+	IDWriteTextFormat* format = pBarFormat_.Get();
+
+	// Last results on the left, one fixed-width cell each
+	const float letterWidth = measureText(L"W", format);
+	const float cellWidth = measureText(L"W ", format);
+	float x = rect.left + CELL_PADDING;
+	for (const bool isWin : stats.lastResults)
+	{
+		drawText(isWin ? L"W" : L"L", format, D2D1::RectF(x, rect.top, x + letterWidth, rect.bottom),
+			isWin ? OVERLAY_WIN : OVERLAY_LOSS);
+		x += cellWidth;
+	}
+	const float resultsRight = x;
+
+	// Streak on the right
+	const std::wstring streak = L"Streak: " + std::to_wstring(stats.streak);
+	const float streakLeft = rect.right - CELL_PADDING - measureText(streak, format);
+	drawText(streak, format, D2D1::RectF(streakLeft, rect.top, rect.right - CELL_PADDING, rect.bottom), OVERLAY_TEXT);
+
+	// Winrate centered between them, the value in the win color
+	const std::wstring label = L"WINRATE ";
+	const std::wstring value = std::to_wstring(stats.winrate) + L"%";
+	const float labelWidth = measureText(label, format);
+	const float valueWidth = measureText(value, format);
+	const float labelLeft = (resultsRight + streakLeft - labelWidth - valueWidth) / 2.0f;
+	const float valueLeft = labelLeft + labelWidth;
+	drawText(label, format, D2D1::RectF(labelLeft, rect.top, valueLeft, rect.bottom), OVERLAY_TEXT);
+	drawText(value, format, D2D1::RectF(valueLeft, rect.top, valueLeft + valueWidth, rect.bottom), OVERLAY_WIN);
+}
+
+void MainWindow::drawNameWithRank(const D2D1_RECT_F& cell, const std::wstring& name, const std::optional<int> rank)
+{
+	IDWriteTextFormat* format = pNamesFormat_.Get();
+	const std::wstring suffix = L"(" + formatRank(rank) + L")";
+	const float suffixWidth = measureText(suffix, format);
+
+	const float available = cell.right - cell.left - 2 * CELL_PADDING;
+	const float nameMaxWidth = (std::max)(available - suffixWidth, 0.0f);
+	const float nameWidth = (std::min)(measureText(name, format), nameMaxWidth);
+
+	// Center name and rank as one unit
+	const float left = cell.left + (cell.right - cell.left - nameWidth - suffixWidth) / 2.0f;
+
+	ComPtr<IDWriteTextLayout> nameLayout;
+	if (nameWidth > 0 && SUCCEEDED(pWriteFactory_->CreateTextLayout(name.c_str(), static_cast<UINT32>(name.size()),
+		format, nameMaxWidth, cell.bottom - cell.top, &nameLayout)))
+	{
+		const DWRITE_TRIMMING trimming = { DWRITE_TRIMMING_GRANULARITY_CHARACTER, 0, 0 };
+		nameLayout->SetTrimming(&trimming, pEllipsis_.Get());
+		nameLayout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+		pBrushOverlay_->SetColor(colorRefToColorf(OVERLAY_PALETTE[OVERLAY_TEXT]));
+		pRenderTarget_->DrawTextLayout(D2D1::Point2F(left, cell.top), nameLayout.Get(), pBrushOverlay_.Get());
+	}
+
+	const float suffixLeft = left + nameWidth;
+	drawText(suffix, format, D2D1::RectF(suffixLeft, cell.top, suffixLeft + suffixWidth, cell.bottom), OVERLAY_TEXT);
+}
+
+void MainWindow::fillRect(const D2D1_RECT_F& rect, const OverlayColor color)
+{
+	pBrushOverlay_->SetColor(colorRefToColorf(OVERLAY_PALETTE[color]));
+	pRenderTarget_->FillRectangle(rect, pBrushOverlay_.Get());
+}
+
+void MainWindow::drawText(const std::wstring& text, IDWriteTextFormat* format, const D2D1_RECT_F& rect, const OverlayColor color)
+{
+	pBrushOverlay_->SetColor(colorRefToColorf(OVERLAY_PALETTE[color]));
+	pRenderTarget_->DrawTextW(text.c_str(), static_cast<UINT32>(text.size()), format, rect, pBrushOverlay_.Get());
+}
+
+float MainWindow::measureText(const std::wstring& text, IDWriteTextFormat* format) const
+{
+	ComPtr<IDWriteTextLayout> layout;
+	DWRITE_TEXT_METRICS metrics = {};
+	if (FAILED(pWriteFactory_->CreateTextLayout(text.c_str(), static_cast<UINT32>(text.size()), format, 10000.0f, 100.0f, &layout))
+		|| FAILED(layout->GetMetrics(&metrics)))
+	{
+		return 0;
+	}
+	return metrics.widthIncludingTrailingWhitespace;
+}
+
 D2D1_COLOR_F MainWindow::paletteToColorf(const int colorIndex) {
-	const COLORREF color = PALETTE[colorIndex];
+	return colorRefToColorf(PALETTE[colorIndex]);
+}
+
+D2D1_COLOR_F MainWindow::colorRefToColorf(const COLORREF color) {
 	return D2D1::ColorF(GetRValue(color) / 255.0f, GetGValue(color) / 255.0f, GetBValue(color) / 255.0f);
 }
 
@@ -537,15 +748,23 @@ void MainWindow::handleStatusResponse(const StatusDto& status)
 
 void MainWindow::handlePlayerResponse(const PlayerDetailsDto& details)
 {
+	const bool playerChanged = !league_.pendingPlayerId.empty() && league_.pendingPlayerId != league_.activePlayerId;
 	if (!league_.pendingPlayerId.empty())
 	{
 		league_.activePlayerId = league_.pendingPlayerId;
 		league_.pendingPlayerId.clear();
-		updatePlayerPolling();
 	}
 
-	league_.overlayStats = toOverlayStats(details);
+	// The score is the user's, so a poll of the same player keeps it
+	OverlayStats stats = toOverlayStats(details);
+	if (!playerChanged && league_.overlayStats)
+	{
+		stats.scorePlayer = league_.overlayStats->scorePlayer;
+		stats.scoreOpponent = league_.overlayStats->scoreOpponent;
+	}
+	league_.overlayStats = std::move(stats);
 	statisticsWindow.setModel(toStatsWindowModel(details));
+	refreshOverlay();
 }
 
 void MainWindow::handleApiError(const TimerApiRequest request, const DWORD code)
@@ -588,7 +807,14 @@ void MainWindow::revertPlayer()
 	{
 		timerApi.getPlayerDetails(savedId, hwnd_);
 	}
+	refreshOverlay();
+}
+
+void MainWindow::refreshOverlay()
+{
+	setLayout(derivedLayout());
 	updatePlayerPolling();
+	requestRedraw();
 }
 
 void MainWindow::refreshPlayerIfNotPolling()

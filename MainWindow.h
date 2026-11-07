@@ -23,16 +23,55 @@ private:
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> pBrushTimer_;
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> pBrushSelectedTimer_;
 	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> pBrushLastSeconds_;
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> pBrushOverlay_; // recolored from OVERLAY_PALETTE before each use
 	D2D1_COLOR_F backgroundColor_;
 
 	// Writing Resources
 	Microsoft::WRL::ComPtr<IDWriteFactory> pWriteFactory_;
 	Microsoft::WRL::ComPtr<IDWriteTextFormat> pTextFormat_;
+	Microsoft::WRL::ComPtr<IDWriteTextFormat> pNamesFormat_; // the names and score row
+	Microsoft::WRL::ComPtr<IDWriteTextFormat> pBarFormat_;	 // the stats bar
+	Microsoft::WRL::ComPtr<IDWriteTextFormat> pBadgeFormat_; // the rank badge
+	Microsoft::WRL::ComPtr<IDWriteInlineObject> pEllipsis_;	 // trims long names
 
 	// Resize constants
 	static constexpr int RESIZE_GRIP = 8; // size in pixels of the square resize area in each corner
 	static constexpr float MIN_SCALE = 0.5f;
 	static constexpr float MAX_SCALE = 4.0f;
+
+	// Overlay layout, in base units (scale 1.0). TimerOnly is SIZE_MAIN_WIDTH x SIZE_MAIN_HEIGHT.
+	static constexpr float OVERLAY_WIDTH = 380.0f;		// both stats layouts
+	static constexpr float TIMER_ROW_HEIGHT = SIZE_MAIN_HEIGHT;
+	static constexpr float STATS_BAR_HEIGHT = 24.0f;
+	static constexpr float NAMES_ROW_HEIGHT = 36.0f;
+	static constexpr float BADGE_WIDTH = OVERLAY_WIDTH - SIZE_MAIN_WIDTH; // the timers keep their size next to it
+	static constexpr float SCORE_WIDTH = 70.0f;
+	static constexpr float CELL_PADDING = 6.0f;
+	static constexpr float NAMES_FONT_SIZE = 19.0f;
+	static constexpr float BAR_FONT_SIZE = 17.0f;
+	static constexpr float BADGE_FONT_SIZE = 22.0f;
+
+	// The stats overlay's colors. Never add pure black: it's the color key for transparency.
+	enum OverlayColor
+	{
+		OVERLAY_BAR_BACKGROUND,
+		OVERLAY_NAME_BACKGROUND,
+		OVERLAY_SCORE_BACKGROUND,
+		OVERLAY_BADGE_BACKGROUND,
+		OVERLAY_TEXT,
+		OVERLAY_WIN, // also the winrate
+		OVERLAY_LOSS,
+		OVERLAY_COLOR_COUNT
+	};
+	static constexpr COLORREF OVERLAY_PALETTE[OVERLAY_COLOR_COUNT] = {
+		RGB(40, 40, 40),	// bar background
+		RGB(50, 50, 50),	// name background
+		RGB(32, 32, 32),	// score background
+		RGB(32, 32, 32),	// badge background
+		RGB(225, 225, 225), // text
+		RGB(30, 160, 95),	// win
+		RGB(195, 50, 25),	// loss
+	};
 
 	// SetTimer IDs
 	static constexpr UINT_PTR TIMER_ID_FRAME = 0;		  // redraws the running timers every 16 ms
@@ -42,7 +81,7 @@ private:
 
 	// Fields
 	Timer* activeTimer_ = &timer1;
-	float scale_ = 1.0f; // current window size relative to SIZE_MAIN_WIDTH x SIZE_MAIN_HEIGHT
+	float scale_ = 1.0f; // current window size relative to baseSize(league_.layout)
 	LeagueState league_; // DBDLeague player, polling and overlay data
 
 	/**
@@ -98,6 +137,91 @@ private:
 	void handlePainting();
 
 	/**
+	@brief The window size of a layout at scale 1.0.
+
+	@param layout The layout.
+
+	@return The size in base units.
+	*/
+	static D2D1_SIZE_F baseSize(OverlayLayout layout);
+
+	/**
+	@brief The layout the applied league settings and the loaded stats call for.
+
+	@return TimerOnly without stats or with the overlay off, otherwise Stats or StatsWithNames.
+	*/
+	OverlayLayout derivedLayout() const;
+
+	/**
+	@brief Switches to the layout and resizes the window to it at the current scale, keeping the top-left corner.
+
+	@param layout The new layout.
+	*/
+	void setLayout(OverlayLayout layout);
+
+	/**
+	@brief Draws the two timers, each in one half of the row.
+
+	@param row The timers' row.
+	*/
+	void paintTimers(const D2D1_RECT_F& row);
+
+	/**
+	@brief Draws the player's rank next to the timers (Stats layout).
+
+	@param rect The badge's rect.
+
+	@param stats The overlay's stats.
+	*/
+	void paintRankBadge(const D2D1_RECT_F& rect, const OverlayStats& stats);
+
+	/**
+	@brief Draws the player and the opponent with their ranks, and the score centered between them.
+
+	@param rect The row's rect.
+
+	@param stats The overlay's stats.
+	*/
+	void paintNamesRow(const D2D1_RECT_F& rect, const OverlayStats& stats);
+
+	/**
+	@brief Draws the last results, the winrate and the streak.
+
+	@param rect The bar's rect.
+
+	@param stats The overlay's stats.
+	*/
+	void paintStatsBar(const D2D1_RECT_F& rect, const OverlayStats& stats);
+
+	/**
+	@brief Draws "name(#rank)" centered in the cell, cutting the name with an ellipsis so the rank always fits.
+
+	@param cell Where to draw.
+
+	@param name The name.
+
+	@param rank The rank; empty draws "#?".
+	*/
+	void drawNameWithRank(const D2D1_RECT_F& cell, const std::wstring& name, std::optional<int> rank);
+
+	/**
+	@brief Fills a rect with an overlay color.
+	*/
+	void fillRect(const D2D1_RECT_F& rect, OverlayColor color);
+
+	/**
+	@brief Draws text with an overlay color, aligned by the format.
+	*/
+	void drawText(const std::wstring& text, IDWriteTextFormat* format, const D2D1_RECT_F& rect, OverlayColor color);
+
+	/**
+	@brief Measures the width of a single line of text, including trailing spaces.
+
+	@return The width in base units, or 0 if it can't be measured.
+	*/
+	float measureText(const std::wstring& text, IDWriteTextFormat* format) const;
+
+	/**
 	@brief Get the COLORF value of a color from the palette.
 
 	@param colorIndex The index of the color in the palette.
@@ -105,7 +229,12 @@ private:
 	@return D2D1_COLOR_F value of the given color.
 	*/
 	static D2D1_COLOR_F paletteToColorf(int colorIndex);
-	
+
+	/**
+	@brief Converts a COLORREF to a D2D1_COLOR_F.
+	*/
+	static D2D1_COLOR_F colorRefToColorf(COLORREF color);
+
 	/**
 	@brief Retrieve and apply the colors from the settings file to the timer brushes.
 	*/
@@ -147,6 +276,11 @@ private:
 	@param code The HTTP status, or 0.
 	*/
 	void handleApiError(TimerApiRequest request, DWORD code);
+
+	/**
+	@brief Starts or stops polling: polls while the API is enabled, the overlay is enabled and a player is active.
+	*/
+	void updatePlayerPolling();
 
 public:
 	// Public fields
@@ -237,7 +371,8 @@ public:
 	void refreshPlayerIfNotPolling();
 
 	/**
-	@brief Starts or stops polling: polls while the API is enabled, the overlay is enabled and a player is active.
+	@brief Brings the overlay in line with the league settings and the loaded stats: switches the layout,
+	starts or stops polling, and redraws. Call it after applying league settings or changing the stats.
 	*/
-	void updatePlayerPolling();
+	void refreshOverlay();
 };
