@@ -4,7 +4,8 @@
 #include "HotkeyManager.h"
 #include "ResourceUtils.h"
 #include "Program.h"
-#include "StatisticsWindowStrings.h"
+#include "Text/StatisticsWindowStrings.h"
+#include "Text/SettingsWindowStrings.h"
 #include "TimerApi/Dtos/StatusDto.h"
 #include "TimerApi/Dtos/PlayerDetailsDto.h"
 #include "TimerApi/TimerApiMessages.h"
@@ -530,7 +531,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 				if (settingsWindow.window() == nullptr) // dont create multiple settings windows
 				{
 					// Create and show settings window
-					if (!settingsWindow.create(SETTINGS_WINDOW_TITLE, 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
+					if (!settingsWindow.create(SettingsText::WINDOW_TITLE, 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
 						return 0;
 					}
 

@@ -55,6 +55,9 @@
     <Filter Include="League\Models">
       <UniqueIdentifier>{cc9a73a6-a5ef-4ade-8856-392610f92173}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Text">
+      <UniqueIdentifier>{7d3e5a91-4c2b-4f86-b1e9-0a6d8c3f5e27}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Program.cpp">
@@ -131,8 +134,14 @@
     <ClInclude Include="StatisticsWindow.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="StatisticsWindowStrings.h">
-      <Filter>Header Files\Windows</Filter>
+    <ClInclude Include="Text\StatisticsWindowStrings.h">
+      <Filter>Header Files\Text</Filter>
+    </ClInclude>
+    <ClInclude Include="Text\SettingsWindowStrings.h">
+      <Filter>Header Files\Text</Filter>
+    </ClInclude>
+    <ClInclude Include="Text\ColorPickerWindowStrings.h">
+      <Filter>Header Files\Text</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>Header Files\Utilities</Filter>
