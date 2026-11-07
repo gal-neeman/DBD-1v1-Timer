@@ -29,8 +29,13 @@ namespace
 	// "Total games: 1234"; grow it if a label in StatisticsWindowStrings.h gets longer.
 	constexpr int STAT_COLUMN_WIDTH = 125;
 
-	// "Last Matches" columns are sized to their content, with the spare width split into equal gaps
-	constexpr int MIN_COLUMN_GAP = 16;
+	// "Last Matches" column widths, each fitting its widest header or cell, so the gaps between the
+	// texts come out even. Longer opponent names are cut to fit (drawOpponent).
+	constexpr int DATE_COLUMN_WIDTH = 124;	// "23/10/2026 12:02"
+	constexpr int RESULT_COLUMN_WIDTH = 46;	// "Result" header
+	constexpr int SCORE_COLUMN_WIDTH = 42;	// "Score" header
+	constexpr int OPPONENT_COLUMN_WIDTH = 120;
+	constexpr int POINTS_COLUMN_WIDTH = 94;	// "Points Gained" header
 
 	constexpr COLORREF COLOR_GAIN = RGB(0, 128, 0);
 	constexpr COLORREF COLOR_LOSS = RGB(200, 30, 30);
@@ -403,43 +408,22 @@ RECT StatisticsWindow::MatchColumns::cell(const MatchColumn column, const int y)
 	return { x[column], y, x[column] + width[column], y + MATCH_ROW_HEIGHT };
 }
 
-StatisticsWindow::MatchColumns StatisticsWindow::layoutMatchColumns(const HDC hdc, const std::vector<MatchRow>& matches, const int left, const int right) const
+StatisticsWindow::MatchColumns StatisticsWindow::layoutMatchColumns(const int left, const int right)
 {
-	// Each column is as wide as its widest header or cell, each measured in the font it's drawn in
-	MatchColumns columns;
-	auto& widths = columns.width;
-	SelectObject(hdc, headerFont_);
-	widths[Date] = textWidth(hdc, StatsText::DATE_HEADER);
-	widths[Result] = textWidth(hdc, StatsText::RESULT_HEADER);
-	widths[Score] = textWidth(hdc, StatsText::SCORE_HEADER);
-	widths[Opponent] = textWidth(hdc, StatsText::OPPONENT_HEADER);
-	widths[Points] = textWidth(hdc, StatsText::POINTS_GAINED_HEADER);
-	SelectObject(hdc, controlsFont_);
-	widths[Result] = (std::max)({ widths[Result], textWidth(hdc, StatsText::WIN_RESULT), textWidth(hdc, StatsText::LOSS_RESULT) });
-	for (const MatchRow& match : matches)
-	{
-		widths[Date] = (std::max)(widths[Date], textWidth(hdc, match.date));
-		widths[Score] = (std::max)(widths[Score], textWidth(hdc, match.score));
-		widths[Opponent] = (std::max)(widths[Opponent], textWidth(hdc, opponentText(match.opponentName, match.opponentRank)));
-		widths[Points] = (std::max)(widths[Points], textWidth(hdc, match.pointsGained));
-	}
+	MatchColumns columns = { .width = { DATE_COLUMN_WIDTH, RESULT_COLUMN_WIDTH, SCORE_COLUMN_WIDTH, OPPONENT_COLUMN_WIDTH, POINTS_COLUMN_WIDTH } };
 
-	// The spare width becomes equal gaps. If there's too little, only the opponent column shrinks
-	constexpr int gapCount = COLUMN_COUNT - 1;
-	const int available = right - left;
-	int content = 0;
-	for (const int width : widths) content += width;
-	int gap = (available - content) / gapCount;
-	if (gap < MIN_COLUMN_GAP)
-	{
-		gap = MIN_COLUMN_GAP;
-		widths[Opponent] = available - (content - widths[Opponent]) - gapCount * MIN_COLUMN_GAP;
-	}
+	// The spare width becomes equal gaps
+	int contentWidth = 0;
+	for (const int width : columns.width) contentWidth += width;
+	const int gap = (right - left - contentWidth) / (COLUMN_COUNT - 1);
 
-	// Left edges; the last column ends at the right edge, which absorbs the rounding
-	columns.x[Date] = left;
-	for (int column = 1; column < Points; ++column) columns.x[column] = columns.x[column - 1] + widths[column - 1] + gap;
-	columns.x[Points] = right - widths[Points];
+	int x = left;
+	for (int column = 0; column < COLUMN_COUNT; ++column)
+	{
+		columns.x[column] = x;
+		x += columns.width[column] + gap;
+	}
+	columns.x[Points] = right - columns.width[Points]; // ends at the right edge; the last gap absorbs the rounding
 	return columns;
 }
 
@@ -451,7 +435,7 @@ void StatisticsWindow::paintMatches(const HDC hdc, const std::vector<MatchRow>& 
 		return;
 	}
 
-	const MatchColumns columns = layoutMatchColumns(hdc, matches, left, right);
+	const MatchColumns columns = layoutMatchColumns(left, right);
 
 	// Everything is left-aligned except the score, which is centered
 	SelectObject(hdc, headerFont_);

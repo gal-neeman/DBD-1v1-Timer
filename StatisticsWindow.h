@@ -148,12 +148,7 @@ private:
 	int paintStatsGrid(HDC hdc, const StatsWindowModel& model, int left, int right, int y) const;
 
 	/**
-	@brief Sizes each "Last Matches" column to its widest header or cell and splits the spare width
-	into equal gaps. If there's too little, only the opponent column shrinks.
-
-	@param hdc The device context to measure with.
-
-	@param matches The rows to fit.
+	@brief Lays out the "Last Matches" columns at fixed widths, with the spare width split into equal gaps.
 
 	@param left The left edge of the table.
 
@@ -161,7 +156,7 @@ private:
 
 	@return The columns' positions and widths.
 	*/
-	MatchColumns layoutMatchColumns(HDC hdc, const std::vector<MatchRow>& matches, int left, int right) const;
+	static MatchColumns layoutMatchColumns(int left, int right);
 
 	/**
 	@brief Draws the "Last Matches" table, or a message when there are no matches.
