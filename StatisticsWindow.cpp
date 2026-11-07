@@ -1,7 +1,7 @@
 #include <Windows.h>
 #include "Globals.h"
 #include "StatisticsWindow.h"
-#include "StatisticsWindowStrings.h"
+#include "Text/StatisticsWindowStrings.h"
 #include "CommCtrlUtils.h"
 #include "ResourceUtils.h"
 #include "SettingsUtils.h"
@@ -26,7 +26,7 @@ namespace
 	constexpr int SECTION_GAP = 8;
 
 	// The stats grid's columns are this wide, with equal gaps between them. It must fit the longest line,
-	// "Total games: 1234"; grow it if a label in StatisticsWindowStrings.h gets longer.
+	// "Total games: 1234"; grow it if a label in Text/StatisticsWindowStrings.h gets longer.
 	constexpr int STAT_COLUMN_WIDTH = 125;
 
 	// "Last Matches" column widths, each fitting its widest header or cell, so the gaps between the

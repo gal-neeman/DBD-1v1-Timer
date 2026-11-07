@@ -187,7 +187,9 @@
     <ClInclude Include="SettingsUtils.h" />
     <ClInclude Include="SettingsWindow.h" />
     <ClInclude Include="StatisticsWindow.h" />
-    <ClInclude Include="StatisticsWindowStrings.h" />
+    <ClInclude Include="Text\StatisticsWindowStrings.h" />
+    <ClInclude Include="Text\SettingsWindowStrings.h" />
+    <ClInclude Include="Text\ColorPickerWindowStrings.h" />
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>

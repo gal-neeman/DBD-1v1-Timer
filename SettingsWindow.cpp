@@ -5,6 +5,8 @@
 #include "BaseWindow.h"
 #include "Program.h"
 #include "ControllerManager.h"
+#include "Text/SettingsWindowStrings.h"
+#include "Text/ColorPickerWindowStrings.h"
 #include <CommCtrl.h>
 #include <windowsx.h>
 #include <exception>
@@ -114,37 +116,37 @@ void SettingsWindow::initializeTextControls() const
 	constexpr int titleX = 15;
 
 	// Headers
-	const HWND hwndTitleHotkeys = createControl(WC_STATIC, L"Hotkeys", headerX, 5, headerWidth, headerHeight, NULL, SS_CENTER | SS_CENTERIMAGE);
-	const HWND hwndTitleOptions = createControl(WC_STATIC, L"Options", headerX, tileHeight_ * 9, headerWidth, headerHeight, NULL, SS_CENTER);
-	const HWND hwndTitleColors = createControl(WC_STATIC, L"Colors", headerX, tileHeight_ * 14, headerWidth, headerHeight, NULL, SS_CENTER);
+	const HWND hwndTitleHotkeys = createControl(WC_STATIC, SettingsText::HOTKEYS_HEADER, headerX, 5, headerWidth, headerHeight, NULL, SS_CENTER | SS_CENTERIMAGE);
+	const HWND hwndTitleOptions = createControl(WC_STATIC, SettingsText::OPTIONS_HEADER, headerX, tileHeight_ * 9, headerWidth, headerHeight, NULL, SS_CENTER);
+	const HWND hwndTitleColors = createControl(WC_STATIC, SettingsText::COLORS_HEADER, headerX, tileHeight_ * 14, headerWidth, headerHeight, NULL, SS_CENTER);
 
 	// Hotkey titles
-	const HWND hwndTextStart = createControl(WC_STATIC, L"Start / Stop / Reset", titleX, tileHeight_ * 2, titleWidth, tileHeight_);
-	const HWND hwndTextStartNoReset = createControl(WC_STATIC, L"Start / Stop", titleX, tileHeight_ * 3, titleWidth, tileHeight_);
-	const HWND hwndTextTimer1 = createControl(WC_STATIC, L"Timer 1", titleX, tileHeight_ * 4, titleWidth, tileHeight_);
-	const HWND hwndTextTimer2 = createControl(WC_STATIC, L"Timer 2", titleX, tileHeight_ * 5, titleWidth, tileHeight_);
-	const HWND hwndTextScoreLeft = createControl(WC_STATIC, L"Score Left +1", titleX, tileHeight_ * 6, titleWidth, tileHeight_);
-	const HWND hwndTextScoreRight = createControl(WC_STATIC, L"Score Right +1", titleX, tileHeight_ * 7, titleWidth, tileHeight_);
-	const HWND hwndTextScoreReset = createControl(WC_STATIC, L"Reset Score", titleX, tileHeight_ * 8, titleWidth, tileHeight_);
+	const HWND hwndTextStart = createControl(WC_STATIC, SettingsText::START_LABEL, titleX, tileHeight_ * 2, titleWidth, tileHeight_);
+	const HWND hwndTextStartNoReset = createControl(WC_STATIC, SettingsText::START_NO_RESET_LABEL, titleX, tileHeight_ * 3, titleWidth, tileHeight_);
+	const HWND hwndTextTimer1 = createControl(WC_STATIC, SettingsText::TIMER1_LABEL, titleX, tileHeight_ * 4, titleWidth, tileHeight_);
+	const HWND hwndTextTimer2 = createControl(WC_STATIC, SettingsText::TIMER2_LABEL, titleX, tileHeight_ * 5, titleWidth, tileHeight_);
+	const HWND hwndTextScoreLeft = createControl(WC_STATIC, SettingsText::SCORE_LEFT_LABEL, titleX, tileHeight_ * 6, titleWidth, tileHeight_);
+	const HWND hwndTextScoreRight = createControl(WC_STATIC, SettingsText::SCORE_RIGHT_LABEL, titleX, tileHeight_ * 7, titleWidth, tileHeight_);
+	const HWND hwndTextScoreReset = createControl(WC_STATIC, SettingsText::SCORE_RESET_LABEL, titleX, tileHeight_ * 8, titleWidth, tileHeight_);
 
 	// Checkbox titles
-	const HWND hwndTextStartOnChange = createControl(WC_STATIC, L"Start Timer On Change", titleX, tileHeight_ * 10, titleWidth, tileHeight_);
-	const HWND hwndTextTransparentBackground = createControl(WC_STATIC, L"Transparent Background", titleX, tileHeight_ * 11, titleWidth, tileHeight_);
-	const HWND hwndTextCheckboxClickthrough = createControl(WC_STATIC, L"Clickthrough (until restart)", titleX, tileHeight_ * 12, titleWidth, tileHeight_);
-	const HWND hwndTextLastSecondsTime = createControl(WC_STATIC, L"Last seconds time", titleX, tileHeight_ * 13, titleWidth, tileHeight_);
+	const HWND hwndTextStartOnChange = createControl(WC_STATIC, SettingsText::START_ON_CHANGE_LABEL, titleX, tileHeight_ * 10, titleWidth, tileHeight_);
+	const HWND hwndTextTransparentBackground = createControl(WC_STATIC, SettingsText::TRANSPARENT_LABEL, titleX, tileHeight_ * 11, titleWidth, tileHeight_);
+	const HWND hwndTextCheckboxClickthrough = createControl(WC_STATIC, SettingsText::CLICKTHROUGH_LABEL, titleX, tileHeight_ * 12, titleWidth, tileHeight_);
+	const HWND hwndTextLastSecondsTime = createControl(WC_STATIC, SettingsText::LAST_SECONDS_TIME_LABEL, titleX, tileHeight_ * 13, titleWidth, tileHeight_);
 
 	// Break lines
 	const HWND hwndBreakLine1 = createControl(WC_STATIC, nullptr, 15, tileHeight_ * 9 + breaklineOffsetY, SIZE_SETTINGS_WIDTH - 40, 5, NULL, SS_ETCHEDHORZ);
 	const HWND hwndBreakLine2 = createControl(WC_STATIC, nullptr, 15, tileHeight_ * 14 + breaklineOffsetY, SIZE_SETTINGS_WIDTH - 40, 5, NULL, SS_ETCHEDHORZ);
 
 	// Color options names
-	const HWND hwndTextColorTimer = createControl(WC_STATIC, L"Timer", titleX, tileHeight_ * 15, titleWidth, tileHeight_);
-	const HWND hwndTextColorSelectedTimer = createControl(WC_STATIC, L"Selected Timer", titleX, tileHeight_ * 16, titleWidth, tileHeight_);
-	const HWND hwndTextColorWinCon = createControl(WC_STATIC, L"Last Seconds Color", titleX, tileHeight_ * 17, titleWidth, tileHeight_);
-	const HWND hwndTextColorBackground = createControl(WC_STATIC, L"Background", titleX, tileHeight_ * 18, titleWidth, tileHeight_);
+	const HWND hwndTextColorTimer = createControl(WC_STATIC, SettingsText::TIMER_COLOR_LABEL, titleX, tileHeight_ * 15, titleWidth, tileHeight_);
+	const HWND hwndTextColorSelectedTimer = createControl(WC_STATIC, SettingsText::SELECTED_TIMER_COLOR_LABEL, titleX, tileHeight_ * 16, titleWidth, tileHeight_);
+	const HWND hwndTextColorWinCon = createControl(WC_STATIC, SettingsText::LAST_SECONDS_COLOR_LABEL, titleX, tileHeight_ * 17, titleWidth, tileHeight_);
+	const HWND hwndTextColorBackground = createControl(WC_STATIC, SettingsText::BACKGROUND_COLOR_LABEL, titleX, tileHeight_ * 18, titleWidth, tileHeight_);
 
 	// Copyright text
-	const HWND hwndCopyright = createControl(WC_STATIC, L"\u00A9 Truueh 2026", 10, SIZE_SETTINGS_HEIGHT - 71, 100, 17);
+	const HWND hwndCopyright = createControl(WC_STATIC, SettingsText::COPYRIGHT, 10, SIZE_SETTINGS_HEIGHT - 71, 100, 17);
 
 	// Apply fonts
 	SendMessage(hwndTitleColors, WM_SETFONT, (WPARAM)titleFont_, TRUE);
@@ -207,8 +209,8 @@ void SettingsWindow::initializeButtonControls()
 	colorButtons[3] = createControl(WC_BUTTON, L"", xColorButton, tileHeight_ * 18, widthColorButton, heightColorButton, CID_BACKGROUND_COLOR, BS_OWNERDRAW);
 
 	// Initialize exit controls
-	HWND hwndOkButton = createControl(WC_BUTTON, L"Save", SIZE_SETTINGS_WIDTH - 184, SIZE_SETTINGS_HEIGHT - 78, 75, 28, CID_OK);
-	HWND hwndCancelButton = createControl(WC_BUTTON, L"Cancel", SIZE_SETTINGS_WIDTH - 102, SIZE_SETTINGS_HEIGHT - 78, 75, 28, CID_CANCEL);
+	HWND hwndOkButton = createControl(WC_BUTTON, SettingsText::SAVE_BUTTON, SIZE_SETTINGS_WIDTH - 184, SIZE_SETTINGS_HEIGHT - 78, 75, 28, CID_OK);
+	HWND hwndCancelButton = createControl(WC_BUTTON, SettingsText::CANCEL_BUTTON, SIZE_SETTINGS_WIDTH - 102, SIZE_SETTINGS_HEIGHT - 78, 75, 28, CID_CANCEL);
 
 	// Apply currently set hotkeys
 	for (const HWND hCtrl : hotkeys) {
@@ -294,7 +296,7 @@ void SettingsWindow::handleControlCommand(const LPARAM lParam)
 	{
 		SetFocus(hwnd_);
 		hActiveControl_ = hwndCtrl;
-		SetWindowText(hActiveControl_, L"...");
+		SetWindowText(hActiveControl_, SettingsText::WAITING_FOR_KEY);
 		break;
 	}
 
@@ -325,7 +327,7 @@ void SettingsWindow::handleControlCommand(const LPARAM lParam)
 			colorPicker.controlId = controlId; // Notify Color Picker who called it
 			colorPicker.pTempSettings = &tempSettings_;
 		
-			if (!colorPicker.create(L"Color Picker", 850, 300, SIZE_COLORPICKER_WIDTH, SIZE_COLORPICKER_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr, nullptr)) {
+			if (!colorPicker.create(ColorPickerText::WINDOW_TITLE, 850, 300, SIZE_COLORPICKER_WIDTH, SIZE_COLORPICKER_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr, nullptr)) {
 				return;
 			}
 			ShowWindow(colorPicker.window(), SW_SHOW);

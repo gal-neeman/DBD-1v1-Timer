@@ -90,8 +90,7 @@ constexpr UINT16 SIZE_STATISTICS_WIDTH = 600;
 constexpr UINT16 SIZE_STATISTICS_HEIGHT = 640;
 
 // Version
-#define APP_VERSION L"1.5.1"
-constexpr WCHAR SETTINGS_WINDOW_TITLE[] = L"Settings - Version " APP_VERSION;
+#define APP_VERSION L"1.6.0" // the settings window title is built from it, see Text/SettingsWindowStrings.h
 
 // Fonts
 constexpr WCHAR FONT_NAME_TIMER[] = L"Segoe UI";

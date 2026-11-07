@@ -4,7 +4,8 @@
 #include "HotkeyManager.h"
 #include "ResourceUtils.h"
 #include "Program.h"
-#include "StatisticsWindowStrings.h"
+#include "Text/StatisticsWindowStrings.h"
+#include "Text/SettingsWindowStrings.h"
 #include "TimerApi/Dtos/StatusDto.h"
 #include "TimerApi/Dtos/PlayerDetailsDto.h"
 #include "TimerApi/TimerApiMessages.h"
@@ -22,6 +23,14 @@ namespace
 	std::wstring formatRank(const std::optional<int> rank)
 	{
 		return rank ? L"#" + std::to_wstring(*rank) : L"#?";
+	}
+
+	// Debug builds only: logs poll rate changes and poll requests; view with DebugView, filter on "[poll]"
+	void logPoll([[maybe_unused]] const std::wstring& message)
+	{
+#ifdef _DEBUG
+		OutputDebugStringW((L"[poll] " + message + L"\n").c_str());
+#endif
 	}
 }
 
@@ -524,7 +533,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 				if (settingsWindow.window() == nullptr) // dont create multiple settings windows
 				{
 					// Create and show settings window
-					if (!settingsWindow.create(SETTINGS_WINDOW_TITLE, 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
+					if (!settingsWindow.create(SettingsText::WINDOW_TITLE, 500, 200, SIZE_SETTINGS_WIDTH, SIZE_SETTINGS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr	, nullptr, nullptr)) {
 						return 0;
 					}
 
@@ -623,6 +632,10 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 				break;
 			case TIMER_ID_PLAYER_POLL:
 				timerApi.getPlayerDetails(league_.activePlayerId, hwnd_);
+				logPoll(league_.fastPollsLeft > 0
+					? L"fast poll request sent, " + std::to_wstring(league_.fastPollsLeft - 1) + L" left"
+					: L"slow poll request sent");
+				if (league_.fastPollsLeft > 0 && --league_.fastPollsLeft == 0) endFastPolling();
 				break;
 			case TIMER_ID_STATUS_RETRY: // repeats until a status response enables the API
 				timerApi.getStatus(hwnd_);
@@ -687,7 +700,10 @@ void MainWindow::handleHotKey(const int code)
 		if (activeTimer_ == nullptr) return;
 
 		if (activeTimer_->getTimerState() == TimerState::Running)
+		{
 			activeTimer_->stopTimer();
+			if (activeTimer_ == &timer2) startFastPolling(); // the set ended, maybe the match too
+		}
 		else
 			activeTimer_->startTimer();
 
@@ -719,6 +735,7 @@ void MainWindow::handleHotKey(const int code)
 		}
 		else if (activeTimer_->getTimerState() == TimerState::Running) {
 			activeTimer_->stopTimer();
+			if (activeTimer_ == &timer2) startFastPolling(); // the set ended, maybe the match too
 		}
 		else {
 			activeTimer_->resetTimer();
@@ -761,6 +778,8 @@ void MainWindow::requestRedraw() const {
 void MainWindow::handleStatusResponse(const StatusDto& status)
 {
 	league_.slowPollSec = status.slowPollSec;
+	league_.fastPollSec = status.fastPollSec;
+	league_.fastPollCapSec = status.fastPollCapSec;
 
 	if (status.statusEnabled)
 	{
@@ -792,6 +811,8 @@ void MainWindow::handlePlayerResponse(const PlayerDetailsDto& details)
 	league_.overlayStats = std::move(stats);
 	statisticsWindow.setModel(toStatsWindowModel(details));
 	refreshOverlay();
+
+	if (league_.fastPollsLeft > 0 && !details.currentMatch.isInMatch) endFastPolling(); // the match is over
 }
 
 void MainWindow::handleApiError(const TimerApiRequest request, const DWORD code)
@@ -803,8 +824,7 @@ void MainWindow::handleApiError(const TimerApiRequest request, const DWORD code)
 	// and the overlay keeps its last stats either way.
 	if (request == TimerApiRequest::Player && isApiOutage(request, code))
 	{
-		KillTimer(hwnd_, TIMER_ID_PLAYER_POLL);
-		league_.playerPolling = false;
+		updatePlayerPolling(); // the service already set timerApiEnabled to false, so this stops polling
 		SetTimer(hwnd_, TIMER_ID_STATUS_RETRY, STATUS_RETRY_MS, nullptr);
 	}
 
@@ -862,9 +882,30 @@ void MainWindow::updatePlayerPolling()
 	if (shouldPoll)
 	{
 		SetTimer(hwnd_, TIMER_ID_PLAYER_POLL, static_cast<UINT>(league_.slowPollSec) * 1000, nullptr);
+		logPoll(L"slow poll started, every " + std::to_wstring(league_.slowPollSec) + L"s");
 	}
 	else
 	{
 		KillTimer(hwnd_, TIMER_ID_PLAYER_POLL);
+		logPoll(league_.fastPollsLeft > 0 ? L"fast poll stopped (polling off)" : L"slow poll stopped (polling off)");
+		league_.fastPollsLeft = 0;
 	}
+}
+
+void MainWindow::startFastPolling()
+{
+	if (!league_.playerPolling || league_.fastPollSec <= 0) return;
+
+	logPoll(league_.fastPollsLeft > 0 ? L"fast poll restarted" : L"slow poll stopped (fast burst)");
+	league_.fastPollsLeft = (std::max)(1, league_.fastPollCapSec / league_.fastPollSec);
+	SetTimer(hwnd_, TIMER_ID_PLAYER_POLL, static_cast<UINT>(league_.fastPollSec) * 1000, nullptr); // replaces the slow timer
+	logPoll(L"fast poll started, " + std::to_wstring(league_.fastPollsLeft) + L" polls every " + std::to_wstring(league_.fastPollSec) + L"s");
+}
+
+void MainWindow::endFastPolling()
+{
+	logPoll(L"fast poll stopped, " + std::to_wstring(league_.fastPollsLeft) + L" polls left");
+	league_.fastPollsLeft = 0;
+	SetTimer(hwnd_, TIMER_ID_PLAYER_POLL, static_cast<UINT>(league_.slowPollSec) * 1000, nullptr);
+	logPoll(L"slow poll started, every " + std::to_wstring(league_.slowPollSec) + L"s");
 }

@@ -4,6 +4,7 @@
 #include "CommCtrlUtils.h"
 #include "ColorPickerWindow.h"
 #include "Program.h"
+#include "Text/ColorPickerWindowStrings.h"
 #include <exception>
 
 // Create and store the squared controls that represent selectable colors
@@ -62,14 +63,14 @@ void ColorPickerWindow::initializeWindow()
 
 	// Initialize exit controls
 	HWND hwndOkButton = CreateWindowEx(
-		0, WC_BUTTON, L"Ok",
+		0, WC_BUTTON, ColorPickerText::OK_BUTTON,
 		WS_VISIBLE | WS_CHILDWINDOW, SIZE_COLORPICKER_WIDTH - 177,
 		SIZE_COLORPICKER_HEIGHT - 78, 75, 28, hwnd_,
 		(HMENU)CID_OK, nullptr, nullptr
 	);
 
 	HWND hwndCancelButton = CreateWindowEx(
-		0, WC_BUTTON, L"Cancel",
+		0, WC_BUTTON, ColorPickerText::CANCEL_BUTTON,
 		WS_VISIBLE | WS_CHILDWINDOW, SIZE_COLORPICKER_WIDTH - 95, 
 		SIZE_COLORPICKER_HEIGHT - 78, 75, 28, hwnd_, 
 		(HMENU)CID_CANCEL, nullptr, nullptr
