@@ -83,7 +83,6 @@ constexpr UINT16 SIZE_STATISTICS_HEIGHT = 640;
 // Version
 #define APP_VERSION L"1.5.1"
 constexpr WCHAR SETTINGS_WINDOW_TITLE[] = L"Settings - Version " APP_VERSION;
-constexpr WCHAR STATISTICS_WINDOW_TITLE[] = L"DBDLeague Statistics";
 
 // Fonts
 constexpr WCHAR FONT_NAME_TIMER[] = L"Segoe UI";

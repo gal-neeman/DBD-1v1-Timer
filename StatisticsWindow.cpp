@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include "Globals.h"
 #include "StatisticsWindow.h"
+#include "StatisticsWindowStrings.h"
 #include "CommCtrlUtils.h"
 #include "ResourceUtils.h"
 #include "SettingsUtils.h"
@@ -114,16 +115,16 @@ void StatisticsWindow::initializeWindow()
 	constexpr int idX = MARGIN + idLabelWidth + 5;
 
 	// Discord ID row
-	createControl(WC_STATIC, L"Your Discord ID", MARGIN, MARGIN + 2, idLabelWidth, 20, 0);
+	createControl(WC_STATIC, StatsText::DISCORD_ID_LABEL, MARGIN, MARGIN + 2, idLabelWidth, 20, 0);
 	const HWND idEdit = createControl(WC_EDIT, pGlobalTimerWindow->activePlayerId().c_str(), idX, MARGIN, loadX - 10 - idX, 23,
 		CID_DISCORD_ID, ES_NUMBER | ES_AUTOHSCROLL | WS_BORDER);
 	SendMessage(idEdit, EM_SETLIMITTEXT, 20, 0);
-	createControl(WC_BUTTON, L"Load Stats", loadX, MARGIN - 1, LOAD_BUTTON_WIDTH, 26, CID_LOAD_STATS);
+	createControl(WC_BUTTON, StatsText::LOAD_STATS_BUTTON, loadX, MARGIN - 1, LOAD_BUTTON_WIDTH, 26, CID_LOAD_STATS);
 
 	// Overlay options
-	createControl(WC_STATIC, L"Enable overlay stats", MARGIN, MARGIN + 40, labelWidth, 20, 0);
+	createControl(WC_STATIC, StatsText::OVERLAY_LABEL, MARGIN, MARGIN + 40, labelWidth, 20, 0);
 	const HWND overlayCheckbox = createControl(WC_BUTTON, L"", checkboxX, MARGIN + 41, CHECKBOX_WIDTH, 17, CID_STATS_OVERLAY_CB, BS_AUTOCHECKBOX);
-	createControl(WC_STATIC, L"Show names and score", MARGIN, MARGIN + 70, labelWidth, 20, 0);
+	createControl(WC_STATIC, StatsText::SHOW_NAMES_LABEL, MARGIN, MARGIN + 70, labelWidth, 20, 0);
 	const HWND namesCheckbox = createControl(WC_BUTTON, L"", checkboxX, MARGIN + 71, CHECKBOX_WIDTH, 17, CID_SHOW_NAMES_CB, BS_AUTOCHECKBOX);
 	Button_SetCheck(overlayCheckbox, tempLeague_.statsOverlayEnabled ? BST_CHECKED : BST_UNCHECKED);
 	Button_SetCheck(namesCheckbox, tempLeague_.showNamesAndScore ? BST_CHECKED : BST_UNCHECKED);
@@ -132,9 +133,9 @@ void StatisticsWindow::initializeWindow()
 	const int buttonY = client.bottom - MARGIN - BUTTON_HEIGHT;
 	constexpr int buttonStep = BUTTON_WIDTH + 8;
 	const int applyX = client.right - MARGIN - BUTTON_WIDTH;
-	createControl(WC_BUTTON, L"Ok", applyX - 2 * buttonStep, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, CID_OK);
-	createControl(WC_BUTTON, L"Cancel", applyX - buttonStep, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, CID_CANCEL);
-	createControl(WC_BUTTON, L"Apply", applyX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, CID_APPLY);
+	createControl(WC_BUTTON, StatsText::OK_BUTTON, applyX - 2 * buttonStep, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, CID_OK);
+	createControl(WC_BUTTON, StatsText::CANCEL_BUTTON, applyX - buttonStep, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, CID_CANCEL);
+	createControl(WC_BUTTON, StatsText::APPLY_BUTTON, applyX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, CID_APPLY);
 
 	contentRect_ = { 0, MARGIN + LOGO_SIZE + SECTION_GAP, client.right, buttonY - 4 };
 	setState(derivedState());
@@ -260,24 +261,24 @@ void StatisticsWindow::paint() const
 		switch (state_)
 		{
 		case StatsState::Disabled:
-			message = statusMessage_.empty() ? L"The stats feature is currently disabled" : statusMessage_;
+			message = statusMessage_.empty() ? StatsText::DISABLED_MESSAGE : statusMessage_;
 			break;
 		case StatsState::NeedsId:
-			message = L"Enter your discord id to enable this feature";
+			message = StatsText::NEEDS_ID_MESSAGE;
 			color = textColor();
 			break;
 		case StatsState::InvalidId:
-			message = L"Enter a valid discord id (17-20 digits)";
+			message = StatsText::INVALID_ID_MESSAGE;
 			break;
 		case StatsState::PlayerNotFound:
-			message = L"No player was found with this discord id";
+			message = StatsText::PLAYER_NOT_FOUND_MESSAGE;
 			break;
 		case StatsState::Loading:
-			message = L"Loading stats...";
+			message = StatsText::LOADING_MESSAGE;
 			color = textColor();
 			break;
 		default:
-			message = L"Couldn't load the stats, try again later";
+			message = StatsText::ERROR_MESSAGE;
 			break;
 		}
 
@@ -301,14 +302,14 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 	drawSeparator(hdc, left, right, y);
 	y += SECTION_GAP;
 	SelectObject(hdc, titleFont_);
-	drawText(hdc, model.playerName + L"'s Stats", { left, y, right, y + LINE_HEIGHT }, textColor(), DT_CENTER | DT_END_ELLIPSIS);
+	drawText(hdc, model.playerName + StatsText::STATS_TITLE_SUFFIX, { left, y, right, y + LINE_HEIGHT }, textColor(), DT_CENTER | DT_END_ELLIPSIS);
 	y += LINE_HEIGHT + 6;
 
 	SelectObject(hdc, controlsFont_);
 	const std::wstring cells[3][2] = {
-		{ L"Rank: " + rankText(model.rank), L"Points: " + model.points },
-		{ L"Total games: " + std::to_wstring(model.totalGames), L"Wins: " + std::to_wstring(model.wins) },
-		{ L"Winrate: " + std::to_wstring(model.winrate) + L"%", L"Streak: " + std::to_wstring(model.streak) },
+		{ StatsText::RANK_LABEL + rankText(model.rank), StatsText::POINTS_LABEL + model.points },
+		{ StatsText::TOTAL_GAMES_LABEL + std::to_wstring(model.totalGames), StatsText::WINS_LABEL + std::to_wstring(model.wins) },
+		{ StatsText::WINRATE_LABEL + std::to_wstring(model.winrate) + L"%", StatsText::STREAK_LABEL + std::to_wstring(model.streak) },
 	};
 	const int columnWidth = (right - left) / 3;
 	for (int column = 0; column < 3; ++column)
@@ -320,14 +321,14 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 		}
 	}
 	const int lossesX = left + columnWidth;
-	drawText(hdc, L"Losses: " + std::to_wstring(model.losses), { lossesX, y + 2 * LINE_HEIGHT, lossesX + columnWidth, y + 3 * LINE_HEIGHT }, textColor());
+	drawText(hdc, StatsText::LOSSES_LABEL + std::to_wstring(model.losses), { lossesX, y + 2 * LINE_HEIGHT, lossesX + columnWidth, y + 3 * LINE_HEIGHT }, textColor());
 	y += 3 * LINE_HEIGHT + 6;
 
 	// Last matches
 	drawSeparator(hdc, left, right, y);
 	y += SECTION_GAP;
 	SelectObject(hdc, titleFont_);
-	drawText(hdc, L"Last Matches", { left, y, right, y + LINE_HEIGHT }, textColor(), DT_CENTER);
+	drawText(hdc, StatsText::MATCHES_TITLE, { left, y, right, y + LINE_HEIGHT }, textColor(), DT_CENTER);
 	y += LINE_HEIGHT + 4;
 	SelectObject(hdc, controlsFont_);
 
@@ -339,21 +340,21 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 
 	if (model.matches.empty())
 	{
-		drawText(hdc, L"No matches played yet", rowRect(left, right), textColor());
+		drawText(hdc, StatsText::NO_MATCHES_MESSAGE, rowRect(left, right), textColor());
 		return;
 	}
 
-	drawText(hdc, L"Date", rowRect(left, resultX), textColor());
-	drawText(hdc, L"Result", rowRect(resultX, scoreX), textColor());
-	drawText(hdc, L"Score", rowRect(scoreX, opponentX), textColor());
-	drawText(hdc, L"Opponent", rowRect(opponentX, pointsX), textColor());
-	drawText(hdc, L"Points Gained", rowRect(pointsX, right), textColor());
+	drawText(hdc, StatsText::DATE_HEADER, rowRect(left, resultX), textColor());
+	drawText(hdc, StatsText::RESULT_HEADER, rowRect(resultX, scoreX), textColor());
+	drawText(hdc, StatsText::SCORE_HEADER, rowRect(scoreX, opponentX), textColor());
+	drawText(hdc, StatsText::OPPONENT_HEADER, rowRect(opponentX, pointsX), textColor());
+	drawText(hdc, StatsText::POINTS_GAINED_HEADER, rowRect(pointsX, right), textColor());
 	y += MATCH_ROW_HEIGHT;
 
 	for (const MatchRow& match : model.matches)
 	{
 		drawText(hdc, match.date, rowRect(left, resultX), textColor());
-		drawText(hdc, match.isWin ? L"Win" : L"Loss", rowRect(resultX, scoreX), match.isWin ? COLOR_GAIN : COLOR_LOSS);
+		drawText(hdc, match.isWin ? StatsText::WIN_RESULT : StatsText::LOSS_RESULT, rowRect(resultX, scoreX), match.isWin ? COLOR_GAIN : COLOR_LOSS);
 		drawText(hdc, match.score, rowRect(scoreX, opponentX), textColor());
 		SetTextColor(hdc, textColor());
 		drawOpponent(hdc, rowRect(opponentX, pointsX - 8), match.opponentName, match.opponentRank);

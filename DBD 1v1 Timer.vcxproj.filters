@@ -131,6 +131,9 @@
     <ClInclude Include="StatisticsWindow.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="StatisticsWindowStrings.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
