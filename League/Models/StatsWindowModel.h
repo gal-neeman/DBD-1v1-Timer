@@ -11,7 +11,7 @@ struct MatchRow
 	std::wstring score;		   // e.g. L"2 - 1", or L"-" if unknown
 	std::wstring opponentName;
 	std::optional<int> opponentRank; // empty when unranked
-	std::wstring pointsGained; // 6 characters including the sign, e.g. L"+12.00"
+	std::wstring pointsGained; // 5 characters including the sign, e.g. L"+12.0"
 	bool pointsPositive = false;
 };
 

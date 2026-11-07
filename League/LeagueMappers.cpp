@@ -8,6 +8,7 @@ namespace
 	constexpr size_t OVERLAY_RESULTS_COUNT = 8;
 	constexpr size_t WINDOW_MATCHES_COUNT = 10;
 	constexpr size_t POINTS_WIDTH = 6;
+	constexpr size_t POINTS_GAINED_WIDTH = 5; // including the sign
 
 	// The API sends -1 for an unranked player.
 	std::optional<int> rankOrNull(const int rank)
@@ -100,7 +101,7 @@ StatsWindowModel toStatsWindowModel(const PlayerDetailsDto& dto)
 		row.score = formatScore(match);
 		row.opponentName = match.opponentName;
 		row.opponentRank = rankOrNull(match.opponentRankBefore);
-		row.pointsGained = formatFixedWidth(match.pointsGained, POINTS_WIDTH, true);
+		row.pointsGained = formatFixedWidth(match.pointsGained, POINTS_GAINED_WIDTH, true);
 		row.pointsPositive = match.pointsGained >= 0;
 		model.matches.push_back(std::move(row));
 	}
