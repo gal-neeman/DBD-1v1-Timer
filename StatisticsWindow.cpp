@@ -25,6 +25,10 @@ namespace
 	constexpr int MATCH_ROW_HEIGHT = 21;
 	constexpr int SECTION_GAP = 8;
 
+	// The stats grid's columns are this wide, with equal gaps between them. It must fit the longest line,
+	// "Total games: 1234"; grow it if a label in StatisticsWindowStrings.h gets longer.
+	constexpr int STAT_COLUMN_WIDTH = 125;
+
 	// "Last Matches" columns are sized to their content, with the spare width split into equal gaps
 	constexpr int MIN_COLUMN_GAP = 16;
 
@@ -367,13 +371,14 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 			recent,
 		},
 	};
-	const int columnWidth = (right - left) / 3;
+	// Column 1 starts at the left edge and column 3 ends at the right, like the table below
+	const int columnGap = (right - left - 3 * STAT_COLUMN_WIDTH) / 2;
 	for (int column = 0; column < 3; ++column)
 	{
-		const int x = left + column * columnWidth;
+		const int x = left + column * (STAT_COLUMN_WIDTH + columnGap);
 		for (int row = 0; row < 3; ++row)
 		{
-			drawText(hdc, cells[column][row], { x, y + row * LINE_HEIGHT, x + columnWidth, y + (row + 1) * LINE_HEIGHT }, textColor());
+			drawText(hdc, cells[column][row], { x, y + row * LINE_HEIGHT, x + STAT_COLUMN_WIDTH, y + (row + 1) * LINE_HEIGHT }, textColor());
 		}
 	}
 	y += 3 * LINE_HEIGHT + 6;
