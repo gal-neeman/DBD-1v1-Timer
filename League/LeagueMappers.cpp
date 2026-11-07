@@ -73,8 +73,7 @@ OverlayStats toOverlayStats(const PlayerDetailsDto& dto)
 	const size_t count = (std::min)(dto.lastMatches.size(), OVERLAY_RESULTS_COUNT);
 	for (size_t i = 0; i < count; ++i)
 	{
-		if (i > 0) stats.lastResults += L' ';
-		stats.lastResults += dto.lastMatches[i].isWin ? L'W' : L'L';
+		stats.lastResults.push_back(dto.lastMatches[i].isWin);
 	}
 	return stats;
 }

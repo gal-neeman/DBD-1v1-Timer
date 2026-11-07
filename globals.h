@@ -88,6 +88,7 @@ constexpr WCHAR SETTINGS_WINDOW_TITLE[] = L"Settings - Version " APP_VERSION;
 constexpr WCHAR FONT_NAME_TIMER[] = L"Segoe UI";
 constexpr WCHAR FONT_NAME_CONTROLS[] = L"Segoe UI";
 constexpr WCHAR FONT_NAME_TITLE[] = L"Segoe UI Semibold";
+constexpr WCHAR FONT_NAME_OVERLAY[] = L"Consolas"; // the stats overlay around the timers
 
 // Bitmaps
 constexpr byte IDB_MOUSE = 110;
