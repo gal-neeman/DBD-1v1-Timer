@@ -315,7 +315,7 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 				if (statisticsWindow.window() == nullptr) // dont create multiple statistics windows
 				{
 					// Create and show statistics window
-					if (!statisticsWindow.create(STATISTICS_WINDOW_TITLE, 500, 200, SIZE_STATISTICS_WIDTH, SIZE_STATISTICS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, hwnd_, nullptr, nullptr, nullptr)) {
+					if (!statisticsWindow.create(STATISTICS_WINDOW_TITLE, 500, 200, SIZE_STATISTICS_WIDTH, SIZE_STATISTICS_HEIGHT, 0, WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX, hwnd_, nullptr, nullptr, nullptr)) {
 						return 0;
 					}
 

@@ -18,6 +18,10 @@ constexpr byte CID_CON_TIMER1 = 114;
 constexpr byte CID_CON_TIMER2 = 115;
 constexpr byte CID_CON_START_NO_RESET = 117;
 constexpr byte CID_LAST_SECONDS_TIME = 118;
+constexpr byte CID_DISCORD_ID = 119;
+constexpr byte CID_LOAD_STATS = 120;
+constexpr byte CID_STATS_OVERLAY_CB = 121;
+constexpr byte CID_SHOW_NAMES_CB = 122;
 constexpr byte MENU_QUIT = 1;
 constexpr byte MENU_SETTINGS = 0;
 constexpr byte MENU_STATISTICS = 2;
@@ -73,7 +77,7 @@ constexpr UINT16 SIZE_SETTINGS_HEIGHT = 660;
 constexpr UINT16 SIZE_COLORPICKER_WIDTH = 270;
 constexpr UINT16 SIZE_COLORPICKER_HEIGHT = 350;
 constexpr UINT16 SIZE_STATISTICS_WIDTH = 600;
-constexpr UINT16 SIZE_STATISTICS_HEIGHT = 600;
+constexpr UINT16 SIZE_STATISTICS_HEIGHT = 640;
 
 // Version
 #define APP_VERSION L"1.5.1"
@@ -88,6 +92,7 @@ constexpr WCHAR FONT_NAME_TITLE[] = L"Segoe UI Semibold";
 // Bitmaps
 constexpr byte IDB_MOUSE = 110;
 constexpr byte IDB_CONTROLLER = 111;
+constexpr byte IDB_LEAGUE_LOGO = 112;
 
 // Custom HWND messages
 constexpr int REFRESH_BRUSHES(WM_APP + 1);

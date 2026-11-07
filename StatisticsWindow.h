@@ -2,6 +2,7 @@
 #include "BaseWindow.h"
 #include "League/Models/StatsWindowModel.h"
 #include "TimerApi/TimerApiMessages.h"
+#include "globals.h"
 #include <optional>
 #include <string>
 
@@ -23,9 +24,36 @@ enum class StatsState
 class StatisticsWindow : public BaseWindow<StatisticsWindow>
 {
 private:
+	// Survive the HWND
 	StatsState state_ = StatsState::Disabled;
 	std::optional<StatsWindowModel> model_;
 	std::wstring statusMessage_; // from the status response; shown while Disabled
+
+	// Live only while the window is open
+	LeagueSettingsStruct tempLeague_; // the checkboxes, applied on Ok
+	HFONT controlsFont_ = nullptr;
+	HFONT titleFont_ = nullptr;
+	HBITMAP logo_ = nullptr;
+	RECT contentRect_ = {}; // the painted area below the settings, redrawn on every state change
+
+	/**
+	@brief Creates the fonts, the logo and the controls, then shows the current state.
+	*/
+	void initializeWindow();
+
+	/**
+	@brief Creates a child control with the controls font, subclassed to turn Esc into Cancel.
+
+	@return The control that was created.
+	*/
+	HWND createControl(LPCWSTR className, LPCWSTR text, int x, int y, int width, int height, int id, long additionalStyle = 0) const;
+
+	/**
+	@brief Handles WM_COMMAND from the buttons and checkboxes.
+
+	@param controlId The ID of the control.
+	*/
+	void handleControlCommand(int controlId);
 
 	/**
 	@brief Switches to the given state and updates the window if it's open.
@@ -33,6 +61,41 @@ private:
 	@param state The new state.
 	*/
 	void setState(StatsState state);
+
+	/**
+	@brief Enables or disables the controls to match the state and the overlay checkbox.
+	*/
+	void updateControls() const;
+
+	/**
+	@brief Draws the logo and the content area for the current state.
+	*/
+	void paint() const;
+
+	/**
+	@brief Draws the Loaded state: the player's stats and the last matches table.
+
+	@param hdc The device context to draw on.
+	*/
+	void paintStats(HDC hdc) const;
+
+	/**
+	@brief Draws "name (#rank)" in the rect, cutting the name with an ellipsis so the rank always fits.
+
+	@param hdc The device context to draw on.
+
+	@param rect Where to draw.
+
+	@param name The opponent's name.
+
+	@param rank The opponent's rank; empty draws "(?)".
+	*/
+	static void drawOpponent(HDC hdc, RECT rect, const std::wstring& name, std::optional<int> rank);
+
+	/**
+	@brief Turns Esc in any control into Cancel. Installed on every control by createControl.
+	*/
+	static LRESULT CALLBACK ctrlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
 	/**
 	@brief The state to show when nothing more specific is known: Disabled while the API is off,
