@@ -362,12 +362,13 @@ void MainWindow::paintStatsBar(const D2D1_RECT_F& rect, const OverlayStats& stat
 	fillRect(rect, OVERLAY_BAR_BACKGROUND);
 	IDWriteTextFormat* format = pBarFormat_.Get();
 
-	// Last results on the left, one fixed-width cell each
+	// Last results on the left, one fixed-width cell each, oldest first so the newest is on the right
 	const float letterWidth = measureText(L"W", format);
 	const float cellWidth = measureText(L"W ", format);
 	float x = rect.left + CELL_PADDING;
-	for (const bool isWin : stats.lastResults)
+	for (auto it = stats.lastResults.rbegin(); it != stats.lastResults.rend(); ++it)
 	{
+		const bool isWin = *it;
 		drawText(isWin ? L"W" : L"L", format, D2D1::RectF(x, rect.top, x + letterWidth, rect.bottom),
 			isWin ? OVERLAY_WIN : OVERLAY_LOSS);
 		x += cellWidth;
