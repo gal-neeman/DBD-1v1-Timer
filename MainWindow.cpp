@@ -552,9 +552,10 @@ void MainWindow::handleApiError(const TimerApiRequest request, const DWORD code)
 {
 	league_.pendingPlayerId.clear();
 
-	// The API went down mid-session (a missing player is an answer, so it stays up):
-	// stop polling and go back to retrying the status. A failed status needs nothing, its retry is running.
-	if (request == TimerApiRequest::Player && code != HTTP_STATUS_NOT_FOUND)
+	// The API went down mid-session: stop polling and go back to retrying the status.
+	// A failed status needs nothing, its retry is running. Polling survives a 404 or 429 (see isApiOutage),
+	// and the overlay keeps its last stats either way.
+	if (request == TimerApiRequest::Player && isApiOutage(request, code))
 	{
 		KillTimer(hwnd_, TIMER_ID_PLAYER_POLL);
 		league_.playerPolling = false;

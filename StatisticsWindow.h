@@ -28,6 +28,7 @@ private:
 	StatsState state_ = StatsState::Disabled;
 	std::optional<StatsWindowModel> model_;
 	std::wstring statusMessage_; // from the status response; shown while Disabled
+	std::wstring notice_; // a one-line notice above the stats, e.g. too many requests; cleared by the next success
 
 	// Live only while the window is open
 	LeagueSettingsStruct tempLeague_; // the checkboxes, applied on Apply or Ok
@@ -37,6 +38,7 @@ private:
 	HFONT titleFont_ = nullptr;
 	HBITMAP logo_ = nullptr;
 	RECT contentRect_ = {}; // the painted area below the settings, redrawn on every state change
+	RECT noticeRect_ = {};  // where notice_ is drawn, between the checkboxes and contentRect_
 
 	/**
 	@brief Creates the fonts, the logo and the controls, then shows the current state.
@@ -63,6 +65,13 @@ private:
 	@param state The new state.
 	*/
 	void setState(StatsState state);
+
+	/**
+	@brief Sets the notice line and redraws it if the window is open.
+
+	@param notice The text to show, or empty to clear it.
+	*/
+	void setNotice(const std::wstring& notice);
 
 	/**
 	@brief Enables or disables the controls to match the state and the overlay checkbox.

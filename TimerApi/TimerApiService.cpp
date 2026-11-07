@@ -80,9 +80,7 @@ bool TimerApiService::isSuccess(const HttpResponse& response)
 
 void TimerApiService::fail(HWND replyTo, const TimerApiRequest request, const DWORD code)
 {
-	// A player that doesn't exist is an answer, not an outage.
-	const bool playerNotFound = request == TimerApiRequest::Player && code == HTTP_STATUS_NOT_FOUND;
-	if (!playerNotFound) timerApiEnabled = false;
+	if (isApiOutage(request, code)) timerApiEnabled = false;
 	PostMessage(replyTo, TIMER_API_ERROR, code, static_cast<LPARAM>(request));
 }
 

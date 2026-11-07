@@ -139,7 +139,7 @@ private:
 	void handlePlayerResponse(const PlayerDetailsDto& details);
 
 	/**
-	@brief Handles a failed request. A player failure other than 404 means the API went down:
+	@brief Handles a failed request. A player failure that isApiOutage means the API went down:
 	stops polling and restarts the status retry. A failed status needs nothing, its retry is running.
 
 	@param request The request that failed.

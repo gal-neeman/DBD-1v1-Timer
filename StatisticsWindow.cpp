@@ -57,18 +57,28 @@ namespace
 void StatisticsWindow::setStatus(const std::wstring& message)
 {
 	statusMessage_ = message;
+	setNotice(L"");
 	setState(derivedState());
 }
 
 void StatisticsWindow::setModel(std::optional<StatsWindowModel> model)
 {
 	model_ = std::move(model);
+	setNotice(L"");
 	setState(derivedState());
 }
 
 void StatisticsWindow::setError(const TimerApiRequest request, const DWORD code)
 {
-	if (request == TimerApiRequest::Status)
+	if (code == HTTP_STATUS_TOO_MANY_REQUESTS)
+	{
+		// Not an outage: keep whatever is shown and say so on the notice line.
+		// Loading means an active ID with no stats yet, which nothing is fetching anymore.
+		setNotice(StatsText::TOO_MANY_REQUESTS_NOTICE);
+		const StatsState state = derivedState();
+		setState(state == StatsState::Loading ? StatsState::Error : state);
+	}
+	else if (request == TimerApiRequest::Status)
 	{
 		statusMessage_.clear(); // the request failed, so there's no message from the API
 		setState(StatsState::Disabled);
@@ -94,6 +104,13 @@ void StatisticsWindow::setState(const StatsState state)
 
 	updateControls();
 	InvalidateRect(hwnd_, &contentRect_, TRUE);
+}
+
+void StatisticsWindow::setNotice(const std::wstring& notice)
+{
+	if (notice_ == notice) return;
+	notice_ = notice;
+	if (hwnd_) InvalidateRect(hwnd_, &noticeRect_, TRUE);
 }
 
 void StatisticsWindow::initializeWindow()
@@ -129,6 +146,9 @@ void StatisticsWindow::initializeWindow()
 	Button_SetCheck(overlayCheckbox, tempLeague_.statsOverlayEnabled ? BST_CHECKED : BST_UNCHECKED);
 	Button_SetCheck(namesCheckbox, tempLeague_.showNamesAndScore ? BST_CHECKED : BST_UNCHECKED);
 
+	// Notice line, in the gap between the checkboxes and the stats
+	noticeRect_ = { MARGIN, MARGIN + 98, logoX - 12, MARGIN + 120 };
+
 	// Exit buttons: Ok, Cancel, Apply from left to right, the standard Windows order
 	const int buttonY = client.bottom - MARGIN - BUTTON_HEIGHT;
 	constexpr int buttonStep = BUTTON_WIDTH + 8;
@@ -162,6 +182,7 @@ void StatisticsWindow::handleControlCommand(const int controlId)
 		wchar_t buffer[32] = {};
 		GetDlgItemTextW(hwnd_, CID_DISCORD_ID, buffer, ARRAYSIZE(buffer));
 		const std::wstring id = buffer;
+		setNotice(L"");
 		if (!isValidDiscordId(id))
 		{
 			setState(StatsState::InvalidId);
@@ -249,6 +270,8 @@ void StatisticsWindow::paint() const
 
 	SetBkMode(hdc, TRANSPARENT);
 	const HGDIOBJ oldFont = SelectObject(hdc, controlsFont_);
+
+	if (!notice_.empty()) drawText(hdc, notice_, noticeRect_, COLOR_LOSS, DT_END_ELLIPSIS);
 
 	if (state_ == StatsState::Loaded && model_)
 	{

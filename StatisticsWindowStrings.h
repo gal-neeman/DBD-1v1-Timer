@@ -23,6 +23,9 @@ namespace StatsText
 	inline constexpr wchar_t LOADING_MESSAGE[] = L"Loading stats...";
 	inline constexpr wchar_t ERROR_MESSAGE[] = L"Couldn't load the stats, try again later";
 
+	// Notice line, above the stats
+	inline constexpr wchar_t TOO_MANY_REQUESTS_NOTICE[] = L"Too many requests, try again in a moment";
+
 	// Stats
 	inline constexpr wchar_t STATS_TITLE_SUFFIX[] = L"'s Stats"; // after the player's name
 	inline constexpr wchar_t RANK_LABEL[] = L"Rank: ";

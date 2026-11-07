@@ -11,7 +11,7 @@
 //   case TIMER_API_STATUS_RESPONSE:
 //       std::unique_ptr<StatusDto> dto(reinterpret_cast<StatusDto*>(lParam)); // take ownership
 // On failure, TIMER_API_ERROR is posted and timerApiEnabled is set to false, except for a player
-// that doesn't exist (404). getStatus sets timerApiEnabled to the response's statusEnabled before
+// that doesn't exist (404) and too many requests (429), see isApiOutage. getStatus sets timerApiEnabled to the response's statusEnabled before
 // posting. Only getStatus runs while it is false.
 class TimerApiService
 {

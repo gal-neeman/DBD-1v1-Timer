@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include <winhttp.h>
 
 // Messages the Timer API posts to the replyTo window.
 
@@ -17,3 +18,14 @@ enum class TimerApiRequest : int
 	Status,
 	Player,
 };
+
+// winhttp.h has no constant for it.
+constexpr DWORD HTTP_STATUS_TOO_MANY_REQUESTS = 429;
+
+// Whether a failed request means the API is down. A player that doesn't exist is an answer, and
+// "too many requests" means the server is up and wants us to slow down, so neither disables the API.
+inline bool isApiOutage(const TimerApiRequest request, const DWORD code)
+{
+	const bool playerNotFound = request == TimerApiRequest::Player && code == HTTP_STATUS_NOT_FOUND;
+	return !playerNotFound && code != HTTP_STATUS_TOO_MANY_REQUESTS;
+}
