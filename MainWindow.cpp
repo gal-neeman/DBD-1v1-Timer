@@ -366,14 +366,15 @@ void MainWindow::paintStatsBar(const D2D1_RECT_F& rect, const OverlayStats& stat
 	const float letterWidth = measureText(L"W", format);
 	const float cellWidth = measureText(L"W ", format);
 	float x = rect.left + CELL_PADDING;
+	float resultsRight = x; // the last letter's right edge, without the space after it
 	for (auto it = stats.lastResults.rbegin(); it != stats.lastResults.rend(); ++it)
 	{
 		const bool isWin = *it;
 		drawText(isWin ? L"W" : L"L", format, D2D1::RectF(x, rect.top, x + letterWidth, rect.bottom),
 			isWin ? OVERLAY_WIN : OVERLAY_LOSS);
+		resultsRight = x + letterWidth;
 		x += cellWidth;
 	}
-	const float resultsRight = x;
 
 	// Streak on the right
 	const std::wstring streak = L"Streak: " + std::to_wstring(stats.streak);
