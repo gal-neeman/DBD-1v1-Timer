@@ -139,8 +139,9 @@ void settingsFromJson(const Json::Value& json, SettingsStruct& settings)
 
 bool isValidDiscordId(const wstring& id)
 {
-	return id.size() >= 17 && id.size() <= 20 &&
-		all_of(id.begin(), id.end(), [](const wchar_t c) { return c >= L'0' && c <= L'9'; });
+	return id.size() >= 17 && id.size() <= 20 && id[0] != L'0' &&
+		all_of(id.begin(), id.end(), [](const wchar_t c) { return c >= L'0' && c <= L'9'; }) &&
+		(id.size() < 20 || id <= L"18446744073709551615"); // same-length digit strings compare numerically
 }
 
 void loadSettingsFromFile(SettingsStruct& settings)

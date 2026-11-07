@@ -38,7 +38,8 @@ Json::Value settingsToJson(const SettingsStruct& settings);
 void settingsFromJson(const Json::Value& json, SettingsStruct& settings);
 
 /**
-@brief Checks whether a string is a Discord user ID: 17 to 20 digits.
+@brief Checks whether a string is a Discord user ID: 17 to 20 digits, no leading zero,
+and at most 2^64 - 1. Matches the API's validation.
 
 @param id The string to check.
 
