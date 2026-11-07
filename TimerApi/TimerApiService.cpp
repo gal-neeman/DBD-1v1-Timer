@@ -1,6 +1,6 @@
 #include "TimerApi/TimerApiService.h"
 #include "TimerApi/Mappers/DtoMappers.h"
-#include "TimerApi/Mappers/JsonHelpers.h"
+#include "TimerApi/TimerApiMessages.h"
 #include "globals.h"
 
 namespace
@@ -34,10 +34,14 @@ void TimerApiService::stop()
 
 void TimerApiService::getStatus(HWND replyTo)
 {
-	worker_.enqueue([replyTo](HttpClient& client)
+	enqueueRequest(replyTo, TimerApiRequest::Status, [replyTo](HttpClient& client)
 	{
 		const HttpResponse response = client.get(endpoint(L"/status"));
-		ensureSuccess(response);
+		if (!isSuccess(response))
+		{
+			fail(replyTo, TimerApiRequest::Status, response.status);
+			return;
+		}
 		std::unique_ptr<StatusDto> status = std::make_unique<StatusDto>(mapStatus(response.body));
 		timerApiEnabled = status->statusEnabled;
 		postResult(replyTo, TIMER_API_STATUS_RESPONSE, std::move(status));
@@ -46,17 +50,20 @@ void TimerApiService::getStatus(HWND replyTo)
 
 void TimerApiService::getPlayerDetails(const std::wstring& playerId, HWND replyTo)
 {
-	if (!timerApiEnabled) return;
+	if (!timerApiEnabled)
+	{
+		fail(replyTo, TimerApiRequest::Player, 0);
+		return;
+	}
 
-	worker_.enqueue([playerId, replyTo](HttpClient& client)
+	enqueueRequest(replyTo, TimerApiRequest::Player, [playerId, replyTo](HttpClient& client)
 	{
 		const HttpResponse response = client.get(endpoint(L"/players/" + playerId));
-		if (response.status == HTTP_STATUS_NOT_FOUND)
+		if (!isSuccess(response))
 		{
-			postResult<PlayerDetailsDto>(replyTo, TIMER_API_PLAYER_RESPONSE, nullptr);
+			fail(replyTo, TimerApiRequest::Player, response.status);
 			return;
 		}
-		ensureSuccess(response);
 		postResult(replyTo, TIMER_API_PLAYER_RESPONSE, std::make_unique<PlayerDetailsDto>(mapPlayerDetails(response.body)));
 	});
 }
@@ -66,12 +73,35 @@ std::wstring TimerApiService::endpoint(const std::wstring& path)
 	return TIMER_API_BASE_PATH + path;
 }
 
-void TimerApiService::ensureSuccess(const HttpResponse& response)
+bool TimerApiService::isSuccess(const HttpResponse& response)
 {
-	if (response.status < 200 || response.status >= 300)
+	return response.status >= 200 && response.status < 300;
+}
+
+void TimerApiService::fail(HWND replyTo, const TimerApiRequest request, const DWORD code)
+{
+	if (isApiOutage(request, code)) timerApiEnabled = false;
+	PostMessage(replyTo, TIMER_API_ERROR, code, static_cast<LPARAM>(request));
+}
+
+template <typename Job>
+void TimerApiService::enqueueRequest(HWND replyTo, const TimerApiRequest request, Job job)
+{
+	const bool queued = worker_.enqueue([replyTo, request, job = std::move(job)](HttpClient& client)
 	{
-		throw TimerApiError("unexpected HTTP status " + std::to_string(response.status));
-	}
+		// Network failures, bodies that don't map, and the cancellation from stop() all end up here.
+		// Posting during shutdown is harmless: the message loop has already exited.
+		try
+		{
+			job(client);
+		}
+		catch (const std::exception&)
+		{
+			fail(replyTo, request, 0);
+		}
+	});
+
+	if (!queued) fail(replyTo, request, 0);
 }
 
 template <typename Dto>

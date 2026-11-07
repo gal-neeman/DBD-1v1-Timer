@@ -9,6 +9,15 @@
 HFONT createTitleFont();
 
 /**
+@brief Create the subtitle font: the title's semibold at a smaller size, e.g. for table headers.
+Segoe UI has no weight between regular and semibold, so it's lighter through size instead.
+The caller owns it and must delete it after the controls using it are destroyed.
+
+@return The font that was created.
+*/
+HFONT createSubtitleFont();
+
+/**
 @brief Create the default controls font. The caller owns it and must delete it after the controls using it are destroyed.
 
 @return The font that was created.

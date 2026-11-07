@@ -18,6 +18,11 @@ constexpr byte CID_CON_TIMER1 = 114;
 constexpr byte CID_CON_TIMER2 = 115;
 constexpr byte CID_CON_START_NO_RESET = 117;
 constexpr byte CID_LAST_SECONDS_TIME = 118;
+constexpr byte CID_DISCORD_ID = 119;
+constexpr byte CID_LOAD_STATS = 120;
+constexpr byte CID_STATS_OVERLAY_CB = 121;
+constexpr byte CID_SHOW_NAMES_CB = 122;
+constexpr byte CID_APPLY = 123;
 constexpr byte MENU_QUIT = 1;
 constexpr byte MENU_SETTINGS = 0;
 constexpr byte MENU_STATISTICS = 2;
@@ -72,13 +77,12 @@ constexpr UINT16 SIZE_SETTINGS_WIDTH = 400;
 constexpr UINT16 SIZE_SETTINGS_HEIGHT = 660;
 constexpr UINT16 SIZE_COLORPICKER_WIDTH = 270;
 constexpr UINT16 SIZE_COLORPICKER_HEIGHT = 350;
-constexpr UINT16 SIZE_STATISTICS_WIDTH = 500;
-constexpr UINT16 SIZE_STATISTICS_HEIGHT = 500;
+constexpr UINT16 SIZE_STATISTICS_WIDTH = 600;
+constexpr UINT16 SIZE_STATISTICS_HEIGHT = 640;
 
 // Version
 #define APP_VERSION L"1.5.1"
 constexpr WCHAR SETTINGS_WINDOW_TITLE[] = L"Settings - Version " APP_VERSION;
-constexpr WCHAR STATISTICS_WINDOW_TITLE[] = L"DBDLeague Statistics";
 
 // Fonts
 constexpr WCHAR FONT_NAME_TIMER[] = L"Segoe UI";
@@ -88,14 +92,13 @@ constexpr WCHAR FONT_NAME_TITLE[] = L"Segoe UI Semibold";
 // Bitmaps
 constexpr byte IDB_MOUSE = 110;
 constexpr byte IDB_CONTROLLER = 111;
+constexpr byte IDB_LEAGUE_LOGO = 112;
 
 // Custom HWND messages
 constexpr int REFRESH_BRUSHES(WM_APP + 1);
 constexpr int HOTKEY_HIT(WM_APP + 2);
 constexpr int CONTROLLER_INPUT(WM_APP + 3);
-// Timer API results. lParam is a heap-allocated DTO the receiving window must take ownership of.
-constexpr int TIMER_API_STATUS_RESPONSE(WM_APP + 4); // StatusDto*
-constexpr int TIMER_API_PLAYER_RESPONSE(WM_APP + 5); // PlayerDetailsDto*, or 0 if the player wasn't found
+// WM_APP + 4 to + 6 are the Timer API messages, in TimerApi/TimerApiMessages.h.
 
 // Configuration File Names
 #define SETTINGS_FILE_NAME "Settings.json"
@@ -107,6 +110,13 @@ struct ColorsStruct // With default values
 	int selectedTimerColor = 6;
 	int lastSecondsColor = 1;
 	int backgroundColor = 20;
+};
+
+struct LeagueSettingsStruct // With default values
+{
+	std::wstring discordId; // empty, or a valid ID (see isValidDiscordId)
+	bool statsOverlayEnabled = false; // always false while discordId is empty
+	bool showNamesAndScore = false;
 };
 
 struct SettingsStruct // With default values
@@ -124,6 +134,7 @@ struct SettingsStruct // With default values
 	bool optionClickThrough = false;
 	int optionLastSecondsTime = 20;
 	ColorsStruct colors;
+	LeagueSettingsStruct league;
 };
 
 // Variables

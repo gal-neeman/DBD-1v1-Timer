@@ -49,6 +49,12 @@
     <Filter Include="TimerApi\Http">
       <UniqueIdentifier>{b71e04d9-3a6c-4f25-8d90-5e2a6c1f7b48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="League">
+      <UniqueIdentifier>{22497a34-86bc-41c4-841b-17e76bb3332e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="League\Models">
+      <UniqueIdentifier>{cc9a73a6-a5ef-4ade-8856-392610f92173}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Program.cpp">
@@ -102,6 +108,9 @@
     <ClCompile Include="TimerApi\Mappers\DtoMappers.cpp">
       <Filter>TimerApi\Mappers</Filter>
     </ClCompile>
+    <ClCompile Include="League\LeagueMappers.cpp">
+      <Filter>League</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Program.h">
@@ -120,6 +129,9 @@
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="StatisticsWindow.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="StatisticsWindowStrings.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
@@ -155,6 +167,9 @@
     <ClInclude Include="TimerApi\TimerApiService.h">
       <Filter>TimerApi</Filter>
     </ClInclude>
+    <ClInclude Include="TimerApi\TimerApiMessages.h">
+      <Filter>TimerApi</Filter>
+    </ClInclude>
     <ClInclude Include="TimerApi\Mappers\JsonHelpers.h">
       <Filter>TimerApi\Mappers</Filter>
     </ClInclude>
@@ -166,6 +181,18 @@
     </ClInclude>
     <ClInclude Include="TimerApi\Dtos\PlayerDetailsDto.h">
       <Filter>TimerApi\Dtos</Filter>
+    </ClInclude>
+    <ClInclude Include="League\LeagueMappers.h">
+      <Filter>League</Filter>
+    </ClInclude>
+    <ClInclude Include="League\LeagueState.h">
+      <Filter>League</Filter>
+    </ClInclude>
+    <ClInclude Include="League\Models\OverlayStats.h">
+      <Filter>League\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="League\Models\StatsWindowModel.h">
+      <Filter>League\Models</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

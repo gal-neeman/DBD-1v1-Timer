@@ -255,6 +255,7 @@ void SettingsWindow::handleControlCommand(const LPARAM lParam)
 	case CID_OK:
 	{
 		updateTempSettingsLastSeconds();
+		tempSettings_.league = appSettings.league; // owned by the statistics window, which may have saved since this one opened
 		applySettings(tempSettings_);
 		SendMessage(GetWindow(hwnd_, GW_OWNER), REFRESH_BRUSHES, 0, 0);
 		DestroyWindow(hwnd_);

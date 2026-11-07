@@ -6,6 +6,12 @@
 #include "Timer.h"
 #include "SettingsWindow.h"
 #include "StatisticsWindow.h"
+#include "League/LeagueState.h"
+#include "TimerApi/Dtos/PlayerDetailsDto.h"
+#include "TimerApi/Dtos/StatusDto.h"
+#include "TimerApi/TimerApiMessages.h"
+#include <optional>
+#include <string>
 
 // The class responsible for the main window of the app
 class MainWindow : public BaseWindow<MainWindow>
@@ -28,9 +34,16 @@ private:
 	static constexpr float MIN_SCALE = 0.5f;
 	static constexpr float MAX_SCALE = 4.0f;
 
+	// SetTimer IDs
+	static constexpr UINT_PTR TIMER_ID_FRAME = 0;		  // redraws the running timers every 16 ms
+	static constexpr UINT_PTR TIMER_ID_PLAYER_POLL = 1;  // fetches the active player every league_.slowPollSec
+	static constexpr UINT_PTR TIMER_ID_STATUS_RETRY = 2; // re-checks the status while the API is off
+	static constexpr UINT STATUS_RETRY_MS = 3 * 60 * 1000;
+
 	// Fields
 	Timer* activeTimer_ = &timer1;
 	float scale_ = 1.0f; // current window size relative to SIZE_MAIN_WIDTH x SIZE_MAIN_HEIGHT
+	LeagueState league_; // DBDLeague player, polling and overlay data
 
 	/**
 	@brief Creates the graphic resources for the main window.
@@ -110,6 +123,31 @@ private:
 	*/
 	void requestRedraw() const;
 
+	/**
+	@brief Handles a status result: if the API is enabled, stops the status retry, fetches the player
+	and starts polling. Otherwise the retry keeps running.
+
+	@param status The status result.
+	*/
+	void handleStatusResponse(const StatusDto& status);
+
+	/**
+	@brief Handles a player result: makes a pending Load Stats ID active and updates both views' models.
+
+	@param details The player's details.
+	*/
+	void handlePlayerResponse(const PlayerDetailsDto& details);
+
+	/**
+	@brief Handles a failed request. A player failure that isApiOutage means the API went down:
+	stops polling and restarts the status retry. A failed status needs nothing, its retry is running.
+
+	@param request The request that failed.
+
+	@param code The HTTP status, or 0.
+	*/
+	void handleApiError(TimerApiRequest request, DWORD code);
+
 public:
 	// Public fields
 	Timer timer1 = Timer();
@@ -174,4 +212,32 @@ public:
 	@param settings The settings to apply.
 	*/
 	void applyWindowSettings(const SettingsStruct& settings) const;
+
+	/**
+	@brief The ID of the player being fetched and polled. Empty if there's none.
+	*/
+	const std::wstring& activePlayerId() const { return league_.activePlayerId; }
+
+	/**
+	@brief Fetches a player for Load Stats. It becomes the active player once its result arrives.
+
+	@param id A valid Discord ID.
+	*/
+	void loadPlayer(const std::wstring& id);
+
+	/**
+	@brief Drops a player loaded since the last save (statistics window Cancel): makes the saved ID
+	active again and fetches it, or clears the models if there's no saved ID.
+	*/
+	void revertPlayer();
+
+	/**
+	@brief Fetches the active player once, unless polling already keeps it fresh.
+	*/
+	void refreshPlayerIfNotPolling();
+
+	/**
+	@brief Starts or stops polling: polls while the API is enabled, the overlay is enabled and a player is active.
+	*/
+	void updatePlayerPolling();
 };

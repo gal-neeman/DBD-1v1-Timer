@@ -10,7 +10,7 @@ This is a C++20 overlay built on Win32, Direct2D/DirectWrite, and XInput. The Js
 - Sources are listed explicitly in `DBD 1v1 Timer.vcxproj` and its `.filters` file, so add new .cpp files there.
 - Older code is flat in the project root. New feature code goes in a feature folder (e.g. `TimerApi/Http/`) with a matching filter. `$(ProjectDir)` is on the include path, so always include relative to the project root: `"TimerApi/Http/HttpClient.h"`, `"globals.h"`.
 - Libraries are linked with `#pragma comment(lib, ...)` in `Program.cpp`, not in project settings.
-- The resource script is `DBD 1v1 Timer.rc`. It is UTF-16LE with a BOM and CRLF line endings, so grep and sed silently find nothing; decode with `iconv -f UTF-16 -t UTF-8` first. Git Bash's sed also strips the CRs, so edit it with a script that preserves the encoding and line endings. The compiled `.rc` loads the app icon and bitmaps from `icon\` by relative path. The bitmaps are 25×25, the size they're drawn at; the 400×400 originals live outside the repo in `..\concept\`.
+- The resource script is `DBD 1v1 Timer.rc`. It is UTF-16LE with a BOM and CRLF line endings, so grep and sed silently find nothing; decode with `iconv -f UTF-16 -t UTF-8` first. Git Bash's sed also strips the CRs, so edit it with a script that preserves the encoding and line endings. The compiled `.rc` loads the app icon and bitmaps from `icon\` by relative path. The bitmaps are saved at the size they're drawn at (25×25 for the hotkey icons, 120×120 for the DBDLeague logo); the 400×400 originals live outside the repo in `..\concept\`. Save them as 24-bit BMPs with the classic 40-byte header: `LoadBitmap` fails on the 124-byte V5 header that some editors write by default (with color space information).
 - `IDB_MOUSE` and `IDB_CONTROLLER` in `globals.h` hardcode the values of `IDB_BITMAP1` and `IDB_BITMAP2` from `resource.h`. Keep them in sync.
 - The global keyboard and mouse hooks are skipped when a debugger is attached, so hotkeys don't work under the VS debugger.
 
@@ -21,10 +21,10 @@ This is a C++20 overlay built on Win32, Direct2D/DirectWrite, and XInput. The Js
 
   `HotkeyManager::execute` then `PostMessage`s `HOTKEY_HIT` to `MainWindow::handleHotKey`. While the settings window is open, controller input goes to it instead, for rebinding.
 - **Timer API:** call it only through the global `timerApi` (`TimerApi/TimerApiService.h`), which `wWinMain` starts and stops. The API host (Debug uses staging, Release uses production) and the `/api/v1` base path live in `TimerApiService.cpp`.
-  - Each method takes an `HWND replyTo` and returns immediately. The request runs on the `HttpWorker` thread through a blocking WinHTTP `HttpClient` (`TimerApi/Http/`). The result is posted as a `new` DTO in `lParam` (`TIMER_API_STATUS_RESPONSE`, `TIMER_API_PLAYER_RESPONSE`), and the receiving window must take ownership with `std::unique_ptr`.
+  - Each method takes an `HWND replyTo` and returns immediately. The request runs on the `HttpWorker` thread through a blocking WinHTTP `HttpClient` (`TimerApi/Http/`). Every call posts exactly one message (`TimerApi/TimerApiMessages.h`). A result is posted as a `new` DTO in `lParam` (`TIMER_API_STATUS_RESPONSE`, `TIMER_API_PLAYER_RESPONSE`), and the receiving window must take ownership with `std::unique_ptr`.
   - JSON is mapped to DTOs (`TimerApi/Dtos/`) by `TimerApi/Mappers/`. The `read*` helpers check every type, so a bad response throws `TimerApiError` instead of crashing.
   - `timerApiEnabled` starts false. The service's status job sets it to `statusEnabled` on the worker thread before posting the result, so windows never set it. Only `getStatus` runs while it is false.
-  - Any failure sets `timerApiEnabled` to false, and nothing is posted: an `HttpError`, a non-2xx status (except a 404 for a player, which posts `lParam = 0`), or a body that doesn't map. The app never exits over it.
+  - Any failure posts `TIMER_API_ERROR` (`wParam` = HTTP status, or 0 for an `HttpError` or a body that doesn't map; `lParam` = the `TimerApiRequest`) and sets `timerApiEnabled` to false, except a 404 for a player or any 429 (`isApiOutage` in `TimerApiMessages.h`). Those keep polling and the last stats. The app never exits over it.
   - `stop()` closes the in-flight request handle to abort it, then joins, so quitting is instant. Never call `HttpClient` on the UI thread.
 - **Timing is single-threaded:** `SetTimer` fires every 16 ms; each `WM_TIMER` calls `Timer::updateTime()` on both timers, then redraws.
 - **Windows** derive from the CRTP template `BaseWindow<T>` (`BaseWindow.h`). Each window type needs a unique `className()`. `RegisterClass` failures are ignored, so a duplicate name silently reuses the other class's window procedure.
@@ -45,6 +45,7 @@ This is a C++20 overlay built on Win32, Direct2D/DirectWrite, and XInput. The Js
 - The settings file is `Settings.json` in the **working directory** (`SETTINGS_FILE_NAME`). The `settings.json` in the repo is only a sample.
 - `settingsFromJson` validates each group of fields separately (hotkeys, bool options, numeric options, colors). If a group is invalid, the whole group falls back to defaults. The fallback values there repeat the struct defaults in `globals.h` as literals, so change both together.
 - Colors are stored as indexes 0–24 into `PALETTE`, not as RGB values.
+- The `league` group (`LeagueSettingsStruct`) is edited only by the statistics window. Each window's OK applies only its own fields onto the current `appSettings`, so the two windows can't overwrite each other's changes.
 - `appSettings` is the only runtime source of settings. The file is read once, by `loadSettingsFromFile` in `wWinMain` before the main window is created, and after that is only written, by `applySettings`.
 - **Adding a setting:**
   1. Add the field and its default to `SettingsStruct` in `globals.h`.

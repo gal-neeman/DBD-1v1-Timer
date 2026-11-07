@@ -41,11 +41,13 @@ public:
 	void start();
 
 	/**
-	 * @brief Queue a job to run on the worker thread. Ignored if the worker isn't running.
+	 * @brief Queue a job to run on the worker thread.
 	 *
 	 * @param job Receives the client to send requests with. Runs on the worker thread.
+	 *
+	 * @return false, and the job is dropped, if the worker isn't running.
 	 */
-	void enqueue(Job job);
+	bool enqueue(Job job);
 
 	/**
 	 * @brief Abort the in-flight request, drop queued jobs and join the thread. Returns immediately.

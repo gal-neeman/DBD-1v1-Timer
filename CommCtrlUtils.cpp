@@ -18,6 +18,15 @@ HFONT createTitleFont()
 	);
 }
 
+HFONT createSubtitleFont()
+{
+	return CreateFont(
+		16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+		DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, FONT_NAME_TITLE
+	);
+}
+
 HFONT createControlsFont()
 {
 	return CreateFont(
