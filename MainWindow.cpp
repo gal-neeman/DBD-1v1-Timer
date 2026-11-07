@@ -296,7 +296,9 @@ OverlayLayout MainWindow::derivedLayout() const
 
 void MainWindow::setLayout(const OverlayLayout layout)
 {
-	if (layout == league_.layout) return;
+	// The move/size loop ends by restoring the size it started with, which would undo the resize below.
+	// WM_EXITSIZEMOVE applies the layout instead.
+	if (layout == league_.layout || inSizeMove_) return;
 	league_.layout = layout;
 
 	// WM_SIZE follows synchronously and recomputes scale_ against the new base size
@@ -505,6 +507,14 @@ LRESULT MainWindow::handleMessage(const UINT wMsg, const WPARAM wParam, const LP
 			return TRUE;
 		case WM_SIZE:
 			handleResize(LOWORD(lParam), HIWORD(lParam));
+			return 0;
+		case WM_ENTERSIZEMOVE:
+			inSizeMove_ = true;
+			return 0;
+		case WM_EXITSIZEMOVE:
+			inSizeMove_ = false;
+			setLayout(derivedLayout()); // a layout change that arrived during the drag
+			requestRedraw();
 			return 0;
 		case WM_COMMAND:
 		{

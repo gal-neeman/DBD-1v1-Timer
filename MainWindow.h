@@ -82,6 +82,7 @@ private:
 	// Fields
 	Timer* activeTimer_ = &timer1;
 	float scale_ = 1.0f; // current window size relative to baseSize(league_.layout)
+	bool inSizeMove_ = false; // the user is dragging or resizing the window; layout changes wait until they let go
 	LeagueState league_; // DBDLeague player, polling and overlay data
 
 	/**
