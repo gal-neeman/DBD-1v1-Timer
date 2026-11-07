@@ -25,11 +25,8 @@ namespace
 	constexpr int MATCH_ROW_HEIGHT = 21;
 	constexpr int SECTION_GAP = 8;
 
-	// "Last Matches" column widths; the opponent takes the rest
-	constexpr int DATE_WIDTH = 135;
-	constexpr int RESULT_WIDTH = 55;
-	constexpr int SCORE_WIDTH = 55;
-	constexpr int POINTS_WIDTH = 105;
+	// "Last Matches" columns are sized to their content, with the spare width split into equal gaps
+	constexpr int MIN_COLUMN_GAP = 16;
 
 	constexpr COLORREF COLOR_GAIN = RGB(0, 128, 0);
 	constexpr COLORREF COLOR_LOSS = RGB(200, 30, 30);
@@ -51,6 +48,26 @@ namespace
 	std::wstring rankText(const std::optional<int> rank)
 	{
 		return rank ? L"#" + std::to_wstring(*rank) : L"?";
+	}
+
+	// " (#rank)" or " (?)", after the opponent's name
+	std::wstring opponentSuffix(const std::optional<int> rank)
+	{
+		return L" (" + rankText(rank) + L")";
+	}
+
+	// The opponent cell before any cutting: "name (#rank)"
+	std::wstring opponentText(const std::wstring& name, const std::optional<int> rank)
+	{
+		return name + opponentSuffix(rank);
+	}
+
+	// Width in pixels of the text in the DC's current font
+	int textWidth(const HDC hdc, const std::wstring& text)
+	{
+		SIZE size = {};
+		GetTextExtentPoint32W(hdc, text.c_str(), static_cast<int>(text.size()), &size);
+		return size.cx;
 	}
 }
 
@@ -355,10 +372,6 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 	y += LINE_HEIGHT + 4;
 	SelectObject(hdc, controlsFont_);
 
-	const int resultX = left + DATE_WIDTH;
-	const int scoreX = resultX + RESULT_WIDTH;
-	const int opponentX = scoreX + SCORE_WIDTH;
-	const int pointsX = right - POINTS_WIDTH;
 	const auto rowRect = [&](const int x1, const int x2) { return RECT{ x1, y, x2, y + MATCH_ROW_HEIGHT }; };
 
 	if (model.matches.empty())
@@ -367,46 +380,76 @@ void StatisticsWindow::paintStats(const HDC hdc) const
 		return;
 	}
 
-	drawText(hdc, StatsText::DATE_HEADER, rowRect(left, resultX), textColor());
-	drawText(hdc, StatsText::RESULT_HEADER, rowRect(resultX, scoreX), textColor());
-	drawText(hdc, StatsText::SCORE_HEADER, rowRect(scoreX, opponentX), textColor());
-	drawText(hdc, StatsText::OPPONENT_HEADER, rowRect(opponentX, pointsX), textColor());
-	drawText(hdc, StatsText::POINTS_GAINED_HEADER, rowRect(pointsX, right), textColor());
+	// Each column is as wide as its widest header or cell
+	enum Column { Date, Result, Score, Opponent, Points, ColumnCount };
+	int widths[ColumnCount] = {
+		textWidth(hdc, StatsText::DATE_HEADER),
+		(std::max)({ textWidth(hdc, StatsText::RESULT_HEADER), textWidth(hdc, StatsText::WIN_RESULT), textWidth(hdc, StatsText::LOSS_RESULT) }),
+		textWidth(hdc, StatsText::SCORE_HEADER),
+		textWidth(hdc, StatsText::OPPONENT_HEADER),
+		textWidth(hdc, StatsText::POINTS_GAINED_HEADER),
+	};
+	for (const MatchRow& match : model.matches)
+	{
+		widths[Date] = (std::max)(widths[Date], textWidth(hdc, match.date));
+		widths[Score] = (std::max)(widths[Score], textWidth(hdc, match.score));
+		widths[Opponent] = (std::max)(widths[Opponent], textWidth(hdc, opponentText(match.opponentName, match.opponentRank)));
+		widths[Points] = (std::max)(widths[Points], textWidth(hdc, match.pointsGained));
+	}
+
+	// The spare width becomes equal gaps. If there's too little, only the opponent column shrinks
+	constexpr int gapCount = ColumnCount - 1;
+	const int available = right - left;
+	int content = 0;
+	for (const int width : widths) content += width;
+	int gap = (available - content) / gapCount;
+	if (gap < MIN_COLUMN_GAP)
+	{
+		gap = MIN_COLUMN_GAP;
+		widths[Opponent] = available - (content - widths[Opponent]) - gapCount * MIN_COLUMN_GAP;
+	}
+
+	// Left edges; the last column ends at the right edge, which absorbs the rounding
+	int xs[ColumnCount] = {};
+	xs[Date] = left;
+	for (int column = 1; column < Points; ++column) xs[column] = xs[column - 1] + widths[column - 1] + gap;
+	xs[Points] = right - widths[Points];
+	const auto cell = [&](const Column column) { return rowRect(xs[column], xs[column] + widths[column]); };
+
+	// Everything is left-aligned except the score, which is centered
+	drawText(hdc, StatsText::DATE_HEADER, cell(Date), textColor());
+	drawText(hdc, StatsText::RESULT_HEADER, cell(Result), textColor());
+	drawText(hdc, StatsText::SCORE_HEADER, cell(Score), textColor(), DT_CENTER);
+	drawText(hdc, StatsText::OPPONENT_HEADER, cell(Opponent), textColor());
+	drawText(hdc, StatsText::POINTS_GAINED_HEADER, cell(Points), textColor());
 	y += MATCH_ROW_HEIGHT;
 
 	for (const MatchRow& match : model.matches)
 	{
-		drawText(hdc, match.date, rowRect(left, resultX), textColor());
-		drawText(hdc, match.isWin ? StatsText::WIN_RESULT : StatsText::LOSS_RESULT, rowRect(resultX, scoreX), match.isWin ? COLOR_GAIN : COLOR_LOSS);
-		drawText(hdc, match.score, rowRect(scoreX, opponentX), textColor());
+		drawText(hdc, match.date, cell(Date), textColor());
+		drawText(hdc, match.isWin ? StatsText::WIN_RESULT : StatsText::LOSS_RESULT, cell(Result), match.isWin ? COLOR_GAIN : COLOR_LOSS);
+		drawText(hdc, match.score, cell(Score), textColor(), DT_CENTER);
 		SetTextColor(hdc, textColor());
-		drawOpponent(hdc, rowRect(opponentX, pointsX - 8), match.opponentName, match.opponentRank);
-		drawText(hdc, match.pointsGained, rowRect(pointsX, right), match.pointsPositive ? COLOR_GAIN : COLOR_LOSS);
+		drawOpponent(hdc, cell(Opponent), match.opponentName, match.opponentRank);
+		drawText(hdc, match.pointsGained, cell(Points), match.pointsPositive ? COLOR_GAIN : COLOR_LOSS);
 		y += MATCH_ROW_HEIGHT;
 	}
 }
 
 void StatisticsWindow::drawOpponent(const HDC hdc, RECT rect, const std::wstring& name, const std::optional<int> rank)
 {
-	const std::wstring suffix = L" (" + rankText(rank) + L")";
 	const int available = rect.right - rect.left;
-
-	SIZE suffixSize, nameSize;
-	GetTextExtentPoint32W(hdc, suffix.c_str(), static_cast<int>(suffix.size()), &suffixSize);
-	GetTextExtentPoint32W(hdc, name.c_str(), static_cast<int>(name.size()), &nameSize);
-
-	std::wstring text = name;
-	if (nameSize.cx + suffixSize.cx > available)
+	std::wstring text = opponentText(name, rank);
+	if (textWidth(hdc, text) > available)
 	{
 		// Fit as much of the name as leaves room for the ellipsis and the rank
-		SIZE ellipsisSize;
-		GetTextExtentPoint32W(hdc, L"\u2026", 1, &ellipsisSize);
-		const int nameRoom = (std::max)(0, static_cast<int>(available - suffixSize.cx - ellipsisSize.cx));
+		const std::wstring suffix = opponentSuffix(rank);
+		const int nameRoom = (std::max)(0, available - textWidth(hdc, suffix) - textWidth(hdc, L"\u2026"));
 		int fit = 0;
-		GetTextExtentExPointW(hdc, name.c_str(), static_cast<int>(name.size()), nameRoom, &fit, nullptr, &nameSize);
-		text = name.substr(0, fit) + L"\u2026";
+		SIZE fitSize;
+		GetTextExtentExPointW(hdc, name.c_str(), static_cast<int>(name.size()), nameRoom, &fit, nullptr, &fitSize);
+		text = name.substr(0, fit) + L"\u2026" + suffix;
 	}
-	text += suffix;
 	DrawTextW(hdc, text.c_str(), static_cast<int>(text.size()), &rect, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
 }
 
