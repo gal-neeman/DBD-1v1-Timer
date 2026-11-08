@@ -37,5 +37,8 @@ namespace SettingsText
 	inline constexpr wchar_t SAVE_BUTTON[] = L"Save";
 	inline constexpr wchar_t CANCEL_BUTTON[] = L"Cancel";
 
+	// Footer
 	inline constexpr wchar_t COPYRIGHT[] = L"\u00A9 Truueh 2026";
+	inline constexpr wchar_t UPDATE_AVAILABLE_PREFIX[] = L"Version "; // then latestVersion, shown instead of the copyright
+	inline constexpr wchar_t UPDATE_AVAILABLE_SUFFIX[] = L" available";
 }

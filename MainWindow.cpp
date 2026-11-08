@@ -10,6 +10,7 @@
 #include "TimerApi/Dtos/PlayerDetailsDto.h"
 #include "TimerApi/TimerApiMessages.h"
 #include "TimerApi/TimerApiService.h"
+#include "TimerApi/VersionCheck.h"
 #include "League/LeagueMappers.h"
 #include <memory>
 #include <algorithm>
@@ -783,8 +784,9 @@ void MainWindow::handleStatusResponse(const StatusDto& status)
 	league_.slowPollSec = status.slowPollSec;
 	league_.fastPollSec = status.fastPollSec;
 	league_.fastPollCapSec = status.fastPollCapSec;
+	league_.availableVersion = isUpdateAvailable(status) ? status.latestVersion : L"";
 
-	if (status.statusEnabled)
+	if (timerApiEnabled) // false when the status is disabled or this version is no longer supported
 	{
 		KillTimer(hwnd_, TIMER_ID_STATUS_RETRY);
 		if (!league_.activePlayerId.empty()) timerApi.getPlayerDetails(league_.activePlayerId, hwnd_);
@@ -792,7 +794,7 @@ void MainWindow::handleStatusResponse(const StatusDto& status)
 	}
 	// Otherwise the retry timer is still running and checks again
 
-	statisticsWindow.setStatus(status.statusMessage);
+	statisticsWindow.setStatus(status);
 }
 
 void MainWindow::handlePlayerResponse(const PlayerResponse& response)

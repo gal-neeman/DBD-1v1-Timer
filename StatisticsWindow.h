@@ -1,6 +1,7 @@
 #pragma once
 #include "BaseWindow.h"
 #include "League/Models/StatsWindowModel.h"
+#include "TimerApi/Dtos/StatusDto.h"
 #include "TimerApi/TimerApiMessages.h"
 #include "globals.h"
 #include <optional>
@@ -11,6 +12,7 @@
 enum class StatsState
 {
 	Disabled,		// the API is off; shows the status message in red
+	UpdateRequired, // the app is older than the API's minimum supported version
 	NeedsId,		// no player loaded; asks for a Discord ID
 	InvalidId,		// the typed ID isn't 17-20 digits
 	PlayerNotFound, // the API has no player with that ID
@@ -42,6 +44,7 @@ private:
 	StatsState state_ = StatsState::Disabled;
 	std::optional<StatsWindowModel> model_;
 	std::wstring statusMessage_; // from the status response; shown while Disabled
+	std::wstring requiredVersion_; // minSupportedVersion when the app is older, else empty
 	std::wstring notice_; // a one-line notice above the stats, e.g. too many requests; cleared by the next success
 
 	// Live only while the window is open
@@ -192,7 +195,8 @@ private:
 	static LRESULT CALLBACK ctrlWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
 	/**
-	@brief The state to show when nothing more specific is known: Disabled while the API is off,
+	@brief The state to show when nothing more specific is known: UpdateRequired while the app is
+	too old for the API, Disabled while the API is off,
 	Loaded with a model, Loading while main has a player to fetch, NeedsId otherwise.
 
 	@return The derived state.
@@ -203,9 +207,9 @@ public:
 	/**
 	@brief Called by the main window with every status result, after timerApiEnabled is set.
 
-	@param message The status message from the API.
+	@param status The status response from the API.
 	*/
-	void setStatus(const std::wstring& message);
+	void setStatus(const StatusDto& status);
 
 	/**
 	@brief Called by the main window when player data arrives, or with nullopt when it's cleared.

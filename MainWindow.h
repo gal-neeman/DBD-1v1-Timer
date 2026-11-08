@@ -367,6 +367,11 @@ public:
 	const std::wstring& activePlayerId() const { return league_.activePlayerId; }
 
 	/**
+	@brief The latest version from the status response if it's newer than the app. Empty otherwise.
+	*/
+	const std::wstring& availableVersion() const { return league_.availableVersion; }
+
+	/**
 	@brief Fetches a player for Load Stats. It becomes the active player once its result arrives.
 
 	@param id A valid Discord ID.
