@@ -145,14 +145,18 @@ void SettingsWindow::initializeTextControls() const
 	const HWND hwndTextColorWinCon = createControl(WC_STATIC, SettingsText::LAST_SECONDS_COLOR_LABEL, titleX, tileHeight_ * 17, titleWidth, tileHeight_);
 	const HWND hwndTextColorBackground = createControl(WC_STATIC, SettingsText::BACKGROUND_COLOR_LABEL, titleX, tileHeight_ * 18, titleWidth, tileHeight_);
 
-	// Copyright text
-	const HWND hwndCopyright = createControl(WC_STATIC, SettingsText::COPYRIGHT, 10, SIZE_SETTINGS_HEIGHT - 71, 100, 17);
+	// Footer: the copyright, or the newer version when the status reported one. It spans up to the Save button.
+	const std::wstring& availableVersion = pGlobalTimerWindow->availableVersion();
+	const std::wstring footerText = availableVersion.empty()
+		? SettingsText::COPYRIGHT
+		: SettingsText::UPDATE_AVAILABLE_PREFIX + availableVersion + SettingsText::UPDATE_AVAILABLE_SUFFIX;
+	const HWND hwndFooter = createControl(WC_STATIC, footerText.c_str(), 10, SIZE_SETTINGS_HEIGHT - 71, SIZE_SETTINGS_WIDTH - 204, 17);
 
 	// Apply fonts
 	SendMessage(hwndTitleColors, WM_SETFONT, (WPARAM)titleFont_, TRUE);
 	SendMessage(hwndTitleHotkeys, WM_SETFONT, (WPARAM)titleFont_, TRUE);
 	SendMessage(hwndTitleOptions, WM_SETFONT, (WPARAM)titleFont_, TRUE);
-	SendMessage(hwndCopyright, WM_SETFONT, (WPARAM)copyrightFont_, TRUE);
+	SendMessage(hwndFooter, WM_SETFONT, (WPARAM)copyrightFont_, TRUE);
 }
 
 void SettingsWindow::initializeButtonControls()

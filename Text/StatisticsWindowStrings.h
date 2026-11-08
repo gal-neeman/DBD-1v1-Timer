@@ -17,6 +17,8 @@ namespace StatsText
 
 	// State messages
 	inline constexpr wchar_t DISABLED_MESSAGE[] = L"The stats feature is currently disabled"; // when the status has no message
+	inline constexpr wchar_t UPDATE_REQUIRED_PREFIX[] = L"Version "; // then minSupportedVersion
+	inline constexpr wchar_t UPDATE_REQUIRED_SUFFIX[] = L" or later is required, please update the app";
 	inline constexpr wchar_t NEEDS_ID_MESSAGE[] = L"Enter your discord id to enable this feature";
 	inline constexpr wchar_t INVALID_ID_MESSAGE[] = L"Enter a valid discord id (17-20 digits)";
 	inline constexpr wchar_t PLAYER_NOT_FOUND_MESSAGE[] = L"No player was found with this discord id";

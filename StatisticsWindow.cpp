@@ -6,6 +6,7 @@
 #include "ResourceUtils.h"
 #include "SettingsUtils.h"
 #include "Program.h"
+#include "TimerApi/VersionCheck.h"
 #include <CommCtrl.h>
 #include <windowsx.h>
 #include <algorithm>
@@ -88,9 +89,10 @@ namespace
 	}
 }
 
-void StatisticsWindow::setStatus(const std::wstring& message)
+void StatisticsWindow::setStatus(const StatusDto& status)
 {
-	statusMessage_ = message;
+	statusMessage_ = status.statusMessage;
+	requiredVersion_ = isUpdateRequired(status) ? status.minSupportedVersion : L"";
 	setNotice(L"");
 	setState(derivedState());
 }
@@ -114,7 +116,9 @@ void StatisticsWindow::setError(const TimerApiRequest request, const DWORD code)
 	}
 	else if (request == TimerApiRequest::Status)
 	{
-		statusMessage_.clear(); // the request failed, so there's no message from the API
+		// The request failed, so there's no message or version from the API
+		statusMessage_.clear();
+		requiredVersion_.clear();
 		setState(StatsState::Disabled);
 	}
 	else
@@ -125,6 +129,7 @@ void StatisticsWindow::setError(const TimerApiRequest request, const DWORD code)
 
 StatsState StatisticsWindow::derivedState() const
 {
+	if (!requiredVersion_.empty()) return StatsState::UpdateRequired;
 	if (!timerApiEnabled) return StatsState::Disabled;
 	if (model_) return StatsState::Loaded;
 	if (pGlobalTimerWindow && !pGlobalTimerWindow->activePlayerId().empty()) return StatsState::Loading;
@@ -268,7 +273,7 @@ void StatisticsWindow::handleControlCommand(const int controlId)
 
 void StatisticsWindow::updateControls() const
 {
-	const bool apiUp = state_ != StatsState::Disabled;
+	const bool apiUp = state_ != StatsState::Disabled && state_ != StatsState::UpdateRequired;
 	const bool loaded = state_ == StatsState::Loaded;
 	const bool loading = state_ == StatsState::Loading;
 
@@ -320,6 +325,9 @@ void StatisticsWindow::paint() const
 		{
 		case StatsState::Disabled:
 			message = statusMessage_.empty() ? StatsText::DISABLED_MESSAGE : statusMessage_;
+			break;
+		case StatsState::UpdateRequired:
+			message = StatsText::UPDATE_REQUIRED_PREFIX + requiredVersion_ + StatsText::UPDATE_REQUIRED_SUFFIX;
 			break;
 		case StatsState::NeedsId:
 			message = StatsText::NEEDS_ID_MESSAGE;

@@ -147,6 +147,7 @@
     <ClCompile Include="TimerApi\Http\HttpClient.cpp" />
     <ClCompile Include="TimerApi\Http\HttpWorker.cpp" />
     <ClCompile Include="TimerApi\TimerApiService.cpp" />
+    <ClCompile Include="TimerApi\VersionCheck.cpp" />
     <ClCompile Include="TimerApi\Mappers\JsonHelpers.cpp" />
     <ClCompile Include="TimerApi\Mappers\DtoMappers.cpp" />
     <ClCompile Include="League\LeagueMappers.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="TimerApi\Http\HttpClient.h" />
     <ClInclude Include="TimerApi\Http\HttpWorker.h" />
     <ClInclude Include="TimerApi\TimerApiService.h" />
+    <ClInclude Include="TimerApi\VersionCheck.h" />
     <ClInclude Include="TimerApi\TimerApiMessages.h" />
     <ClInclude Include="TimerApi\Mappers\JsonHelpers.h" />
     <ClInclude Include="TimerApi\Mappers\DtoMappers.h" />

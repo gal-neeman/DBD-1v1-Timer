@@ -105,6 +105,9 @@
     <ClCompile Include="TimerApi\TimerApiService.cpp">
       <Filter>TimerApi</Filter>
     </ClCompile>
+    <ClCompile Include="TimerApi\VersionCheck.cpp">
+      <Filter>TimerApi</Filter>
+    </ClCompile>
     <ClCompile Include="TimerApi\Mappers\JsonHelpers.cpp">
       <Filter>TimerApi\Mappers</Filter>
     </ClCompile>
@@ -174,6 +177,9 @@
       <Filter>TimerApi\Http</Filter>
     </ClInclude>
     <ClInclude Include="TimerApi\TimerApiService.h">
+      <Filter>TimerApi</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerApi\VersionCheck.h">
       <Filter>TimerApi</Filter>
     </ClInclude>
     <ClInclude Include="TimerApi\TimerApiMessages.h">

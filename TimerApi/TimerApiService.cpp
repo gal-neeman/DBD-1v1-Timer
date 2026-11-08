@@ -1,6 +1,7 @@
 #include "TimerApi/TimerApiService.h"
 #include "TimerApi/Mappers/DtoMappers.h"
 #include "TimerApi/TimerApiMessages.h"
+#include "TimerApi/VersionCheck.h"
 #include "globals.h"
 
 namespace
@@ -51,7 +52,7 @@ void TimerApiService::getStatus(HWND replyTo)
 			return;
 		}
 		std::unique_ptr<StatusDto> status = std::make_unique<StatusDto>(mapStatus(response.body));
-		timerApiEnabled = status->statusEnabled;
+		timerApiEnabled = status->statusEnabled && !isUpdateRequired(*status);
 		postResult(replyTo, TIMER_API_STATUS_RESPONSE, std::move(status));
 	});
 }
