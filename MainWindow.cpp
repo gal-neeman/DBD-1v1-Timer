@@ -718,6 +718,8 @@ void MainWindow::handleHotKey(const int code)
 	case KEY_SCORE_RESET:
 	{
 		if (!league_.overlayStats) return;
+		// A hidden score can't be seen changing, so only reset works while it's hidden
+		if (code != KEY_SCORE_RESET && derivedLayout() != OverlayLayout::StatsWithNames) return;
 
 		constexpr int maxScore = 99; // keeps the names row from overflowing
 		OverlayStats& stats = *league_.overlayStats;
